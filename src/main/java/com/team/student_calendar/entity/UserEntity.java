@@ -2,9 +2,12 @@ package com.team.student_calendar.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 
 import java.time.Instant;
 
+@DynamicInsert
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,12 +33,15 @@ public class UserEntity {
     @Column(name = "phone", nullable = false, length = 45)
     private String phone;
 
+    @ColumnDefault("'TEACHER'")
     @Column(name = "role", nullable = false, length = 45)
     private String role;
 
+    @ColumnDefault("0")
     @Column(name = "is_deleted", nullable = false)
     private Byte isDeleted;
 
+    @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "registered_at", nullable = false)
     private Instant registeredAt;
 
