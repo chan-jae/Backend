@@ -2,27 +2,41 @@ package com.team.student_calendar.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
+
+import java.time.Instant;
 
 @Builder
-@Entity
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "user")
+@Getter
+@Setter
+@Entity
+@Table(name = "user", schema = "student_calendar")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(length = 20, nullable = false)
+    @Column(name = "nickname", nullable = false, length = 20)
+    private String nickname;
+
+    @Column(name = "username", nullable = false, length = 20)
     private String username;
 
-    @Column(length = 60, nullable = false)
+    @Column(name = "password", nullable = false, length = 60)
     private String password;
 
-    @Column(length = 20, nullable = false)
-    private String nickname;
+    @Column(name = "phone", nullable = false, length = 45)
+    private String phone;
+
+    @Column(name = "role", nullable = false, length = 45)
+    private String role;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Byte isDeleted;
+
+    @Column(name = "registered_at", nullable = false)
+    private Instant registeredAt;
+
 }

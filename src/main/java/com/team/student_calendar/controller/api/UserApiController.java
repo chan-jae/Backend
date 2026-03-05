@@ -23,6 +23,7 @@ public class UserApiController {
                 .username("root")
                 .password("0000")
                 .nickname("test")
+                .phone("010-1111-2222")
                 .build();
 
         userRepository.save(userEntity);
