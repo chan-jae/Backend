@@ -1,9 +1,11 @@
 package com.team.student_calendar.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -15,7 +17,11 @@ public class BookEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
     private UserEntity userId;
 
     @Column(name = "title", nullable = false, length = 50)
@@ -33,7 +39,7 @@ public class BookEntity {
     @Column(name = "level", length = 3)
     private String level;
 
-    @Column(name = "difficulty", length = 4)
-    private String difficulty;
+    @Column(name = "difficulty")
+    private Integer difficulty;
 
 }
