@@ -45,8 +45,8 @@ public class InsertBookService {
 
         // 이미 존재하는 책을 빼고 엔티티로 변환
         List<BookEntity> bookEntityList = bookList.stream()
-                // 이미 존재하는거 필터링
-                .filter(b -> existingNoSet.contains(b.getBookNo()))
+                // 이미 존재하는거 제외 (새로운 책만 저장)
+                .filter(b -> !existingNoSet.contains(b.getBookNo()))
                 .map(BookCreateReq::toEntity)
                 .toList();
 

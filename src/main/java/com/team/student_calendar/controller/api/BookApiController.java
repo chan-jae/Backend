@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "책", description = "BookApiController")
 
 public class BookApiController {
@@ -54,6 +56,8 @@ public class BookApiController {
             @RequestBody List<@Valid BookCreateReq> bookCreateReqList,
             BindingResult bindingResult
             ) {
+
+        log.info("[BookApiController.createBook] bookCreateReqList: {}", bookCreateReqList);
 
         // valid 검증에 실패했으면 해당 메시지로 에러 던지기
         if (bindingResult.hasFieldErrors()) {

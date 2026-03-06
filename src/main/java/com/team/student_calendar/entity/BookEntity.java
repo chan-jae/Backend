@@ -19,7 +19,7 @@ public class BookEntity {
     @ManyToOne
     @JoinColumn(
             name = "user_id",
-            nullable = false,
+            nullable = true,
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
     private UserEntity userId;
@@ -33,7 +33,7 @@ public class BookEntity {
     @Column(name = "publisher", nullable = false, length = 20)
     private String publisher;
 
-    @Column(name = "category", nullable = false, length = 10)
+    @Column(name = "category", nullable = false, length = 20)
     private String category;
 
     @Column(name = "level", length = 3)
