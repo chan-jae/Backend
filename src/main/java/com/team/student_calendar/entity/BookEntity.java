@@ -42,4 +42,7 @@ public class BookEntity {
     @Column(name = "difficulty")
     private Integer difficulty;
 
+    @Column(name = "book_no")
+    private Integer bookNo;
+
 }

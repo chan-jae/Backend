@@ -25,6 +25,8 @@ public class BookCreateReq {
 
     private Integer difficulty;
 
+    private Integer bookNo;
+
 
     public BookEntity toEntity () {
         return BookEntity.builder()
@@ -34,6 +36,7 @@ public class BookCreateReq {
                 .category(this.category)
                 .level(this.level)
                 .difficulty(this.difficulty)
+                .bookNo(this.bookNo)
                 .build();
     }
 }
