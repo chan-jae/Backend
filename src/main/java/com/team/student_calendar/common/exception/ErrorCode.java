@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 public interface ErrorCode {
 
-    HttpStatus getStatus(); // 추상 메서드 선언
+    HttpStatus getStatus();
     String getCode();
     String getMessage();
 }

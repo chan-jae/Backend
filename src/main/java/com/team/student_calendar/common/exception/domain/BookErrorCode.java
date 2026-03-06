@@ -7,10 +7,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum CommonErrorCode implements ErrorCode {
+public enum BookErrorCode implements ErrorCode {
 
-    INTERNAL_SERVER_ERROR("C001",HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
-    PARAMETER_ERROR("C002", HttpStatus.BAD_REQUEST, "Invalid parameter");
+    BOOK_NOT_FOUND("B001", HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다.");
 
 
 
