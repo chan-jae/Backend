@@ -21,20 +21,20 @@ public class UserEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "nickname", nullable = false, length = 20)
+    @Column(name = "nickname", nullable = false, length = 10)
     private String nickname;
 
     @Column(name = "username", nullable = false, length = 20)
     private String username;
 
-    @Column(name = "password", nullable = false, length = 60)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "phone", nullable = false, length = 45)
+    @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
     @ColumnDefault("'TEACHER'")
-    @Column(name = "role", nullable = false, length = 45)
+    @Column(name = "role", nullable = false, length = 20)
     private String role;
 
     @ColumnDefault("0")
