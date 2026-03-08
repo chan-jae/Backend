@@ -1,6 +1,6 @@
 package com.team.student_calendar.service.book;
 
-import com.team.student_calendar.common.dto.BookCreateReq;
+import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.RequiredArgsConstructor;

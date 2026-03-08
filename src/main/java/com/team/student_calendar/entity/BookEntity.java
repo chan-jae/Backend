@@ -45,4 +45,7 @@ public class BookEntity {
     @Column(name = "book_no")
     private Integer bookNo;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
 }

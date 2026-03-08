@@ -1,6 +1,6 @@
 package com.team.student_calendar.controller.api;
 
-import com.team.student_calendar.common.dto.BookCreateReq;
+import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;

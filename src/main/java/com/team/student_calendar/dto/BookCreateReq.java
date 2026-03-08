@@ -1,10 +1,8 @@
-package com.team.student_calendar.common.dto;
+package com.team.student_calendar.dto;
 
 import com.team.student_calendar.entity.BookEntity;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-
-import java.awt.print.Book;
 
 @Data
 public class BookCreateReq {
@@ -27,6 +25,8 @@ public class BookCreateReq {
 
     private Integer bookNo;
 
+    private String imageUrl;
+
 
     public BookEntity toEntity () {
         return BookEntity.builder()
@@ -37,6 +37,7 @@ public class BookCreateReq {
                 .level(this.level)
                 .difficulty(this.difficulty)
                 .bookNo(this.bookNo)
+                .imageUrl(this.imageUrl)
                 .build();
     }
 }
