@@ -3,6 +3,10 @@ package com.team.student_calendar.service.book;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,5 +26,15 @@ public class SelectBookService {
     public List<BookEntity> findAllByBookNoList(List<Integer> bookNoList) {
 
         return bookRepository.findAllByBookNoIn(bookNoList);
+    }
+
+    /**
+     * 책 목록 페이징
+     */
+    @Transactional(readOnly = true)
+    public Page<BookEntity> getBookListWithPaging(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.ASC, "bookNo"));
+
+        return bookRepository.findAll(pageable);
     }
 }

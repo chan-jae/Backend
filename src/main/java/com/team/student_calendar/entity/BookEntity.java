@@ -22,7 +22,7 @@ public class BookEntity {
             nullable = true,
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    private UserEntity userId;
+    private StudentEntity userId;
 
     @Column(name = "title", nullable = false, length = 50)
     private String title;

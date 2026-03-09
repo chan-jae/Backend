@@ -4,7 +4,9 @@ import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
+import com.team.student_calendar.service.book.SelectBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -14,9 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 public class BookApiController {
 
     private final InsertBookService insertBookService;
+    private final SelectBookService selectBookService;
 
 
 //    /**
@@ -71,5 +73,25 @@ public class BookApiController {
         // 응답
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiSuccessResponse.created("책 여러권 삽입에 성공했습니다.", "SUCCESS"));
+    }
+
+    /**
+     * 책 목록 페이징 조회
+     * @param page 조회 할 페이지 번호 (기본값: 1)
+     * @param size 한 페이지 책 개수 (기본값: 10)
+     */
+    @Validated
+    @Operation(summary = "책 목록 페이징 조회", description = "페이지 번호와 사이즈를 입력하여 책 목록을 조회합니다.")
+    @GetMapping("/api/books")
+    public ResponseEntity<ApiSuccessResponse<Page<BookEntity>>> getBookList(
+            @RequestParam(defaultValue = "1", name = "page") int page,
+            @RequestParam(defaultValue = "10", name = "size") int size
+    ) {
+        // 서비스에서 Page 가져옴
+        Page<BookEntity> bookPage = selectBookService.getBookListWithPaging(page, size);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(bookPage, "책 목록 페이징 조회에 성공했습니다.", "SUCCESS")
+        );
     }
 }
