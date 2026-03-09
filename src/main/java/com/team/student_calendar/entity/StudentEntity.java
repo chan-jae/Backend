@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Builder
 @AllArgsConstructor
@@ -21,33 +22,12 @@ public class StudentEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "user_id",
-            nullable = false,
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    private UserEntity userId;
+    @Column(name = "login_id", nullable = false, length = 20)
+    private String loginId;
 
-    @Column(name = "name", nullable = false, length = 10)
-    private String name;
+    @Column(name = "grade", nullable = false, length = 10)
+    private String grade;
 
-    @Column(name = "phone", nullable = false, length = 20)
-    private String phone;
-
-    @Column(name = "parent_phone", length = 20)
-    private String parentPhone;
-
-    @ColumnDefault("'STUDENT'")
-    @Column(name = "role", length = 20)
-    private String role;
-
-    @ColumnDefault("0")
-    @Column(name = "is_deleted", nullable = false)
-    private Byte isDeleted;
-
-    @ColumnDefault("CURRENT_TIMESTAMP(6)")
-    @Column(name = "registered_at", nullable = false)
-    private Instant registeredAt;
-
+    @Column(name = "level", nullable = false, length = 10)
+    private String level;
 }
