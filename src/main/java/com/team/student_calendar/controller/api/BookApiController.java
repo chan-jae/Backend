@@ -80,7 +80,6 @@ public class BookApiController {
      * @param page 조회 할 페이지 번호 (기본값: 1)
      * @param size 한 페이지 책 개수 (기본값: 10)
      */
-    @Validated
     @Operation(summary = "책 목록 페이징 조회", description = "페이지 번호와 사이즈를 입력하여 책 목록을 조회합니다.")
     @GetMapping("/api/books")
     public ResponseEntity<ApiSuccessResponse<Page<BookEntity>>> getBookList(
