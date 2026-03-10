@@ -30,7 +30,7 @@ public class InsertBookService {
     public void saveBookList(List<BookCreateReq> bookList) {
 
         // bookNo만 리스트로 뽑기
-        List<Integer> bookNoList = bookList.stream()
+        List<Long> bookNoList = bookList.stream()
                 .map(BookCreateReq::getBookNo)
                 .toList();
 
@@ -39,7 +39,7 @@ public class InsertBookService {
                 .findAllByBookNoList(bookNoList);
 
         // 이미 존재하는 bookNo만 뽑기
-        Set<Integer> existingNoSet = existingBookEntity.stream()
+        Set<Long> existingNoSet = existingBookEntity.stream()
                 .map(BookEntity::getBookNo)
                 .collect(Collectors.toSet());
 
