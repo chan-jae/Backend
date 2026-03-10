@@ -23,7 +23,7 @@ public class BookCreateReq {
 
     private Integer difficulty;
 
-    private Integer bookNo;
+    private Long bookNo;
 
     private String imageUrl;
 
