@@ -25,6 +25,9 @@ public class StudentEntity {
     @Column(name = "login_id", nullable = false, length = 20)
     private String loginId;
 
+    @Column(name = "phone", nullable = false, length = 20)
+    private String phone;
+
     @Column(name = "grade", nullable = false, length = 10)
     private String grade;
 

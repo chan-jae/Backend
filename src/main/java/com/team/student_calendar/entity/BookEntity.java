@@ -16,14 +16,6 @@ public class BookEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "user_id",
-            nullable = true,
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    private UserEntity userId;
-
     @Column(name = "title", nullable = false, length = 50)
     private String title;
 
