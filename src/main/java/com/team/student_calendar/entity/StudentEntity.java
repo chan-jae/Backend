@@ -33,4 +33,7 @@ public class StudentEntity {
 
     @Column(name = "level", nullable = false, length = 10)
     private String level;
+
+    @Column(name = "account_no", nullable = false)
+    private Long accountNo;
 }
