@@ -3,6 +3,7 @@ package com.team.student_calendar.service.book;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,5 +23,20 @@ public class SelectBookService {
     public List<BookEntity> findAllByBookNoList(List<Long> bookNoList) {
 
         return bookRepository.findAllByBookNoIn(bookNoList);
+    }
+
+
+    /**
+     * 난이도, 제목순으로 BookEntity 가져오기
+     */
+    @Transactional(readOnly = true)
+    public List<BookEntity> findAllByDifficultyAscAndTitleAsc() {
+
+        Sort sort = Sort.by(
+                Sort.Order.asc("difficulty"),
+                Sort.Order.asc("title")
+        );
+
+        return bookRepository.findAll(sort);
     }
 }

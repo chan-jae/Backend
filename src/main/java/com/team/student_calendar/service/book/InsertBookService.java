@@ -20,11 +20,6 @@ public class InsertBookService {
 
 
 
-//    @Transactional
-//    public void saveBook() {
-//
-//    }
-
 
     @Transactional
     public void saveBookList(List<BookCreateReq> bookList) {
