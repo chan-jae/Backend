@@ -4,7 +4,9 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.StudentCreateReq;
+import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.service.student.InsertStudentService;
+import com.team.student_calendar.service.student.SelectStudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +30,7 @@ import java.util.List;
 public class StudentApiController {
 
     private final InsertStudentService insertStudentService;
+    private final SelectStudentService selectStudentService;
 
 
     @Validated
@@ -57,5 +61,16 @@ public class StudentApiController {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(ApiSuccessResponse.created("학생 수정에 성공했습니다.", "SUCCESS"));
         }
+    }
+
+
+    @Operation(summary = "전체 학생 가져오기", description = "모든 학생들을 가져온다.")
+    @GetMapping("/api/students")
+    public ResponseEntity<ApiSuccessResponse<List<StudentEntity>>> selectAllStudents() {
+
+        List<StudentEntity> allStudents = selectStudentService.findAllStudents();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(allStudents, "모든 학생 조회에 성공했습니다.", "SUCCESS"));
     }
 }

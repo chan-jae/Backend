@@ -25,6 +25,9 @@ public class StudentEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @OneToOne(mappedBy = "student")
+    private BookProgressEntity bookProgress;
+
     @Column(name = "name", nullable = false, length = 10)
     private String name;
 

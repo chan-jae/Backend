@@ -3,6 +3,8 @@ package com.team.student_calendar.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,6 +17,9 @@ public class BookEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @OneToMany(mappedBy = "book")
+    private List<BookProgressEntity> bookProgress;
 
     @Column(name = "title", nullable = false, length = 50)
     private String title;

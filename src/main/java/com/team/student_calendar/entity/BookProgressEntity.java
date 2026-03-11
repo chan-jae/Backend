@@ -17,13 +17,13 @@ public class BookProgressEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(
             name = "student_id",
             nullable = false,
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    private StudentEntity studentEntity;
+    private StudentEntity student;
 
     @ManyToOne
     @JoinColumn(
@@ -31,5 +31,5 @@ public class BookProgressEntity {
             nullable = false,
             foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
     )
-    private BookEntity bookEntity;
+    private BookEntity book;
 }
