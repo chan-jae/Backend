@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
 
-    List<BookEntity> findAllByBookNoIn(List<Integer> bookNoList);
+    List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
 }

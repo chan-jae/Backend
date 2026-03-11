@@ -23,7 +23,7 @@ public class SelectBookService {
      * List안에 있는 bookNo를 가지는 BookEntity 가져오기
      * */
     @Transactional(readOnly = true)
-    public List<BookEntity> findAllByBookNoList(List<Integer> bookNoList) {
+    public List<BookEntity> findAllByBookNoList(List<Long> bookNoList) {
 
         return bookRepository.findAllByBookNoIn(bookNoList);
     }

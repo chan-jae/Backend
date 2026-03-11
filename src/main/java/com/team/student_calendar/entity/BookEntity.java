@@ -16,14 +16,6 @@ public class BookEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "user_id",
-            nullable = true,
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
-    private StudentEntity userId;
-
     @Column(name = "title", nullable = false, length = 50)
     private String title;
 
@@ -36,16 +28,16 @@ public class BookEntity {
     @Column(name = "category", nullable = false, length = 20)
     private String category;
 
-    @Column(name = "level", length = 3)
+    @Column(name = "level", nullable = false, length = 10)
     private String level;
 
-    @Column(name = "difficulty")
+    @Column(name = "difficulty", nullable = false)
     private Integer difficulty;
 
-    @Column(name = "book_no")
-    private Integer bookNo;
+    @Column(name = "book_no", nullable = false)
+    private Long bookNo;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
 }
