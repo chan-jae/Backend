@@ -4,6 +4,7 @@ import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.dto.BookSliderRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
 import com.team.student_calendar.service.book.SelectBookService;
@@ -91,6 +92,24 @@ public class BookApiController {
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(bookPage, "책 목록 페이징 조회에 성공했습니다.", "SUCCESS")
+        );
+    }
+
+    /**
+     * 슬라이더로 도서 조회
+     */
+    @Operation(summary = "도서 조회", description = "학생의 현재 진도에 맞춰 자동으로 중앙이 세팅된 책 5권을 반환합니다.")
+    @GetMapping("/api/students/{studentId}/books/slider")
+    public ResponseEntity<ApiSuccessResponse<List<BookSliderRes>>> getSliderBooks(
+            @PathVariable("studentId") Long studentId) {
+
+        log.info("[BookApiController.getSliderBooks] 슬라이더 타격 개시 studentId: {}", studentId);
+
+        List<BookSliderRes> result = selectBookService.getSliderBooks(studentId);
+
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(result, "도서 조회에 성공했습니다.", "SUCCESS")
         );
     }
 }
