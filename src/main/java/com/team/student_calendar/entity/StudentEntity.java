@@ -1,5 +1,6 @@
 package com.team.student_calendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.team.student_calendar.dto.StudentCreateReq;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,6 +26,7 @@ public class StudentEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "student")
     private BookProgressEntity bookProgress;
 

@@ -1,5 +1,6 @@
 package com.team.student_calendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,7 @@ public class BookEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "book")
     private List<BookProgressEntity> bookProgress;
 
