@@ -17,7 +17,7 @@ public enum StudentState {
 
 
 
-    public static Byte fromString(String stateStr) {
+    public static Byte getStateFromString(String stateStr) {
 
         if (stateStr == null) return null;
 
