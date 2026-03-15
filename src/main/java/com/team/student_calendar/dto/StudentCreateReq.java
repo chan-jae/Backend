@@ -26,6 +26,9 @@ public class StudentCreateReq {
     @NotNull(message = "계정 넘버는 필수 항목입니다.")
     private Long accountNo;
 
+    @NotNull(message = "상태는 필수 항목입니다.")
+    private String stateStr;
+
 
     public StudentEntity toEntity() {
         return StudentEntity.builder()
