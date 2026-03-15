@@ -15,4 +15,16 @@ public enum StudentState {
 
     private final int state;
 
+
+
+    public static Byte getStateFromString(String stateStr) {
+
+        if (stateStr == null) return null;
+
+        try {
+            return (byte) (StudentState.valueOf(stateStr.toUpperCase()).getState());
+        } catch (Exception e) {
+            return -1;
+        }
+    }
 }

@@ -1,9 +1,14 @@
 package com.team.student_calendar.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.team.student_calendar.common.enums.StudentState;
 import com.team.student_calendar.entity.StudentEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class StudentCreateReq {
@@ -29,6 +34,10 @@ public class StudentCreateReq {
     @NotNull(message = "상태는 필수 항목입니다.")
     private String stateStr;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    @NotNull(message = "가입일자는 필수 항목입니다.")
+    private LocalDateTime joinedAt;
+
 
     public StudentEntity toEntity() {
         return StudentEntity.builder()
@@ -38,6 +47,8 @@ public class StudentCreateReq {
                 .grade(this.grade)
                 .level(this.level)
                 .accountNo(this.accountNo)
+                .state(StudentState.getStateFromString(this.stateStr))
+                .joinedAt(this.joinedAt)
                 .build();
     }
 }
