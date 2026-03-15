@@ -27,6 +27,7 @@ public class BookCreateReq {
 
     private String imageUrl;
 
+    private Byte type;
 
     public BookEntity toEntity () {
         return BookEntity.builder()
@@ -38,6 +39,7 @@ public class BookCreateReq {
                 .difficulty(this.difficulty)
                 .bookNo(this.bookNo)
                 .imageUrl(this.imageUrl)
+                .type(this.type)
                 .build();
     }
 }

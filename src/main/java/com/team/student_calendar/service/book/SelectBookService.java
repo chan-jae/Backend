@@ -10,12 +10,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,83 +41,64 @@ public class SelectBookService {
     }
 
     /**
-     * 난이도/제목순 전체 책 목록 조회
-     */
-    @Transactional(readOnly = true)
-    public List<BookEntity> findAllByDifficultyAscAndTitleAsc() {
-        Sort sort = Sort.by(Sort.Direction.ASC, "difficulty").and(Sort.by(Sort.Direction.ASC, "title"));
-        return bookRepository.findAll(sort);
-    }
-
-    /**
      * 슬라이더 도서 추출 (현재 읽어야 할 책이 중앙에 오도록 5권 자르기)
      */
     @Transactional(readOnly = true)
     public List<BookSliderRes> getSliderBooks(Long studentId) {
 
+        // 전체 책 목록
         List<BookEntity> allBooks = findAllByDifficultyAscAndTitleAsc();
 
         if (allBooks.isEmpty()) {
             return java.util.Collections.emptyList();
         }
 
+        // 학생 진도 찾기
+        BookProgressEntity progress = bookProgressRepository.findByStudentId(studentId).orElse(null);
+
+        int currentIndex = 0;
+
+        // 전체 목록에서 현재 책 index 찾기
+        if (progress != null && progress.getBook() != null) {
+            Long currentBookId = progress.getBook().getId();
+            for (int i = 0; i < allBooks.size(); i++) {
+                if (allBooks.get(i).getId().equals(currentBookId)) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // 5권 시작점, 끝점 계산
+        int startIndex = Math.max(0, currentIndex - 2);
+        int endIndex = Math.min(allBooks.size() - 1, startIndex + 4);
+
+        if (endIndex - startIndex < 4) {
+            startIndex = Math.max(0, endIndex - 4);
+        }
+
+        // 5권을 잘라서 BookSliderRes로
+        return allBooks.subList(startIndex, endIndex + 1).stream()
+                .map(book -> new BookSliderRes(
+                        book.getBookNo(),    // 1. 책 번호 (엔티티에 getId()로 되어있다면 book.getId()로 변경!)
+                        book.getTitle(),     // 2. 제목
+                        book.getAuthor(),    // 3. 작가
+                        book.getCategory(),  // 4. 카테고리
+                        book.getImageUrl(),  // 5. 이미지 URL
+                        false                // 6. 읽음 여부 (슬라이더에 띄울 책이니 일단 false(안읽음) 처리)
+                ))
+                .collect(Collectors.toList());
+    }
 
     /**
      * 난이도, 제목순으로 BookEntity 가져오기
      */
     @Transactional(readOnly = true)
     public List<BookEntity> findAllByDifficultyAscAndTitleAsc() {
-
         Sort sort = Sort.by(
                 Sort.Order.asc("difficulty"),
                 Sort.Order.asc("title")
         );
-
         return bookRepository.findAll(sort);
-    }
-}
-
-        BookProgressEntity progress = bookProgressRepository.findByStudentEntity_Id(studentId).orElse(null);
-
-        // 현재 읽는 책 인덱스 찾기
-        int targetIndex = 0; // 진도가 없으면 무조건 1번째 책
-
-        if (progress != null && progress.getBookEntity() != null) {
-            Long currentBookId = progress.getBookEntity().getId();
-
-            for (int i = 0; i < allBooks.size(); i++) {
-                if (allBooks.get(i).getId().equals(currentBookId)) {
-                    targetIndex = i; // 발견
-                    break;
-                }
-            }
-        }
-
-        // 5권 자르기 알고리즘
-        int startIndex = Math.max(0, targetIndex - 2);
-        int endIndex = Math.min(allBooks.size(), startIndex + 5);
-        if (endIndex - startIndex < 5 && allBooks.size() >= 5) {
-            startIndex = endIndex - 5;
-        }
-
-        List<BookSliderRes> result = new ArrayList<>();
-
-        for (int i = startIndex; i < endIndex; i++) {
-            BookEntity book = allBooks.get(i);
-
-            // 타겟보다 앞에 있으면 무조건 이미 읽은 책(true)
-            boolean isRead = (i < targetIndex);
-
-            result.add(new BookSliderRes(
-                    book.getBookNo(),
-                    book.getTitle(),
-                    book.getAuthor(),
-                    book.getCategory(),
-                    book.getImageUrl(),
-                    isRead
-            ));
-        }
-
-        return result;
     }
 }
