@@ -1,5 +1,6 @@
 package com.team.student_calendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.team.student_calendar.dto.StudentCreateReq;
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,6 +9,7 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 @DynamicUpdate
 @Builder
@@ -24,6 +26,10 @@ public class StudentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "student")
+    private List<StudentBookEntity> studentBooks;
 
     @Column(name = "name", nullable = false, length = 10)
     private String name;
@@ -42,6 +48,10 @@ public class StudentEntity {
 
     @Column(name = "account_no", nullable = false)
     private Long accountNo;
+
+    @Column(name = "state", nullable = false)
+    @ColumnDefault("0")
+    private Byte state;
 
 
     public void applyChanges(StudentCreateReq req) {

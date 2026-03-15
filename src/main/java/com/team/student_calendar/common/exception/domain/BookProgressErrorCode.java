@@ -7,11 +7,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum BookErrorCode implements ErrorCode {
+public enum BookProgressErrorCode implements ErrorCode {
 
-    BOOK_NOT_FOUND("B001", HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다."),
-    NEXT_BOOK_NOT_FOUND("B002", HttpStatus.NOT_FOUND, "다음 책을 찾을 수 없습니다."),
-    PREV_BOOK_NOT_FOUND("B003", HttpStatus.NOT_FOUND, "이전 책을 찾을 수 없습니다.");
+    BOOK_PROGRESS_NOT_FOUND("BP001", HttpStatus.NOT_FOUND, "책 진행상황을 찾을 수 없습니다.");
 
 
 

@@ -3,10 +3,12 @@ package com.team.student_calendar.common.response;
 import com.team.student_calendar.common.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

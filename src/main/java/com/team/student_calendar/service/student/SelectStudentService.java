@@ -31,4 +31,14 @@ public class SelectStudentService {
 
         return studentRepository.count();
     }
+
+
+    /**
+     * 모든 StudentEntity 가져오기
+     */
+    @Transactional(readOnly = true)
+    public List<StudentEntity> findAllStudents() {
+
+        return studentRepository.findAll();
+    }
 }

@@ -6,11 +6,13 @@ import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.BookSliderRes;
 import com.team.student_calendar.entity.BookEntity;
+import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
 import com.team.student_calendar.service.book.SelectBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -32,20 +38,6 @@ public class BookApiController {
     private final InsertBookService insertBookService;
     private final SelectBookService selectBookService;
 
-
-//    /**
-//     * 책 1개만 생성
-//     * @param bookCreateReq 책 정보
-//     * */
-//    @PostMapping("/api/books")
-//    public ApiSuccessResponse<Void> createBook(
-//            @RequestBody BookCreateReq bookCreateReq
-//    ) {
-//
-//
-//
-//
-//    }
 
 
     /**
@@ -111,5 +103,15 @@ public class BookApiController {
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(result, "도서 조회에 성공했습니다.", "SUCCESS")
         );
+    }
+
+    @Operation(summary = "난이도순으로 책 가져오기", description = "난이도, 제목순으로 책 가져오기")
+    @GetMapping("/api/books/by-difficulty")
+    public ResponseEntity<ApiSuccessResponse<List<BookEntity>>> selectBookByDifficultyAsc() {
+
+        List<BookEntity> bookEntityList = selectBookService.findAllByDifficultyAscAndTitleAsc();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(bookEntityList, "난이도순으로 책 가져오기에 성공했습니다", "SUCCESS"));
     }
 }

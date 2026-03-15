@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +61,22 @@ public class SelectBookService {
         if (allBooks.isEmpty()) {
             return java.util.Collections.emptyList();
         }
+
+
+    /**
+     * 난이도, 제목순으로 BookEntity 가져오기
+     */
+    @Transactional(readOnly = true)
+    public List<BookEntity> findAllByDifficultyAscAndTitleAsc() {
+
+        Sort sort = Sort.by(
+                Sort.Order.asc("difficulty"),
+                Sort.Order.asc("title")
+        );
+
+        return bookRepository.findAll(sort);
+    }
+}
 
         BookProgressEntity progress = bookProgressRepository.findByStudentEntity_Id(studentId).orElse(null);
 
