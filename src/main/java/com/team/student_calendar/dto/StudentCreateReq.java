@@ -1,5 +1,6 @@
 package com.team.student_calendar.dto;
 
+import com.team.student_calendar.common.enums.StudentState;
 import com.team.student_calendar.entity.StudentEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -38,6 +39,7 @@ public class StudentCreateReq {
                 .grade(this.grade)
                 .level(this.level)
                 .accountNo(this.accountNo)
+                .state(StudentState.fromString(this.stateStr))
                 .build();
     }
 }
