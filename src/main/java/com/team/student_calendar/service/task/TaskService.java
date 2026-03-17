@@ -19,6 +19,7 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final StudentRepository studentRepository;
 
+    // 추가
     @Transactional
     public TaskCreateRes createTask(Long studentId, TaskCreateReq req) {
         StudentEntity student = studentRepository.findById(studentId)
@@ -36,11 +37,26 @@ public class TaskService {
         return new TaskCreateRes(savedTask);
     }
 
+    //조회
     @Transactional(readOnly = true)
     public List<TaskListRes> getTaskList(Long studentId) {
         // 레포로 학생 데이터 가져옴
         return taskRepository.findAllByStudentEntity_Id(studentId).stream()
                 .map(TaskListRes::new) // 데이터들을 TaskListRes에 넣음
                 .toList(); // 리스트로 묶음
+    }
+
+    // 삭제
+    @Transactional
+    public void deleteTask(Long studentId, Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 할 일을 찾을 수 없습니다. ID: " + taskId));
+
+        // 삭제 대상 확인
+        if (!task.getStudentEntity().getId().equals(studentId)) {
+            throw new IllegalArgumentException("해당 학생의 할 일이 아닙니다! (권한 없음)");
+        }
+
+        taskRepository.delete(task);
     }
 }

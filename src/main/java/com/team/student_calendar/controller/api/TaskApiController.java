@@ -30,6 +30,7 @@ public class TaskApiController {
                 .body(ApiSuccessResponse.created(result, "할 일(Task) 생성 성공", "SUCCESS"));
     }
 
+    //조회
     @GetMapping("/api/students/{studentId}/tasks")
     public ResponseEntity<ApiSuccessResponse<List<TaskListRes>>> getTasks(
             @PathVariable("studentId") Long studentId) {
@@ -38,6 +39,19 @@ public class TaskApiController {
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(result, "할 일 목록 조회 성공", "SUCCESS")
+        );
+    }
+
+    // 삭제
+    @DeleteMapping("/api/students/{studentId}/tasks/{taskId}")
+    public ResponseEntity<ApiSuccessResponse<Void>> deleteTask(
+            @PathVariable("studentId") Long studentId,
+            @PathVariable("taskId") Long taskId) {
+
+        taskService.deleteTask(studentId, taskId);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(null, "할 일(Task) 삭제 완료!", "SUCCESS")
         );
     }
 }
