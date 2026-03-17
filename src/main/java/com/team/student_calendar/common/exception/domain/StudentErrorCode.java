@@ -1,14 +1,15 @@
 package com.team.student_calendar.common.exception.domain;
 
+import com.team.student_calendar.common.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum StudentErrorCode {
+public enum StudentErrorCode implements ErrorCode {
 
-    BOOK_NOT_FOUND("S001", HttpStatus.NOT_FOUND, "학생을 찾을 수 없습니다.");
+    STUDENT_NOT_FOUND("S001", HttpStatus.NOT_FOUND, "학생을 찾을 수 없습니다.");
 
 
 

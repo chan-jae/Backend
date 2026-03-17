@@ -1,6 +1,7 @@
 package com.team.student_calendar.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.team.student_calendar.common.enums.BookType;
 import jakarta.persistence.*;
 import lombok.*;
