@@ -1,5 +1,6 @@
 package com.team.student_calendar.controller.api;
 
+import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
@@ -60,13 +61,17 @@ public class StudentBookApiController {
 
     @Operation(summary = "읽은 책 가져오기", description = "학생이 읽었던 책들을 모두 가져온다.")
     @GetMapping("/api/student-books/students/{id}")
-    public ResponseEntity<ApiSuccessResponse<List<ReadBooksRes>>> selectReadBooks(
-            @PathVariable("id") Long studentId
+    public ResponseEntity<ApiSuccessResponse<ReadBooksRes>> selectReadBooks(
+            @PathVariable("id") Long studentId,
+            @RequestParam(name = "category", required = false, defaultValue = "ALL") String category
     ) {
 
-        List<ReadBooksRes> readBookList = selectReadBookService.findReadBooksByStudentId(studentId);
+        ReadBooksRes res = selectReadBookService
+                .findReadBooksByStudentId(studentId, category);
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiSuccessResponse.ok(readBookList, "학생이 읽은 책을 가져왔습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.ok(res, "학생이 읽은 책을 가져왔습니다.", "SUCCESS"));
     }
+
+
 }

@@ -44,20 +44,21 @@ public class StudentBookEntity {
     private Byte state;
 
 
-    public ReadBooksRes toReadBooksRes() {
-        ReadBooksRes res = new ReadBooksRes();
-        res.setId(book.getId());
-        res.setTitle(book.getTitle());
-        res.setAuthor(book.getAuthor());
-        res.setPublisher(book.getPublisher());
-        res.setCategory(book.getCategory());
-        res.setLevel(book.getLevel());
-        res.setDifficulty(book.getDifficulty());
-        res.setBookNo(book.getBookNo());
-        res.setImageUrl(book.getImageUrl());
-        res.setType(book.getType());
-        res.setState(state);
+    public ReadBooksRes.Book toReadBooksRes() {
 
-        return res;
+        ReadBooksRes.Book resBook = new ReadBooksRes.Book();
+        resBook.setId(book.getId());
+        resBook.setTitle(book.getTitle());
+        resBook.setAuthor(book.getAuthor());
+        resBook.setPublisher(book.getPublisher());
+        resBook.setCategory(book.getCategory());
+        resBook.setLevel(book.getLevel());
+        resBook.setDifficulty(book.getDifficulty());
+        resBook.setBookNo(book.getBookNo());
+        resBook.setImageUrl(book.getImageUrl());
+        resBook.setType(book.getType());
+        resBook.setState(state);
+
+        return resBook;
     }
 }

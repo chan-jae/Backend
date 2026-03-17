@@ -12,4 +12,8 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
     Optional<StudentBookEntity> findByStudentIdAndBookId(Long studentId, Long bookId);
 
     List<StudentBookEntity> findByStudentId(Long studentId);
+
+    List<StudentBookEntity> findByStudentIdAndBook_Category(Long studentId, String category);
+
+    List<StudentBookEntity> findByStudentIdAndBook_CategoryNot(Long studentId, String category);
 }

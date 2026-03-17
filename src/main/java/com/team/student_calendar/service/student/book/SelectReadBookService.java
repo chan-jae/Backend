@@ -1,7 +1,9 @@
 package com.team.student_calendar.service.student.book;
 
+import com.team.student_calendar.common.enums.BookCategory;
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.dto.ReadBooksRes;
-import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.repository.StudentBookRepository;
@@ -39,22 +41,47 @@ public class SelectReadBookService {
     /**
      * 학생이 읽은 책 가져오기
      * @param studentId 학생 pk
-     * @return List<ReadBooksRes>
+     * @return ReadBooksRes
      */
     @Transactional(readOnly = true)
-    public List<ReadBooksRes> findReadBooksByStudentId(Long studentId) {
+    public ReadBooksRes findReadBooksByStudentId(Long studentId, String category) {
 
         /* 학생 찾기*/
         StudentEntity student = selectStudentService.findById(studentId);
 
-        /* 읽은 책 목록 모두 가져오기*/
-        List<StudentBookEntity> readBookList = studentBookRepository.findByStudentId(studentId);
+        /* 대문자로 변환*/
+        category = category.toUpperCase();
 
-        /* ReadBooksRes로 바꾸기*/
-        List<ReadBooksRes> readBooksResList = readBookList.stream()
+        /* 카테고리 분류가 유효한지*/
+        BookCategory bookCategory;
+        try {
+            bookCategory = BookCategory.valueOf(category);
+        } catch (Exception e) {
+            throw new BaseException(BookErrorCode.INVALID_CATEGORY);
+        }
+
+        /* 카테고리별로 분기*/
+        List<StudentBookEntity> readBookList = switch (bookCategory) {
+            // 읽은 책 목록 모두 가져오기
+            case ALL -> studentBookRepository
+                    .findByStudentId(studentId);
+            // 문학만 가져오기
+            case LITERATURE -> studentBookRepository
+                    .findByStudentIdAndBook_Category(studentId, BookCategory.LITERATURE.name());
+            // 비문학만 가져오기
+            case NON_LITERATURE -> studentBookRepository
+                    .findByStudentIdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name());
+        };
+
+        /* 응답 데이터 만들기*/
+        List<ReadBooksRes.Book> books = readBookList.stream()
                 .map(StudentBookEntity::toReadBooksRes)
                 .toList();
 
-        return readBooksResList;
+        ReadBooksRes res = new ReadBooksRes();
+        res.setStudentId(studentId);
+        res.setBooks(books);
+
+        return res;
     }
 }
