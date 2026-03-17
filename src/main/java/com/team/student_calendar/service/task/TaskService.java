@@ -2,6 +2,7 @@ package com.team.student_calendar.service.task;
 
 import com.team.student_calendar.dto.TaskCreateReq;
 import com.team.student_calendar.dto.TaskCreateRes;
+import com.team.student_calendar.dto.TaskListRes;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.entity.TaskEntity;
 import com.team.student_calendar.repository.StudentRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +34,13 @@ public class TaskService {
         TaskEntity savedTask = taskRepository.save(task);
 
         return new TaskCreateRes(savedTask);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TaskListRes> getTaskList(Long studentId) {
+        // 레포로 학생 데이터 가져옴
+        return taskRepository.findAllByStudentEntity_Id(studentId).stream()
+                .map(TaskListRes::new) // 데이터들을 TaskListRes에 넣음
+                .toList(); // 리스트로 묶음
     }
 }
