@@ -1,5 +1,6 @@
 package com.team.student_calendar.repository;
 
+import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,6 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
     List<StudentBookEntity> findByStudentIdAndBook_CategoryNot(Long studentId, String category);
 
     long deleteAllByStudent(StudentEntity student);
+
+    long deleteByStudentAndBook(StudentEntity student, BookEntity book);
 }

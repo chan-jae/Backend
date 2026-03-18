@@ -90,4 +90,20 @@ public class StudentBookApiController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("학생이 읽은 책들을 모두 삭제했습니다.", "SUCCESS"));
     }
+
+
+    @Operation(summary = "학생이 읽은 책 1권 지우기", description = "학생이 읽은 책 1권 지우기")
+    @DeleteMapping("/api/students/{studentId}/books/{bookId}")
+    public ResponseEntity<ApiSuccessResponse<Void>> deleteReadBook(
+            @PathVariable("studentId") Long studentId,
+            @PathVariable("bookId") Long bookId
+    ) {
+
+        /* 학생이 읽은책 1권 삭제*/
+        deleteReadBookService.deleteReadBook(studentId, bookId);
+
+        /* 응답*/
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("학생이 읽은 책 1권을 삭제했습니다.", "SUCCESS"));
+    }
 }
