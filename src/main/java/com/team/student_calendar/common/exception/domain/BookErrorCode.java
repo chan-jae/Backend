@@ -10,8 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum BookErrorCode implements ErrorCode {
 
     BOOK_NOT_FOUND("B001", HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다."),
-    NEXT_BOOK_NOT_FOUND("B002", HttpStatus.NOT_FOUND, "다음 책을 찾을 수 없습니다."),
-    PREV_BOOK_NOT_FOUND("B003", HttpStatus.NOT_FOUND, "이전 책을 찾을 수 없습니다.");
+    INVALID_CATEGORY("B002", HttpStatus.BAD_REQUEST, "유효한 카테고리 분류가 아닙니다.");
 
 
 

@@ -1,9 +1,11 @@
 package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.dto.BookSliderRes;
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.entity.BookEntity;
-import com.team.student_calendar.entity.BookProgressEntity;
-import com.team.student_calendar.repository.BookProgressRepository;
+import com.team.student_calendar.entity.StudentBookEntity;
+import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 public class SelectBookService {
 
     private final BookRepository bookRepository;
-    private final BookProgressRepository bookProgressRepository;
+    private final StudentBookRepository studentBookRepository;
 
     /**
      * List안에 있는 bookNo를 가지는 BookEntity 가져오기
@@ -54,7 +56,10 @@ public class SelectBookService {
         }
 
         // 학생 진도 찾기
-        BookProgressEntity progress = bookProgressRepository.findByStudentId(studentId).orElse(null);
+        StudentBookEntity progress = studentBookRepository.findByStudentId(studentId)
+                .stream()       // 리스트 정렬
+                .findFirst()    // 맨 앞에 있는 타겟 하나
+                .orElse(null);
 
         int currentIndex = 0;
 
@@ -100,5 +105,13 @@ public class SelectBookService {
                 Sort.Order.asc("title")
         );
         return bookRepository.findAll(sort);
+    }
+
+
+    @Transactional(readOnly = true)
+    public BookEntity findById(Long id) {
+
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
     }
 }

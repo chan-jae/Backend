@@ -1,6 +1,7 @@
 package com.team.student_calendar.service.student;
 
-import com.team.student_calendar.entity.BookEntity;
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,13 @@ public class SelectStudentService {
     public List<StudentEntity> findAllStudents() {
 
         return studentRepository.findAll();
+    }
+
+
+    @Transactional(readOnly = true)
+    public StudentEntity findById(Long id) {
+
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new BaseException(StudentErrorCode.STUDENT_NOT_FOUND));
     }
 }

@@ -13,4 +13,8 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
 
     List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
+
+    List<BookEntity> findAllByIdIn(List<Long> idList);
+
+    long countAllByIdIn(List<Long> idList);
 }
