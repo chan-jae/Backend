@@ -8,6 +8,7 @@ import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.dto.ReadBooksSaveReq;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
+import com.team.student_calendar.service.student.book.DeleteReadBookService;
 import com.team.student_calendar.service.student.book.InsertReadBookService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +32,8 @@ public class StudentBookApiController {
 
     private final InsertReadBookService insertReadBookService;
     private final SelectReadBookService selectReadBookService;
+    private final DeleteReadBookService deleteReadBookService;
+
 
 
     @Validated
@@ -74,4 +77,17 @@ public class StudentBookApiController {
     }
 
 
+    @Operation(summary = "학생이 읽은 책 모두 지우기", description = "학생과 관련된 데이터를 모두 제거")
+    @DeleteMapping("/api/students/{id}/books")
+    public ResponseEntity<ApiSuccessResponse<Void>> deleteReadBooks(
+            @PathVariable("id") Long studentId
+    ) {
+
+        /* 학생이 읽은책 모두 삭제*/
+        deleteReadBookService.deleteReadBooks(studentId);
+
+        /* 응답*/
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("학생이 읽은 책들을 모두 삭제했습니다.", "SUCCESS"));
+    }
 }

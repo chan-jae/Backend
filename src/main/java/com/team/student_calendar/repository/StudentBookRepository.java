@@ -16,4 +16,6 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
     List<StudentBookEntity> findByStudentIdAndBook_Category(Long studentId, String category);
 
     List<StudentBookEntity> findByStudentIdAndBook_CategoryNot(Long studentId, String category);
+
+    long deleteAllByStudent(StudentEntity student);
 }
