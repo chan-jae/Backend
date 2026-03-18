@@ -54,6 +54,9 @@ public class StudentEntity {
     @ColumnDefault("0")
     private Byte state;
 
+    @Column(name = "first_level", length = 10)
+    private String firstLevel;
+
     @Column(name = "joined_at", nullable = false, columnDefinition = "DATETIME(0)")
     private LocalDateTime joinedAt;
 

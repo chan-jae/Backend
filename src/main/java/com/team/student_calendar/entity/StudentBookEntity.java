@@ -8,6 +8,8 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDateTime;
+
 @DynamicUpdate
 @Builder
 @AllArgsConstructor
@@ -42,6 +44,13 @@ public class StudentBookEntity {
     @Column(name = "state", nullable = false)
     @ColumnDefault("0")
     private Byte state;
+
+    @Column(name = "read_at", columnDefinition = "DATETIME(0)")
+    private LocalDateTime readAt;
+
+    @ColumnDefault("CURRENT_TIMESTAMP(6)")
+    @Column(name = "registered_at", nullable = false)
+    private LocalDateTime registeredAt;
 
 
     public ReadBooksRes.Book toReadBooksRes() {

@@ -32,7 +32,7 @@ public class TaskEntity {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @Column(name = "due_at")
+    @Column(name = "due_at", columnDefinition = "DATETIME(0)")
     private LocalDateTime dueAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP(6)")
