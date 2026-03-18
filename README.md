@@ -1,3 +1,3 @@
 # ER-Diagram
 
-![student-calendar_20260304](https://github.com/user-attachments/assets/4715c92c-0a6b-4a2f-839b-2cf01f4098be)
+![(개선중)student-calendar](https://github.com/user-attachments/assets/63606852-95e0-484c-9be8-6d8354e98b03)
