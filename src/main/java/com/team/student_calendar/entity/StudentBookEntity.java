@@ -6,10 +6,13 @@ import com.team.student_calendar.dto.ReadBooksRes;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@DynamicInsert
 @DynamicUpdate
 @Builder
 @AllArgsConstructor
@@ -45,8 +48,8 @@ public class StudentBookEntity {
     @ColumnDefault("0")
     private Byte state;
 
-    @Column(name = "read_at", columnDefinition = "DATETIME(0)")
-    private LocalDateTime readAt;
+    @Column(name = "read_at")
+    private LocalDate readAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "registered_at", nullable = false)
@@ -67,6 +70,7 @@ public class StudentBookEntity {
         resBook.setImageUrl(book.getImageUrl());
         resBook.setType(book.getType());
         resBook.setState(state);
+        resBook.setReadAt(this.readAt);
 
         return resBook;
     }

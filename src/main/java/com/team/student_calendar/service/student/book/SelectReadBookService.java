@@ -9,6 +9,10 @@ import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.service.student.SelectStudentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,10 +48,23 @@ public class SelectReadBookService {
      * @return ReadBooksRes
      */
     @Transactional(readOnly = true)
-    public ReadBooksRes findReadBooksByStudentId(Long studentId, String category) {
+    public ReadBooksRes findReadBooksByStudentId(
+            Long studentId,
+            String category,
+            Pageable pageable
+    ) {
 
         /* 학생 찾기*/
         StudentEntity student = selectStudentService.findById(studentId);
+
+        /* 기본 정렬 지정*/
+        if (pageable.getSort().isUnsorted()) {
+            Sort defaultSort = Sort.by(
+                    Sort.Order.desc("readAt").nullsLast(),
+                    Sort.Order.desc("registeredAt")
+            );
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), defaultSort);
+        }
 
         /* 대문자로 변환*/
         category = category.toUpperCase();
@@ -61,27 +78,22 @@ public class SelectReadBookService {
         }
 
         /* 카테고리별로 분기*/
-        List<StudentBookEntity> readBookList = switch (bookCategory) {
+        Slice<StudentBookEntity> readBookList = switch (bookCategory) {
             // 읽은 책 목록 모두 가져오기
             case ALL -> studentBookRepository
-                    .findByStudentId(studentId);
+                    .findByStudentId(studentId, pageable);
             // 문학만 가져오기
             case LITERATURE -> studentBookRepository
-                    .findByStudentIdAndBook_Category(studentId, BookCategory.LITERATURE.name());
+                    .findByStudentIdAndBook_Category(studentId, BookCategory.LITERATURE.name(), pageable);
             // 비문학만 가져오기
             case NON_LITERATURE -> studentBookRepository
-                    .findByStudentIdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name());
+                    .findByStudentIdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name(), pageable);
         };
 
-        /* 응답 데이터 만들기*/
-        List<ReadBooksRes.Book> books = readBookList.stream()
-                .map(StudentBookEntity::toReadBooksRes)
-                .toList();
+        /* 필요한 부분만 추출*/
+        Slice<ReadBooksRes.Book> books = readBookList
+                .map(StudentBookEntity::toReadBooksRes);
 
-        ReadBooksRes res = new ReadBooksRes();
-        res.setStudentId(studentId);
-        res.setBooks(books);
-
-        return res;
+        return ReadBooksRes.of(studentId, books);
     }
 }

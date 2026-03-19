@@ -3,6 +3,8 @@ package com.team.student_calendar.repository;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -12,11 +14,16 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
 
     Optional<StudentBookEntity> findByStudentIdAndBookId(Long studentId, Long bookId);
 
-    List<StudentBookEntity> findByStudentId(Long studentId);
+    Slice<StudentBookEntity> findByStudentId(Long studentId,
+                                             Pageable pageable);
 
-    List<StudentBookEntity> findByStudentIdAndBook_Category(Long studentId, String category);
+    Slice<StudentBookEntity> findByStudentIdAndBook_Category(Long studentId,
+                                                            String category,
+                                                            Pageable pageable);
 
-    List<StudentBookEntity> findByStudentIdAndBook_CategoryNot(Long studentId, String category);
+    Slice<StudentBookEntity> findByStudentIdAndBook_CategoryNot(Long studentId,
+                                                               String category,
+                                                               Pageable pageable);
 
     long deleteAllByStudent(StudentEntity student);
 
