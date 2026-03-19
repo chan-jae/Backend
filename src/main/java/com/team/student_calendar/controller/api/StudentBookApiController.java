@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -66,11 +68,12 @@ public class StudentBookApiController {
     @GetMapping("/api/student-books/students/{id}")
     public ResponseEntity<ApiSuccessResponse<ReadBooksRes>> selectReadBooks(
             @PathVariable("id") Long studentId,
-            @RequestParam(name = "category", required = false, defaultValue = "ALL") String category
-    ) {
+            @RequestParam(name = "category", required = false, defaultValue = "ALL") String category,
+            @PageableDefault(size = 10, page = 0) Pageable pageable
+            ) {
 
         ReadBooksRes res = selectReadBookService
-                .findReadBooksByStudentId(studentId, category);
+                .findReadBooksByStudentId(studentId, category, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "학생이 읽은 책을 가져왔습니다.", "SUCCESS"));
