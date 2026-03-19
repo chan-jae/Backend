@@ -3,6 +3,7 @@ package com.team.student_calendar.service.task;
 import com.team.student_calendar.dto.TaskCreateReq;
 import com.team.student_calendar.dto.TaskCreateRes;
 import com.team.student_calendar.dto.TaskListRes;
+import com.team.student_calendar.dto.TaskUpdateReq;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.entity.TaskEntity;
 import com.team.student_calendar.repository.StudentRepository;
@@ -58,5 +59,23 @@ public class TaskService {
         }
 
         taskRepository.delete(task);
+    }
+
+    // 업데이트
+    @Transactional
+    public TaskListRes updateTask(Long studentId, Long taskId, TaskUpdateReq req) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 할 일을 찾을 수 없습니다. ID: " + taskId));
+
+        if (!task.getStudentEntity().getId().equals(studentId)) {
+            throw new IllegalArgumentException("해당 학생의 할 일이 아닙니다! (권한 없음)");
+        }
+
+        // JPA 더티 체킹
+        // Entity의 @Setter로 값 바꿔치기
+        task.setContent(req.getContent());
+        task.setDueAt(req.getDueAt());
+
+        return new TaskListRes(task);
     }
 }

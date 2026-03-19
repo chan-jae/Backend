@@ -4,6 +4,7 @@ import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.TaskCreateReq;
 import com.team.student_calendar.dto.TaskCreateRes;
 import com.team.student_calendar.dto.TaskListRes;
+import com.team.student_calendar.dto.TaskUpdateReq;
 import com.team.student_calendar.service.task.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,20 @@ public class TaskApiController {
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(null, "할 일(Task) 삭제 완료!", "SUCCESS")
+        );
+    }
+
+    // 업데이트
+    @PutMapping("/api/students/{studentId}/tasks/{taskId}")
+    public ResponseEntity<ApiSuccessResponse<TaskListRes>> updateTask(
+            @PathVariable("studentId") Long studentId,
+            @PathVariable("taskId") Long taskId,
+            @RequestBody TaskUpdateReq req) {
+
+        TaskListRes result = taskService.updateTask(studentId, taskId, req);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(result, "할 일(Task) 수정 완료!", "SUCCESS")
         );
     }
 }
