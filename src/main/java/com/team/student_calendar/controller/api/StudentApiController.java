@@ -3,10 +3,12 @@ package com.team.student_calendar.controller.api;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.dto.FirstLevelReq;
 import com.team.student_calendar.dto.StudentCreateReq;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.service.student.InsertStudentService;
 import com.team.student_calendar.service.student.SelectStudentService;
+import com.team.student_calendar.service.student.UpdateStudentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,10 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,6 +30,7 @@ public class StudentApiController {
 
     private final InsertStudentService insertStudentService;
     private final SelectStudentService selectStudentService;
+    private final UpdateStudentService updateStudentService;
 
 
     @Validated
@@ -72,5 +72,19 @@ public class StudentApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(allStudents, "모든 학생 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "학생 초기레벨 설정", description = "학생 초기레벨을 설정한다.")
+    @PatchMapping("/api/students/{id}/first-level")
+    public ResponseEntity<ApiSuccessResponse<Void>> updateStudentFirstLevel(
+            @PathVariable("id") Long studentId,
+            @RequestBody FirstLevelReq req
+    ) {
+
+        updateStudentService.updateStudentFirstLevel(studentId, req);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("초기 레벨 설정에 성공했습니다.", "SUCCESS"));
     }
 }
