@@ -56,9 +56,10 @@ public class SelectBookService {
         }
 
         // 학생 진도 찾기
-        StudentBookEntity progress = studentBookRepository.findByStudentId(studentId)
-                .stream()       // 리스트 정렬
-                .findFirst()    // 맨 앞에 있는 타겟 하나
+        StudentBookEntity progress = studentBookRepository.findByStudentId(studentId, PageRequest.of(0, 1))
+                .getContent()
+                .stream()
+                .findFirst()
                 .orElse(null);
 
         int currentIndex = 0;

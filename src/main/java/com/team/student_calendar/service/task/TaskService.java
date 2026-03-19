@@ -1,5 +1,8 @@
 package com.team.student_calendar.service.task;
 
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.StudentErrorCode;
+import com.team.student_calendar.common.exception.domain.TaskErrorCode;
 import com.team.student_calendar.dto.TaskCreateReq;
 import com.team.student_calendar.dto.TaskCreateRes;
 import com.team.student_calendar.dto.TaskListRes;
@@ -24,7 +27,7 @@ public class TaskService {
     @Transactional
     public TaskCreateRes createTask(Long studentId, TaskCreateReq req) {
         StudentEntity student = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 학생을 찾을 수 없습니다: " + studentId));
+                .orElseThrow(() -> new BaseException(StudentErrorCode.STUDENT_NOT_FOUND));
 
         TaskEntity task = TaskEntity.builder()
                 .studentEntity(student)
@@ -51,11 +54,11 @@ public class TaskService {
     @Transactional
     public void deleteTask(Long studentId, Long taskId) {
         TaskEntity task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 할 일을 찾을 수 없습니다. ID: " + taskId));
+                .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
         // 삭제 대상 확인
         if (!task.getStudentEntity().getId().equals(studentId)) {
-            throw new IllegalArgumentException("해당 학생의 할 일이 아닙니다! (권한 없음)");
+            throw new BaseException(TaskErrorCode.TASK_UNAUTHORIZED);
         }
 
         taskRepository.delete(task);
@@ -65,10 +68,10 @@ public class TaskService {
     @Transactional
     public TaskListRes updateTask(Long studentId, Long taskId, TaskUpdateReq req) {
         TaskEntity task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 할 일을 찾을 수 없습니다. ID: " + taskId));
+                .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
         if (!task.getStudentEntity().getId().equals(studentId)) {
-            throw new IllegalArgumentException("해당 학생의 할 일이 아닙니다! (권한 없음)");
+            throw new BaseException(TaskErrorCode.TASK_UNAUTHORIZED);
         }
 
         // JPA 더티 체킹
