@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,5 +82,25 @@ public class TaskService {
         task.setDueAt(req.getDueAt());
 
         return new TaskListRes(task);
+    }
+
+    // 모든 학생의 Task 마감 기한 3일 이내 & 기한 초과
+    @Transactional(readOnly = true)
+    public Map<String, List<TaskListRes>> getUrgentTasks() {
+
+        LocalDateTime targetDate = LocalDateTime.now().plusDays(3); // 3일 이내
+
+        List<TaskListRes> allUrgentTasks = taskRepository.findAllByDueAtIsNotNullAndDueAtLessThanEqualOrderByDueAtAsc(targetDate)
+                .stream()
+                .map(TaskListRes::new)
+                .toList();
+
+        Map<Boolean, List<TaskListRes>> partitionedTasks = allUrgentTasks.stream() // 2파트로 나눔 (기한 3일 이내, 초과)
+                .collect(Collectors.partitioningBy(TaskListRes::isOverdue));
+
+        return Map.of(
+                "overdueTasks", partitionedTasks.get(true),   // 기한 지난 메모들 (isOverdue == true)
+                "upcomingTasks", partitionedTasks.get(false)  // 3일 이내 메모들 (isOverdue == false)
+        );
     }
 }

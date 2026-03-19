@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -67,6 +68,17 @@ public class TaskApiController {
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(result, "할 일(Task) 수정 완료!", "SUCCESS")
+        );
+    }
+
+    // 3일 이내 & 초과
+    @GetMapping("/api/tasks/urgent")
+    public ResponseEntity<ApiSuccessResponse<Map<String, List<TaskListRes>>>> getUrgentTasks() {
+
+        Map<String, List<TaskListRes>> result = taskService.getUrgentTasks();
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(result, "기한 3일 이내 및 초과 할 일 목록 조회 성공!", "SUCCESS")
         );
     }
 }
