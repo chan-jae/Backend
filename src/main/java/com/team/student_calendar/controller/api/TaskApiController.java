@@ -45,12 +45,11 @@ public class TaskApiController {
     }
 
     // 삭제
-    @DeleteMapping("/api/students/{studentId}/tasks/{taskId}")
+    @DeleteMapping("/api/tasks/{taskId}")
     public ResponseEntity<ApiSuccessResponse<Void>> deleteTask(
-            @PathVariable("studentId") Long studentId,
             @PathVariable("taskId") Long taskId) {
 
-        taskService.deleteTask(studentId, taskId);
+        taskService.deleteTask(taskId);
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(null, "할 일(Task) 삭제 완료!", "SUCCESS")
@@ -58,13 +57,12 @@ public class TaskApiController {
     }
 
     // 업데이트
-    @PutMapping("/api/students/{studentId}/tasks/{taskId}")
+    @PutMapping("/api/tasks/{taskId}")
     public ResponseEntity<ApiSuccessResponse<TaskListRes>> updateTask(
-            @PathVariable("studentId") Long studentId,
             @PathVariable("taskId") Long taskId,
             @RequestBody TaskUpdateReq req) {
 
-        TaskListRes result = taskService.updateTask(studentId, taskId, req);
+        TaskListRes result = taskService.updateTask(taskId, req);
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(result, "할 일(Task) 수정 완료!", "SUCCESS")

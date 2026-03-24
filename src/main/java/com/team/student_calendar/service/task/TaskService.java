@@ -54,30 +54,31 @@ public class TaskService {
 
     // 삭제
     @Transactional
-    public void deleteTask(Long studentId, Long taskId) {
+    public void deleteTask(Long taskId) {
         TaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-        // 삭제 대상 확인
-        if (!task.getStudentEntity().getId().equals(studentId)) {
-            throw new BaseException(TaskErrorCode.TASK_UNAUTHORIZED);
+        Long targetStudentId = task.getStudentEntity().getId();
+        if (!studentRepository.existsById(targetStudentId)) {
+            throw new BaseException(StudentErrorCode.STUDENT_NOT_FOUND);
         }
-
         taskRepository.delete(task);
     }
 
     // 업데이트
     @Transactional
-    public TaskListRes updateTask(Long studentId, Long taskId, TaskUpdateReq req) {
+    public TaskListRes updateTask(Long taskId, TaskUpdateReq req) {
+        // 1. 메모(Task)가 존재하는지 확인
         TaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
-        if (!task.getStudentEntity().getId().equals(studentId)) {
-            throw new BaseException(TaskErrorCode.TASK_UNAUTHORIZED);
+        // ✨ 2. 동업자 피드백 반영: 해당 메모의 주인이 테이블에 존재하는지만 확인!
+        Long targetStudentId = task.getStudentEntity().getId();
+        if (!studentRepository.existsById(targetStudentId)) {
+            throw new BaseException(StudentErrorCode.STUDENT_NOT_FOUND);
         }
 
-        // JPA 더티 체킹
-        // Entity의 @Setter로 값 바꿔치기
+        // 3. JPA 더티 체킹으로 값 바꿔치기
         task.setContent(req.getContent());
         task.setDueAt(req.getDueAt());
 
