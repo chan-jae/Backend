@@ -1,5 +1,6 @@
 package com.team.student_calendar.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team.student_calendar.entity.TaskEntity;
 import lombok.Getter;
 
@@ -11,8 +12,9 @@ public class TaskListRes {
 
     private Long studentId;
     private String studentName;
-
     private String content;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime dueAt;
     private LocalDateTime registeredAt;
 

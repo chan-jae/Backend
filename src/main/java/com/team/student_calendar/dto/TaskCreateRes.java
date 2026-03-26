@@ -1,5 +1,6 @@
 package com.team.student_calendar.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team.student_calendar.entity.TaskEntity;
 import lombok.Getter;
 import java.time.LocalDateTime;
@@ -8,6 +9,8 @@ import java.time.LocalDateTime;
 public class TaskCreateRes {
     private Long taskId;
     private String content;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime dueAt;
     private LocalDateTime registeredAt;
 

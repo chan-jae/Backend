@@ -1,5 +1,6 @@
 package com.team.student_calendar.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
@@ -8,5 +9,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class TaskCreateReq {
     private String content;
-    private LocalDateTime dueAt; // 언제까지 할 것인가? (선택)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    private LocalDateTime dueAt;
 }

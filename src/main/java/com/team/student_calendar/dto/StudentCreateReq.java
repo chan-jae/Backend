@@ -34,7 +34,7 @@ public class StudentCreateReq {
     @NotNull(message = "상태는 필수 항목입니다.")
     private String stateStr;
 
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     @NotNull(message = "가입일자는 필수 항목입니다.")
     private LocalDateTime joinedAt;
 
