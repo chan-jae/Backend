@@ -4,19 +4,16 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.dto.FirstLevelReq;
 import com.team.student_calendar.entity.StudentEntity;
-import com.team.student_calendar.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.team.student_calendar.common.constant.RegexPattern.*;
-import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Service
 public class UpdateStudentService {
 
-    private final StudentRepository studentRepository;
     private final SelectStudentService selectStudentService;
 
 
