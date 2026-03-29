@@ -8,6 +8,7 @@ import com.team.student_calendar.dto.BookSliderRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
+import com.team.student_calendar.service.book.SearchBookService;
 import com.team.student_calendar.service.book.SelectBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +38,7 @@ public class BookApiController {
 
     private final InsertBookService insertBookService;
     private final SelectBookService selectBookService;
-
+    private final SearchBookService searchBookService;
 
 
     /**
@@ -113,5 +114,18 @@ public class BookApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(bookEntityList, "난이도순으로 책 가져오기에 성공했습니다", "SUCCESS"));
+    }
+
+    /**
+     * 통합 도서 검색
+     */
+    @Operation(summary = "통합 도서 검색", description = "제목, 저자, 출판사 키워드로 도서를 검색합니다.")
+    @GetMapping("/api/books/search")
+    public ResponseEntity<ApiSuccessResponse<List<BookSliderRes>>> searchBooks(@RequestParam("keyword") String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<BookSliderRes> response = searchBookService.searchBooks(keyword);
+        return ResponseEntity.ok(ApiSuccessResponse.ok(response, "통합 도서 검색에 성공했습니다.", "SUCCESS"));
     }
 }

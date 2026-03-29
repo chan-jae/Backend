@@ -17,4 +17,10 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
     List<BookEntity> findAllByIdIn(List<Long> idList);
 
     long countAllByIdIn(List<Long> idList);
+
+    // 검색
+    @Query("SELECT b FROM BookEntity b WHERE REPLACE(b.title, ' ', '') LIKE %:keyword% " +
+            "OR REPLACE(b.author, ' ', '') LIKE %:keyword% " +
+            "OR REPLACE(b.publisher, ' ', '') LIKE %:keyword%")
+    List<BookEntity> searchBooksByKeyword(@Param("keyword") String keyword);
 }
