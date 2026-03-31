@@ -14,11 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UpdateTaskService {
     private final TaskRepository taskRepository;
     private final StudentRepository studentRepository;
 
-    @Transactional
     public TaskListRes updateTask(Long taskId, TaskUpdateReq req) {
         TaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));

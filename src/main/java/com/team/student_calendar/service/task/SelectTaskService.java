@@ -20,7 +20,7 @@ public class SelectTaskService {
 
     @Transactional(readOnly = true)
     public List<TaskListRes> getTaskList(Long studentId) {
-        return taskRepository.findAllByStudentEntity_Id(studentId).stream()
+        return taskRepository.findAllByStudentEntity_IdAndIsCompletedFalse(studentId).stream()
                 .map(TaskListRes::new)
                 .toList();
     }
