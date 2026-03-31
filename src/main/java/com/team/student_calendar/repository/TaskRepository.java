@@ -16,4 +16,7 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
     // 학생별 7일 이내 ~ 마감 Task
     List<TaskEntity> findAllByStudentEntityIdAndIsCompletedFalseAndDueAtIsNotNullAndDueAtBetweenOrderByDueAtAsc(
             Long studentId, LocalDateTime start, LocalDateTime end);
+
+    // 완료된 메모
+    List<TaskEntity> findAllByStudentEntity_IdAndIsCompletedTrue(Long studentId);
 }

@@ -55,4 +55,12 @@ public class SelectTaskService {
                 .map(TaskListRes::new)
                 .collect(Collectors.toList());
     }
+
+    // 완료된 Task 조회
+    @Transactional(readOnly = true)
+    public List<TaskListRes> getCompletedTaskList(Long studentId) {
+        return taskRepository.findAllByStudentEntity_IdAndIsCompletedTrue(studentId).stream()
+                .map(TaskListRes::new)
+                .toList();
+    }
 }

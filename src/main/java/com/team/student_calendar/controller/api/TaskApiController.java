@@ -63,7 +63,7 @@ public class TaskApiController {
         deleteTaskService.deleteTask(taskId);
 
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(null, "Task 삭제 완료!", "SUCCESS")
+                ApiSuccessResponse.ok(null, "Task 삭제 완료", "SUCCESS")
         );
     }
 
@@ -77,7 +77,7 @@ public class TaskApiController {
         TaskListRes result = updateTaskService.updateTask(taskId, req);
 
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(result, "Task 수정 완료!", "SUCCESS")
+                ApiSuccessResponse.ok(result, "Task 수정 완료", "SUCCESS")
         );
     }
 
@@ -89,7 +89,7 @@ public class TaskApiController {
         Map<String, List<TaskListRes>> result = selectTaskService.getUrgentTasks();
 
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(result, "기한 임박 및 초과 할 일 목록 조회 성공!", "SUCCESS")
+                ApiSuccessResponse.ok(result, "기한 임박 및 초과 할 일 목록 조회 성공", "SUCCESS")
         );
     }
 
@@ -114,6 +114,32 @@ public class TaskApiController {
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(null, "Task 완료", "SUCCESS")
+        );
+    }
+
+    // 완료 메모 조회
+    @Operation(summary = "완료된 메모 조회", description = "특정 학생의 완료 처리된 메모 목록만 따로 조회한다.")
+    @GetMapping("/api/students/{studentId}/tasks/completed")
+    public ResponseEntity<ApiSuccessResponse<List<TaskListRes>>> getCompletedTasks(
+            @PathVariable("studentId") Long studentId) {
+
+        List<TaskListRes> result = selectTaskService.getCompletedTaskList(studentId);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(result, "완료된 Task 목록 조회 성공", "SUCCESS")
+        );
+    }
+
+    // 완료 취소
+    @Operation(summary = "메모 완료 취소", description = "완료 처리된 메모를 다시 미완료 상태로 되돌린다.")
+    @PatchMapping("/api/tasks/{taskId}/incomplete")
+    public ResponseEntity<ApiSuccessResponse<Void>> cancelTaskCompletion(
+            @PathVariable("taskId") Long taskId) {
+
+        updateTaskService.cancelTaskCompletion(taskId);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(null, "Task 완료 취소 성공", "SUCCESS")
         );
     }
 }

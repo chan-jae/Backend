@@ -39,4 +39,13 @@ public class UpdateTaskService {
 
         task.complete();
     }
+
+    // 완료 취소
+    @Transactional
+    public void cancelTaskCompletion(Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 메모가 없습니다. id=" + taskId));
+
+        task.incomplete();
+    }
 }

@@ -44,4 +44,8 @@ public class TaskEntity {
     public void complete() {
         this.isCompleted = true;
     }
+    // 완료 취소
+    public void incomplete() {
+        this.isCompleted = false; // 상태를 다시 false(미완료)로 되돌림
+    }
 }
