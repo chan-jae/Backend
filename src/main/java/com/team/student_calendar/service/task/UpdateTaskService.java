@@ -31,4 +31,12 @@ public class UpdateTaskService {
         task.setDueAt(req.getDueAt());
         return new TaskListRes(task);
     }
+
+    // 완료
+    public void completeTask(Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 메모가 없습니다. id=" + taskId));
+
+        task.complete();
+    }
 }

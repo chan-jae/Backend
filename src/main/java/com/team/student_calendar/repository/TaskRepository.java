@@ -3,6 +3,7 @@ package com.team.student_calendar.repository;
 import com.team.student_calendar.entity.TaskEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,4 +12,8 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
     List<TaskEntity> findAllByStudentEntity_Id(Long studentId);
     // 3일 이내 & 기한 초과 Task
     List<TaskEntity> findAllByDueAtIsNotNullAndDueAtLessThanEqualOrderByDueAtAsc(LocalDateTime targetDate);
+
+    // 학생별 7일 이내 ~ 마감 Task
+    List<TaskEntity> findAllByStudentEntityIdAndIsCompletedFalseAndDueAtIsNotNullAndDueAtBetweenOrderByDueAtAsc(
+            Long studentId, LocalDateTime start, LocalDateTime end);
 }

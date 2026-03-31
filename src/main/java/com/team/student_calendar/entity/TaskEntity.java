@@ -38,4 +38,10 @@ public class TaskEntity {
     @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt;
+
+    @Column(nullable = false)
+    private boolean isCompleted = false; // 기본값은 '미완료(false)'
+    public void complete() {
+        this.isCompleted = true;
+    }
 }

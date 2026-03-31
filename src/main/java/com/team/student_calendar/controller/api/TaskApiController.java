@@ -92,4 +92,28 @@ public class TaskApiController {
                 ApiSuccessResponse.ok(result, "기한 임박 및 초과 할 일 목록 조회 성공!", "SUCCESS")
         );
     }
+
+    // 학생별 7일 이내 조회
+    @Operation(summary = "학생별 임박한 Task 조회", description = "특정 학생의 7일 이내 마감되는 Task 목록을 조회한다.")
+    @GetMapping("/api/students/{studentId}/tasks/upcoming")
+    public ResponseEntity<ApiSuccessResponse<List<TaskListRes>>> getUpcomingTasks(
+            @PathVariable("studentId") Long studentId) {
+
+        List<TaskListRes> response = selectTaskService.getTasksWithin7Days(studentId);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(response, "학생별 7일 이내 Task 조회에 성공했습니다.", "SUCCESS")
+        );
+    }
+    // 완료
+    @Operation(summary = "메모 완료 처리", description = "메모를 완료 상태로 변경하여 목록에서 제거한다.")
+    @PatchMapping("/api/tasks/{taskId}/complete")
+    public ResponseEntity<ApiSuccessResponse<Void>> completeTask(@PathVariable Long taskId) {
+
+        updateTaskService.completeTask(taskId);
+
+        return ResponseEntity.ok(
+                ApiSuccessResponse.ok(null, "Task 완료", "SUCCESS")
+        );
+    }
 }
