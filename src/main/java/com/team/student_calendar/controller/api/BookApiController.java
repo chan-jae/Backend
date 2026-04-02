@@ -38,19 +38,17 @@ public class BookApiController {
     private final InsertBookService insertBookService;
     private final SelectBookService selectBookService;
 
-
-
     /**
      * 책 여러개 생성
+     *
      * @param bookCreateReqList 책 정보 List
-     * */
+     */
     @Validated
     @Operation(summary = "여러책 삽입", description = "List 타입 책 삽입")
     @PostMapping("/api/books")
     public ResponseEntity<ApiSuccessResponse<Void>> createBook(
             @RequestBody List<@Valid BookCreateReq> bookCreateReqList,
-            BindingResult bindingResult
-            ) {
+            BindingResult bindingResult) {
 
         log.info("[BookApiController.createBook] bookCreateReqList: {}", bookCreateReqList);
 
@@ -70,6 +68,7 @@ public class BookApiController {
 
     /**
      * 책 목록 페이징 조회
+     *
      * @param page 조회 할 페이지 번호 (기본값: 1)
      * @param size 한 페이지 책 개수 (기본값: 10)
      */
@@ -77,14 +76,12 @@ public class BookApiController {
     @GetMapping("/api/books")
     public ResponseEntity<ApiSuccessResponse<Page<BookEntity>>> getBookList(
             @RequestParam(defaultValue = "1", name = "page") int page,
-            @RequestParam(defaultValue = "10", name = "size") int size
-    ) {
+            @RequestParam(defaultValue = "10", name = "size") int size) {
         // 서비스에서 Page 가져옴
         Page<BookEntity> bookPage = selectBookService.getBookListWithPaging(page, size);
 
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(bookPage, "책 목록 페이징 조회에 성공했습니다.", "SUCCESS")
-        );
+                ApiSuccessResponse.ok(bookPage, "책 목록 페이징 조회에 성공했습니다.", "SUCCESS"));
     }
 
     /**
@@ -99,10 +96,8 @@ public class BookApiController {
 
         List<BookSliderRes> result = selectBookService.getSliderBooks(studentId);
 
-
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(result, "도서 조회에 성공했습니다.", "SUCCESS")
-        );
+                ApiSuccessResponse.ok(result, "도서 조회에 성공했습니다.", "SUCCESS"));
     }
 
     @Operation(summary = "난이도순으로 책 가져오기", description = "난이도, 제목순으로 책 가져오기")
