@@ -2,12 +2,14 @@ package com.team.student_calendar.repository.jdbc;
 
 import com.team.student_calendar.dto.BookCreateReq;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 @Repository
@@ -24,17 +26,21 @@ public class BookJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public void bulkInsertBooks(List<BookCreateReq> bookList) {
+    public int bulkInsertBooks(List<BookCreateReq> bookList) {
+
         int size = bookList.size();
         if (size == 0) {
-            return;
+            return 0;
         }
+
+        int totalInserted = 0;
         for (int from = 0; from < size; from += BATCH_SIZE) {
             int chunk = Math.min(BATCH_SIZE, size - from);
             int fromIndex = from;
-            jdbcTemplate.batchUpdate(INSERT_SQL, new BatchPreparedStatementSetter() {
+            int[] results = jdbcTemplate.batchUpdate(INSERT_SQL, new BatchPreparedStatementSetter() {
+
                 @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
                     BookCreateReq b = bookList.get(fromIndex + i);
                     ps.setString(1, b.getTitle());
                     ps.setString(2, b.getAuthor());
@@ -51,6 +57,9 @@ public class BookJdbcRepository {
                     return chunk;
                 }
             });
+            totalInserted += Arrays.stream(results).sum();
         }
+
+        return totalInserted;
     }
 }
