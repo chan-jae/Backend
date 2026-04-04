@@ -7,9 +7,11 @@ import com.team.student_calendar.entity.TaskEntity;
 import com.team.student_calendar.repository.StudentRepository;
 import com.team.student_calendar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeleteTaskService {
@@ -18,6 +20,9 @@ public class DeleteTaskService {
 
     @Transactional
     public void deleteTask(Long taskId) {
+
+        log.info("try to delete 1 task: {}", taskId);
+
         TaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
@@ -25,5 +30,7 @@ public class DeleteTaskService {
             throw new BaseException(StudentErrorCode.STUDENT_NOT_FOUND);
         }
         taskRepository.delete(task);
+
+        log.info("success to delete 1 task");
     }
 }

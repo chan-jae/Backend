@@ -8,9 +8,11 @@ import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.service.book.SelectBookService;
 import com.team.student_calendar.service.student.SelectStudentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeleteReadBookService {
@@ -27,11 +29,15 @@ public class DeleteReadBookService {
     @Transactional
     public void deleteReadBooks(Long studentId) {
 
+        log.info("try to delete student: {} read all books", studentId);
+
         /* 학생 찾기*/
         StudentEntity student = selectStudentService.findById(studentId);
 
         /* 학생이 읽은 책 모두 지우기*/
         studentBookRepository.deleteAllByStudent(student);
+
+        log.info("success to delete read all books");
     }
 
 
@@ -42,6 +48,8 @@ public class DeleteReadBookService {
      */
     @Transactional
     public void deleteReadBook(Long studentId, Long bookId) {
+
+        log.info("try to delete student: {} read 1 book: {}", studentId, bookId);
 
         /* 학생찾기*/
         StudentEntity student = selectStudentService.findById(studentId);
@@ -55,5 +63,7 @@ public class DeleteReadBookService {
         if (deleted == 0) {
             throw new BaseException(ReadBookErrorCode.READ_BOOK_NOT_FOUND);
         }
+
+        log.info("success to delete read 1 book");
     }
 }

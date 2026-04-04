@@ -9,11 +9,13 @@ import com.team.student_calendar.entity.TaskEntity;
 import com.team.student_calendar.repository.StudentRepository;
 import com.team.student_calendar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InsertTaskService {
@@ -22,6 +24,9 @@ public class InsertTaskService {
 
     @Transactional
     public TaskCreateRes createTask(Long studentId, TaskCreateReq req) {
+
+        log.info("try to create student: {} task", studentId);
+
         StudentEntity student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new BaseException(StudentErrorCode.STUDENT_NOT_FOUND));
 
@@ -32,6 +37,10 @@ public class InsertTaskService {
                 .registeredAt(LocalDateTime.now())
                 .build();
 
-        return new TaskCreateRes(taskRepository.save(task));
+        TaskEntity saved = taskRepository.save(task);
+
+        log.info("success to create task");
+
+        return new TaskCreateRes(saved);
     }
 }
