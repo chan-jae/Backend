@@ -18,7 +18,10 @@ public class MdcLoggingFilter implements Filter {
 
         MDC.put("traceId", traceId);
 
-        chain.doFilter(request, response);
-        MDC.clear();
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            MDC.clear();
+        }
     }
 }

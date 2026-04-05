@@ -51,8 +51,6 @@ public class BookApiController {
             @RequestBody List<@Valid BookCreateReq> bookCreateReqList,
             BindingResult bindingResult) {
 
-        log.info("[BookApiController.createBook] bookCreateReqList: {}", bookCreateReqList);
-
         // valid 검증에 실패했으면 해당 메시지로 에러 던지기
         if (bindingResult.hasFieldErrors()) {
             throw new BaseException(CommonErrorCode.PARAMETER_ERROR,
@@ -82,6 +80,7 @@ public class BookApiController {
     public ResponseEntity<ApiSuccessResponse<Page<BookEntity>>> getBookList(
             @RequestParam(defaultValue = "1", name = "page") int page,
             @RequestParam(defaultValue = "10", name = "size") int size) {
+
         // 서비스에서 Page 가져옴
         Page<BookEntity> bookPage = selectBookService.getBookListWithPaging(page, size);
 
