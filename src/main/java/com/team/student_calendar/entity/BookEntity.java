@@ -48,7 +48,7 @@ public class BookEntity {
     @Column(name = "difficulty", nullable = false)
     private Integer difficulty;
 
-    @Column(name = "book_no", nullable = false)
+    @Column(name = "book_no", nullable = false, unique = true)
     private Long bookNo;
 
     @Column(name = "image_url", nullable = false)
