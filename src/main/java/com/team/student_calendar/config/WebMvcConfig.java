@@ -1,6 +1,7 @@
 package com.team.student_calendar.config;
 
 import com.team.student_calendar.common.filter.ApiLoggingFilter;
+import com.team.student_calendar.common.filter.MdcLoggingFilter;
 import com.team.student_calendar.security.interceptor.ApiTokenInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -23,13 +24,22 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public FilterRegistrationBean<ApiLoggingFilter> logFilter() {
+    public FilterRegistrationBean<MdcLoggingFilter> mdcLoggingFilter() {
+        FilterRegistrationBean<MdcLoggingFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new MdcLoggingFilter());
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registration.addUrlPatterns("/*");
+        registration.setName("mdcLoggingFilter");
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<ApiLoggingFilter> apiLoggingFilter() {
         FilterRegistrationBean<ApiLoggingFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new ApiLoggingFilter());
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
         registration.addUrlPatterns("/api/*");
         registration.setName("apiLoggingFilter");
         return registration;
     }
-
 }
