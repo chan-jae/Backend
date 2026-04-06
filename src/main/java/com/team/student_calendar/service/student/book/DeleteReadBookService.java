@@ -35,9 +35,9 @@ public class DeleteReadBookService {
         StudentEntity student = selectStudentService.findById(studentId);
 
         /* 학생이 읽은 책 모두 지우기*/
-        studentBookRepository.deleteAllByStudent(student);
+        long deleted = studentBookRepository.deleteAllByStudent(student);
 
-        log.info("success to delete read all books");
+        log.info("success to delete {} books", deleted);
     }
 
 

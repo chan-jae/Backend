@@ -96,8 +96,6 @@ public class BookApiController {
     public ResponseEntity<ApiSuccessResponse<List<BookSliderRes>>> getSliderBooks(
             @PathVariable("studentId") Long studentId) {
 
-        log.info("[BookApiController.getSliderBooks] 슬라이더 타격 개시 studentId: {}", studentId);
-
         List<BookSliderRes> result = selectBookService.getSliderBooks(studentId);
 
         return ResponseEntity.ok(

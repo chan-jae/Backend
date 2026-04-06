@@ -32,7 +32,7 @@ public class InsertReadBookService {
     @Transactional
     public StudentBookEntity saveReadBookList(ReadBooksSaveReq req) {
 
-        log.info("try to save student: {} read book: {} with state: {}",
+        log.info("try to save student: {}, read book: {}, state: {}",
                 req.getStudentId(), req.getBookId(), req.getStateStr());
 
         // 학생 있는지 체크

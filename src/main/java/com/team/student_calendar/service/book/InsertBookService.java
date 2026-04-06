@@ -38,7 +38,7 @@ public class InsertBookService {
             나누기 -2를 하면 영향을 받은 행 개수를 알 수 있다.
         */
         long existingBookCnt = selectBookService.countAll();
-        log.info("try {} books batch insert", bookList.size());
+        log.info("try to save {} books", bookList.size());
         int result = bookJdbcRepository.bulkInsertBooks(bookList);
         long insertedCnt;
         if (result == 0) {
@@ -48,7 +48,7 @@ public class InsertBookService {
             insertedCnt = (result / -2) - existingBookCnt;
         }
 
-        log.info("{} books batch insert success", insertedCnt);
+        log.info("success to save {} books", insertedCnt);
 
         return new BookListCreateRes(insertedCnt);
     }

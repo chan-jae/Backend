@@ -39,7 +39,7 @@ public class InsertTaskService {
 
         TaskEntity saved = taskRepository.save(task);
 
-        log.info("success to create task");
+        log.info("success to create task: {}", saved.getId());
 
         return new TaskCreateRes(saved);
     }
