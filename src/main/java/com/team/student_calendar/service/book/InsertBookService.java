@@ -2,7 +2,7 @@ package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.dto.BookListCreateRes;
-import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
+import com.team.student_calendar.repository.impl.BookJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,13 +39,13 @@ public class InsertBookService {
         */
         long existingBookCnt = selectBookService.countAll();
         log.info("try to save {} books", bookList.size());
-        int result = bookJdbcRepository.bulkInsertBooks(bookList);
+        int rowCnt = bookJdbcRepository.bulkInsertBooks(bookList);
         long insertedCnt;
-        if (result == 0) {
+        if (rowCnt == 0) {
             insertedCnt = 0;
         }
         else {
-            insertedCnt = (result / -2) - existingBookCnt;
+            insertedCnt = rowCnt- existingBookCnt;
         }
 
         log.info("success to save {} books", insertedCnt);
