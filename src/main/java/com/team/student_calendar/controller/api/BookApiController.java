@@ -4,6 +4,7 @@ import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.dto.BookListCreateRes;
 import com.team.student_calendar.dto.BookSliderRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.BookEntity;
@@ -52,11 +53,9 @@ public class BookApiController {
     @Validated
     @Operation(summary = "여러책 삽입", description = "List 타입 책 삽입")
     @PostMapping("/api/books")
-    public ResponseEntity<ApiSuccessResponse<Void>> createBook(
+    public ResponseEntity<ApiSuccessResponse<BookListCreateRes>> createBook(
             @RequestBody List<@Valid BookCreateReq> bookCreateReqList,
             BindingResult bindingResult) {
-
-        log.info("[BookApiController.createBook] bookCreateReqList: {}", bookCreateReqList);
 
         // valid 검증에 실패했으면 해당 메시지로 에러 던지기
         if (bindingResult.hasFieldErrors()) {
@@ -65,11 +64,15 @@ public class BookApiController {
         }
 
         // 책 List 저장
-        insertBookService.saveBookList(bookCreateReqList);
-
-        // 응답
+        BookListCreateRes bookListCreateRes = insertBookService.saveBookList(bookCreateReqList);
+        // 삽입된 데이터가 없으면 200 응답
+        if (bookListCreateRes == null || bookListCreateRes.getInsertedCnt() == 0) {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiSuccessResponse.created(bookListCreateRes, "책 리스트가 없거나 모두 중복된 책입니다.", "SUCCESS"));
+        }
+        // 삽입된 데이터가 있으면 201 응답
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiSuccessResponse.created("책 여러권 삽입에 성공했습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.created(bookListCreateRes, "책 여러권 삽입에 성공했습니다.", "SUCCESS"));
     }
     /**
      * 도서 추천
@@ -84,7 +87,7 @@ public class BookApiController {
         List<BookSliderRes> result = recommendBookService.getRecommendSliderBooks(studentId);
 
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(result, "맞춤 도서 조회에 성공했습니다.", "SUCCESS"));
+                ApiSuccessResponse.ok(result, "추천 도서 조회에 성공했습니다.", "SUCCESS"));
     }
 
     @Operation(summary = "난이도순으로 책 가져오기", description = "난이도, 제목순으로 책 가져오기")

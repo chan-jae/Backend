@@ -11,11 +11,13 @@ import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.service.book.SelectBookService;
 import com.team.student_calendar.service.student.SelectStudentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InsertReadBookService {
@@ -29,6 +31,9 @@ public class InsertReadBookService {
 
     @Transactional
     public StudentBookEntity saveReadBookList(ReadBooksSaveReq req) {
+
+        log.info("try to save student: {}, read book: {}, state: {}",
+                req.getStudentId(), req.getBookId(), req.getStateStr());
 
         // 학생 있는지 체크
         StudentEntity student = selectStudentService.findById(req.getStudentId());
@@ -54,6 +59,10 @@ public class InsertReadBookService {
                 .build();
 
         // 학생 읽은 책 저장하기
-        return studentBookRepository.save(entity);
+        StudentBookEntity saved = studentBookRepository.save(entity);
+
+        log.info("success to save student read book");
+
+        return saved;
     }
 }

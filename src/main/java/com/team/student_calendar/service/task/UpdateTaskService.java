@@ -9,9 +9,11 @@ import com.team.student_calendar.entity.TaskEntity;
 import com.team.student_calendar.repository.StudentRepository;
 import com.team.student_calendar.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -20,6 +22,9 @@ public class UpdateTaskService {
     private final StudentRepository studentRepository;
 
     public TaskListRes updateTask(Long taskId, TaskUpdateReq req) {
+
+        log.info("try to update task: {}", taskId);
+
         TaskEntity task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new BaseException(TaskErrorCode.TASK_NOT_FOUND));
 
@@ -29,6 +34,8 @@ public class UpdateTaskService {
 
         task.setContent(req.getContent());
         task.setDueAt(req.getDueAt());
+
+        log.info("success to update task");
         return new TaskListRes(task);
     }
 

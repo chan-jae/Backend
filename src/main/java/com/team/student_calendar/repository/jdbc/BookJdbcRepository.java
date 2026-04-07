@@ -1,40 +1,37 @@
 package com.team.student_calendar.repository.jdbc;
 
+
 import com.team.student_calendar.dto.BookCreateReq;
-import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-@Repository
-@RequiredArgsConstructor
-public class BookJdbcRepository {
+public interface BookJdbcRepository {
 
-    private static final int BATCH_SIZE = 500;
+    int BATCH_SIZE = 150;
 
-    private static final String INSERT_SQL = """
-            INSERT IGNORE INTO student_calendar.book
-            (title, author, publisher, category, `level`, difficulty, book_no, image_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """;
+    JdbcTemplate jdbcTemplate();
 
-    private final JdbcTemplate jdbcTemplate;
+    String insertSql();
 
-    public void bulkInsertBooks(List<BookCreateReq> bookList) {
+    default int bulkInsertBooks(List<BookCreateReq> bookList) {
         int size = bookList.size();
         if (size == 0) {
-            return;
+            return 0;
         }
+        JdbcTemplate jt = jdbcTemplate();
+        String sql = insertSql();
         for (int from = 0; from < size; from += BATCH_SIZE) {
             int chunk = Math.min(BATCH_SIZE, size - from);
             int fromIndex = from;
-            jdbcTemplate.batchUpdate(INSERT_SQL, new BatchPreparedStatementSetter() {
+            jt.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
                 @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                public void setValues(@NonNull PreparedStatement ps, int i) throws SQLException {
                     BookCreateReq b = bookList.get(fromIndex + i);
                     ps.setString(1, b.getTitle());
                     ps.setString(2, b.getAuthor());
@@ -52,5 +49,6 @@ public class BookJdbcRepository {
                 }
             });
         }
+        return size;
     }
 }

@@ -31,7 +31,7 @@ public class InsertStudentService {
     @Transactional
     public boolean saveStudentList(List<StudentCreateReq> studentCreateReqList) {
 
-        log.info("[InsertStudentService.saveStudentList] 학생 등록 시작 - 요청 건수: {}건", studentCreateReqList.size());
+        log.info("try to save {} students", studentCreateReqList.size());
 
         // 몇번 추가되었는지 체크
         int insertCount = 0;
@@ -66,7 +66,7 @@ public class InsertStudentService {
             insertCount++;
         }
 
-        log.info("[InsertStudentService.saveStudentList] 학생 등록 끝 - 삽입 건수: {}건", insertCount);
+        log.info("success to save {} students", insertCount);
 
         return (insertCount > 0);
     }

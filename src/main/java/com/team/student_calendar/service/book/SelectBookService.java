@@ -55,4 +55,13 @@ public class SelectBookService {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
     }
+
+
+    /**
+     * 전체 책 개수 가져오기
+     */
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return bookRepository.count();
+    }
 }

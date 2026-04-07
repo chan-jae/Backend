@@ -6,6 +6,7 @@ import com.team.student_calendar.dto.StudentCreateReq;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
@@ -57,7 +58,8 @@ public class StudentEntity {
     @Column(name = "first_level", length = 10)
     private String firstLevel;
 
-    @Column(name = "joined_at", nullable = false, columnDefinition = "DATETIME(0)")
+    @CreationTimestamp
+    @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
 
 

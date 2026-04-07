@@ -41,8 +41,6 @@ public class StudentApiController {
             BindingResult bindingResult
     ) {
 
-        log.info("[StudentApiController.createStudent] 요청 건수: {}", studentCreateReqList.size());
-
         // valid 검증에 실패했으면 해당 메시지로 에러 던지기
         if (bindingResult.hasFieldErrors()) {
             throw new BaseException(CommonErrorCode.PARAMETER_ERROR,
