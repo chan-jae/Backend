@@ -1,4 +1,4 @@
-package com.team.student_calendar.repository.impl;
+package com.team.student_calendar.repository.jdbc;
 
 
 import com.team.student_calendar.dto.BookCreateReq;

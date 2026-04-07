@@ -2,7 +2,7 @@ package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.dto.BookListCreateRes;
-import com.team.student_calendar.repository.impl.BookJdbcRepository;
+import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
