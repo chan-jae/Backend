@@ -25,12 +25,13 @@ public class SearchBookService {
 
         return searchedBooks.stream()
                 .map(book -> new BookSliderRes(
+                        book.getId(),
                         book.getBookNo(),
                         book.getTitle(),
                         book.getAuthor(),
                         book.getCategory(),
                         book.getImageUrl(),
-                        false // 검색 결과이므로 기본적으로 '읽음' 상태는 false로 둡니다.
+                        false
                 ))
                 .collect(Collectors.toList());
     }
