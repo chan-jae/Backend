@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookSliderRes {
+    private Long id;
     private Long bookNo;
     private String title;
     private String author;

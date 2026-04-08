@@ -16,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UpdateTaskService {
     private final TaskRepository taskRepository;
     private final StudentRepository studentRepository;
 
-    @Transactional
     public TaskListRes updateTask(Long taskId, TaskUpdateReq req) {
 
         log.info("try to update task: {}", taskId);
@@ -37,5 +37,22 @@ public class UpdateTaskService {
 
         log.info("success to update task");
         return new TaskListRes(task);
+    }
+
+    // 완료
+    public void completeTask(Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 메모가 없습니다. id=" + taskId));
+
+        task.complete();
+    }
+
+    // 완료 취소
+    @Transactional
+    public void cancelTaskCompletion(Long taskId) {
+        TaskEntity task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 메모가 없습니다. id=" + taskId));
+
+        task.incomplete();
     }
 }

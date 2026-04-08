@@ -8,6 +8,7 @@ import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.dto.ReadBooksSaveReq;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
+import com.team.student_calendar.service.book.UpdateStudentBookService;
 import com.team.student_calendar.service.student.book.DeleteReadBookService;
 import com.team.student_calendar.service.student.book.InsertReadBookService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
@@ -35,6 +36,7 @@ public class StudentBookApiController {
     private final InsertReadBookService insertReadBookService;
     private final SelectReadBookService selectReadBookService;
     private final DeleteReadBookService deleteReadBookService;
+    private final UpdateStudentBookService updateStudentBookService;
 
 
 
@@ -108,5 +110,17 @@ public class StudentBookApiController {
         /* 응답*/
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("학생이 읽은 책 1권을 삭제했습니다.", "SUCCESS"));
+    }
+
+    @Operation(summary = "도서 완료 처리", description = "학생이 읽은 책을 완료 상태(state=1)로 변경합니다.")
+    @PatchMapping("/api/students/{studentId}/books/{bookId}/complete")
+    public ResponseEntity<ApiSuccessResponse<Void>> completeReadBook(
+            @PathVariable("studentId") Long studentId,
+            @PathVariable("bookId") Long bookId
+    ) {
+        updateStudentBookService.completeBook(studentId, bookId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("도서 완료 처리가 되었습니다.", "SUCCESS"));
     }
 }

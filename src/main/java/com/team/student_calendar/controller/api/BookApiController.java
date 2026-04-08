@@ -8,6 +8,8 @@ import com.team.student_calendar.dto.BookSliderRes;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
+import com.team.student_calendar.service.book.RecommendBookService;
+import com.team.student_calendar.service.book.SearchBookService;
 import com.team.student_calendar.service.book.SelectBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,6 +38,10 @@ public class BookApiController {
 
     private final InsertBookService insertBookService;
     private final SelectBookService selectBookService;
+    private final SearchBookService searchBookService;
+    private final RecommendBookService recommendBookService;
+
+
 
     /**
      * 책 여러개 생성
@@ -66,38 +72,20 @@ public class BookApiController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiSuccessResponse.created(upsertResult, "책 여러권 삽입에 성공했습니다.", "SUCCESS"));
     }
-
     /**
-     * 책 목록 페이징 조회
-     *
-     * @param page 조회 할 페이지 번호 (기본값: 1)
-     * @param size 한 페이지 책 개수 (기본값: 10)
+     * 도서 추천
      */
-    @Operation(summary = "책 목록 페이징 조회", description = "페이지 번호와 사이즈를 입력하여 책 목록을 조회합니다.")
-    @GetMapping("/api/books")
-    public ResponseEntity<ApiSuccessResponse<Page<BookEntity>>> getBookList(
-            @RequestParam(defaultValue = "1", name = "page") int page,
-            @RequestParam(defaultValue = "10", name = "size") int size) {
-
-        // 서비스에서 Page 가져옴
-        Page<BookEntity> bookPage = selectBookService.getBookListWithPaging(page, size);
-
-        return ResponseEntity.ok(
-                ApiSuccessResponse.ok(bookPage, "책 목록 페이징 조회에 성공했습니다.", "SUCCESS"));
-    }
-
-    /**
-     * 슬라이더로 도서 조회
-     */
-    @Operation(summary = "도서 조회", description = "학생의 현재 진도에 맞춰 자동으로 중앙이 세팅된 책 5권을 반환합니다.")
+    @Operation(summary = "도서 추천 조회", description = "학생의 레벨과 문학/비문학 교차를 고려하며 이전/현재/다음 3권의 책을 가져옵니다.")
     @GetMapping("/api/students/{studentId}/books/slider")
     public ResponseEntity<ApiSuccessResponse<List<BookSliderRes>>> getSliderBooks(
             @PathVariable("studentId") Long studentId) {
 
-        List<BookSliderRes> result = selectBookService.getSliderBooks(studentId);
+        log.info("[BookApiController.getSliderBooks] 맞춤 도서 추천 studentId: {}", studentId);
+
+        List<BookSliderRes> result = recommendBookService.getRecommendSliderBooks(studentId);
 
         return ResponseEntity.ok(
-                ApiSuccessResponse.ok(result, "도서 조회에 성공했습니다.", "SUCCESS"));
+                ApiSuccessResponse.ok(result, "추천 도서 조회에 성공했습니다.", "SUCCESS"));
     }
 
     @Operation(summary = "난이도순으로 책 가져오기", description = "난이도, 제목순으로 책 가져오기")
@@ -108,5 +96,18 @@ public class BookApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(bookEntityList, "난이도순으로 책 가져오기에 성공했습니다", "SUCCESS"));
+    }
+
+    /**
+     * 통합 도서 검색
+     */
+    @Operation(summary = "통합 도서 검색", description = "제목, 저자, 출판사 키워드로 도서를 검색합니다.")
+    @GetMapping("/api/books/search")
+    public ResponseEntity<ApiSuccessResponse<List<BookSliderRes>>> searchBooks(@RequestParam("keyword") String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<BookSliderRes> response = searchBookService.searchBooks(keyword);
+        return ResponseEntity.ok(ApiSuccessResponse.ok(response, "통합 도서 검색에 성공했습니다.", "SUCCESS"));
     }
 }
