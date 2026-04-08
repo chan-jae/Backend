@@ -4,16 +4,14 @@ import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
-import com.team.student_calendar.dto.BookListCreateRes;
 import com.team.student_calendar.dto.BookSliderRes;
-import com.team.student_calendar.entity.BookEntity;
+import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
 import com.team.student_calendar.service.book.SelectBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -47,7 +45,7 @@ public class BookApiController {
     @Validated
     @Operation(summary = "여러책 삽입", description = "List 타입 책 삽입")
     @PostMapping("/api/books")
-    public ResponseEntity<ApiSuccessResponse<BookListCreateRes>> createBook(
+    public ResponseEntity<ApiSuccessResponse<UpsertResult>> createBook(
             @RequestBody List<@Valid BookCreateReq> bookCreateReqList,
             BindingResult bindingResult) {
 
@@ -58,15 +56,15 @@ public class BookApiController {
         }
 
         // 책 List 저장
-        BookListCreateRes bookListCreateRes = insertBookService.saveBookList(bookCreateReqList);
+        UpsertResult upsertResult = insertBookService.saveBookList(bookCreateReqList);
         // 삽입된 데이터가 없으면 200 응답
-        if (bookListCreateRes == null || bookListCreateRes.getInsertedCnt() == 0) {
+        if (upsertResult.insertedCount() == 0) {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiSuccessResponse.created(bookListCreateRes, "책 리스트가 없거나 모두 중복된 책입니다.", "SUCCESS"));
+                    .body(ApiSuccessResponse.created(upsertResult, "책 리스트가 없거나 모두 중복된 책입니다.", "SUCCESS"));
         }
         // 삽입된 데이터가 있으면 201 응답
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiSuccessResponse.created(bookListCreateRes, "책 여러권 삽입에 성공했습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.created(upsertResult, "책 여러권 삽입에 성공했습니다.", "SUCCESS"));
     }
 
     /**

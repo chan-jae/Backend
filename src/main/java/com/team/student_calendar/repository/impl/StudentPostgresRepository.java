@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,7 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
      *   <li>RETURNING에 없는 행 → 충돌했지만 값이 동일해 스킵된 행</li>
      * </ul>
      */
+    @Transactional
     @Override
     public UpsertResult bulkInsertStudents(List<StudentCreateReq> studentList) {
 
