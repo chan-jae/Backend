@@ -1,73 +1,38 @@
 package com.team.student_calendar.service.student;
 
 import com.team.student_calendar.dto.StudentCreateReq;
-import com.team.student_calendar.entity.StudentEntity;
-import com.team.student_calendar.repository.StudentRepository;
+import com.team.student_calendar.dto.UpsertResult;
+import com.team.student_calendar.repository.jdbc.StudentJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class InsertStudentService {
 
-    private final StudentRepository studentRepository;
-    private final SelectStudentService selectStudentService;
-
-
+    private final StudentJdbcRepository studentJdbcRepository;
 
     /**
-     * List 타입 학생들을 모두 저장
-     * @param  studentCreateReqList List 타입 학생들
-     * @return 1개라도 삽입된 데이터가 있는지?
-     * */
+     * List 타입 학생들을 UPSERT 저장.
+     *
+     * @param studentCreateReqList 저장할 학생 목록
+     * @return 삽입 데이터, 수정 데이터, 영향 안받은 데이터
+     */
     @Transactional
-    public boolean saveStudentList(List<StudentCreateReq> studentCreateReqList) {
+    public UpsertResult saveStudentList(List<StudentCreateReq> studentCreateReqList) {
 
-        log.info("try to save {} students", studentCreateReqList.size());
+        log.info("try to upsert {} students", studentCreateReqList.size());
 
-        // 몇번 추가되었는지 체크
-        int insertCount = 0;
+        UpsertResult result = studentJdbcRepository.bulkInsertStudents(studentCreateReqList);
 
-        // accountNo만 리스트로 뽑기
-        List<Long> accountNoList = studentCreateReqList.stream()
-                .map(StudentCreateReq::getAccountNo)
-                .toList();
+        log.info("upsert complete — inserted: {}, updated: {}, skipped(no change): {}",
+                result.insertedCount(), result.updatedCount(), result.skippedCount());
 
-        // 이미 존재하는 student 가져오기
-        Map<Long, StudentEntity> existingMap = selectStudentService
-                .findAllByAccountNoList(accountNoList)
-                .stream()
-                .collect(Collectors.toMap(StudentEntity::getAccountNo, s -> s));
-
-        /*
-        * accountNo를 가지는 튜플이 있음 -> applyChanges()
-        * accountNo를 가지는 튜플이 없음 -> 새로 삽입
-        * */
-        for (StudentCreateReq dto : studentCreateReqList) {
-            StudentEntity studentEntity = existingMap.get(dto.getAccountNo());
-
-            // 이미 있는값이면 필드 수정
-            if (studentEntity != null) {
-                // 변경만 해놓으면 @DynamicInsert가 알아서 변경된 값으로 Isnert 해줌
-                studentEntity.applyChanges(dto);
-                continue;
-            }
-            // 없으면 삽입
-            StudentEntity insertingEntity = dto.toEntity();
-            studentRepository.save(insertingEntity);
-            insertCount++;
-        }
-
-        log.info("success to save {} students", insertCount);
-
-        return (insertCount > 0);
+        return result;
     }
 }

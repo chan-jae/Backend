@@ -5,6 +5,7 @@ import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.FirstLevelReq;
 import com.team.student_calendar.dto.StudentCreateReq;
+import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.service.student.InsertStudentService;
 import com.team.student_calendar.service.student.SelectStudentService;
@@ -36,7 +37,7 @@ public class StudentApiController {
     @Validated
     @Operation(summary = "여러 학생 추가", description = "List 타입 학생들을 추가한다.")
     @PostMapping("/api/students")
-    public ResponseEntity<ApiSuccessResponse<Void>> createStudent(
+    public ResponseEntity<ApiSuccessResponse<UpsertResult>> createStudent(
             @RequestBody List<@Valid StudentCreateReq> studentCreateReqList,
             BindingResult bindingResult
     ) {
@@ -48,16 +49,16 @@ public class StudentApiController {
         }
 
         // 저장
-        boolean isInserted = insertStudentService.saveStudentList(studentCreateReqList);
+        UpsertResult upsertResult = insertStudentService.saveStudentList(studentCreateReqList);
 
         // 응답
-        if (isInserted) {
+        if (upsertResult.insertedCount() > 0) {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiSuccessResponse.created("학생 리스트 추가 및 수정에 성공했습니다.", "SUCCESS"));
+                    .body(ApiSuccessResponse.created(upsertResult, "학생 추가 및 업데이트에 성공했습니다.", "SUCCESS"));
         }
         else {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(ApiSuccessResponse.created("학생 수정에 성공했습니다.", "SUCCESS"));
+                    .body(ApiSuccessResponse.created(upsertResult, "학생 업데이트에 성공했습니다.", "SUCCESS"));
         }
     }
 

@@ -1,0 +1,120 @@
+package com.team.student_calendar.repository.impl;
+
+import com.team.student_calendar.dto.StudentCreateReq;
+import com.team.student_calendar.dto.UpsertResult;
+import com.team.student_calendar.repository.jdbc.StudentJdbcRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Profile("postgres")
+@Repository
+@RequiredArgsConstructor
+public class StudentPostgresRepository implements StudentJdbcRepository {
+
+//    // insertSql() 호환용 단일 행 템플릿 (BookJdbcRepository 등 다른 곳에서 재사용 시 사용)
+//    private static final String INSERT_SQL_TEMPLATE = """
+//            INSERT INTO student_calendar.student
+//                (name, login_id, phone, grade, "level", account_no, state, joined_at)
+//            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//            ON CONFLICT (account_no)
+//            DO UPDATE SET
+//                name     = EXCLUDED.name,
+//                login_id = EXCLUDED.login_id,
+//                phone    = EXCLUDED.phone,
+//                grade    = EXCLUDED.grade,
+//                "level"  = EXCLUDED."level",
+//                state    = EXCLUDED.state
+//            WHERE
+//                (student.name, student.login_id, student.phone, student.grade,
+//                 student."level", student.state)
+//                IS DISTINCT FROM
+//                (EXCLUDED.name, EXCLUDED.login_id, EXCLUDED.phone, EXCLUDED.grade,
+//                 EXCLUDED."level", EXCLUDED.state)
+//            """;
+
+    private static final String INSERT_HEAD = """
+            INSERT INTO student_calendar.student
+                (name, login_id, phone, grade, "level", account_no, state, joined_at)
+            VALUES
+            """;
+
+    private static final String UPSERT_SUFFIX = """
+            ON CONFLICT (account_no)
+            DO UPDATE SET
+                name     = EXCLUDED.name,
+                login_id = EXCLUDED.login_id,
+                phone    = EXCLUDED.phone,
+                grade    = EXCLUDED.grade,
+                "level"  = EXCLUDED."level",
+                state    = EXCLUDED.state
+            WHERE
+                (student.name, student.login_id, student.phone, student.grade,
+                 student."level", student.state)
+                IS DISTINCT FROM
+                (EXCLUDED.name, EXCLUDED.login_id, EXCLUDED.phone, EXCLUDED.grade,
+                 EXCLUDED."level", EXCLUDED.state)
+            RETURNING (xmax = 0) AS is_new
+            """;
+
+    private final JdbcTemplate jdbcTemplate;
+
+
+    /**
+     * 다중 VALUES + RETURNING + xmax 방식으로 UPSERT 실행.
+     * <ul>
+     *   <li>xmax = 0  → 신규 삽입된 행</li>
+     *   <li>xmax ≠ 0  → 기존 행이 실제로 갱신된 행</li>
+     *   <li>RETURNING에 없는 행 → 충돌했지만 값이 동일해 스킵된 행</li>
+     * </ul>
+     */
+    @Override
+    public UpsertResult bulkInsertStudents(List<StudentCreateReq> studentList) {
+
+        if (studentList.isEmpty()) {
+            return new UpsertResult(0, 0, 0);
+        }
+
+        // VALUES 절 동적 생성: (?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?), ...
+        String valuesClause = studentList.stream()
+                .map(b -> "(?, ?, ?, ?, ?, ?, ?, ?)")
+                .collect(Collectors.joining(",\n"));
+
+        String sql = INSERT_HEAD + valuesClause + "\n" + UPSERT_SUFFIX;
+
+        // 파라미터 평탄화 (행 순서 × 컬럼 8개)
+        List<Object> args = new ArrayList<>(studentList.size() * 8);
+        for (StudentCreateReq b : studentList) {
+            args.add(b.getName());
+            args.add(b.getLoginId());
+            args.add(b.getPhone());
+            args.add(b.getGrade());
+            args.add(b.getLevel());
+            args.add(b.getAccountNo());
+            args.add(b.getStateStr());
+            args.add(b.getJoinedAt());
+        }
+
+        // RETURNING 결과를 is_new(boolean) 목록으로 수신
+        List<Boolean> returning = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getBoolean("is_new"),
+                args.toArray());
+
+        // true인 것만 실제로 삽입된 것
+        long inserted = returning.stream().filter(v -> v).count();
+        // false인 것은 수정된 것
+        long updated  = returning.size() - inserted;
+        // 유니크 키 충돌나서 스킵됬으니 애초에 리스트에 포함 안되서 전체 사이즈에서 빼면 됨
+        long skipped  = studentList.size() - returning.size();
+
+        return new UpsertResult(inserted, updated, skipped);
+    }
+}
