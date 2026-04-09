@@ -32,6 +32,7 @@ public class BookCreateReq {
     @NotBlank(message = "이미지주소는 필수 항목입니다.")
     private String imageUrl;
 
+    private Byte type;
 
     public BookEntity toEntity () {
         return BookEntity.builder()
@@ -43,6 +44,7 @@ public class BookCreateReq {
                 .difficulty(this.difficulty)
                 .bookNo(this.bookNo)
                 .imageUrl(this.imageUrl)
+                .type(this.type)
                 .build();
     }
 }

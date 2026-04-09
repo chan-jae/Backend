@@ -1,51 +1,44 @@
 package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.dto.BookCreateReq;
-import com.team.student_calendar.entity.BookEntity;
-import com.team.student_calendar.repository.BookRepository;
+import com.team.student_calendar.dto.UpsertResult;
+import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InsertBookService {
 
-    private final BookRepository bookRepository;
-    private final SelectBookService selectBookService;
+    private final BookJdbcRepository bookJdbcRepository;
 
-
-
-
+    /**
+     * 책 list 저장.
+     * registered_at / updated_at 기반 SELECT 로 삽입/갱신/스킵 건수를 정확히 반환.
+     *
+     * @param bookList 책 list
+     * @return 삽입·갱신·스킵 건수
+     */
     @Transactional
-    public void saveBookList(List<BookCreateReq> bookList) {
+    public UpsertResult saveBookList(List<BookCreateReq> bookList) {
 
-        // bookNo만 리스트로 뽑기
-        List<Long> bookNoList = bookList.stream()
-                .map(BookCreateReq::getBookNo)
-                .toList();
+        if (bookList.isEmpty()) {
+            log.warn("book list is empty");
+            return new UpsertResult(0, 0, 0);
+        }
 
-        // 이미 존재하는 엔티티 가져오기
-        List<BookEntity> existingBookEntity = selectBookService
-                .findAllByBookNoList(bookNoList);
+        log.info("try to save {} books", bookList.size());
 
-        // 이미 존재하는 bookNo만 뽑기
-        Set<Long> existingNoSet = existingBookEntity.stream()
-                .map(BookEntity::getBookNo)
-                .collect(Collectors.toSet());
+        UpsertResult result = bookJdbcRepository.bulkInsertBooks(bookList);
 
-        // 이미 존재하는 책을 빼고 엔티티로 변환
-        List<BookEntity> bookEntityList = bookList.stream()
-                // 이미 존재하는거 제외 (새로운 책만 저장)
-                .filter(b -> !existingNoSet.contains(b.getBookNo()))
-                .map(BookCreateReq::toEntity)
-                .toList();
+        log.info("book save complete — inserted: {}, updated: {}, skipped(no change): {}",
+                result.insertedCount(), result.updatedCount(), result.skippedCount());
 
-        // 저장
-        bookRepository.saveAll(bookEntityList);
+        return result;
     }
 }

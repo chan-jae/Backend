@@ -6,12 +6,14 @@ import com.team.student_calendar.dto.FirstLevelReq;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.team.student_calendar.common.constant.RegexPattern.*;
 import java.util.regex.Pattern;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UpdateStudentService {
@@ -22,6 +24,8 @@ public class UpdateStudentService {
 
     @Transactional
     public void updateStudentFirstLevel(Long studentId, FirstLevelReq req) {
+
+        log.info("try change student: {} to {}", studentId, req.getFirstLevel());
 
         /* 학생 찾기*/
         StudentEntity student = selectStudentService.findById(studentId);
@@ -34,5 +38,7 @@ public class UpdateStudentService {
 
         /* 레벨 변경*/
         student.setFirstLevel(req.getFirstLevel());
+
+        log.info("success to change level");
     }
 }

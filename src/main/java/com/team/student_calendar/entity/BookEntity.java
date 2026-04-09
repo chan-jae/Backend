@@ -5,10 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.team.student_calendar.common.enums.BookType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @DynamicInsert
@@ -48,7 +47,7 @@ public class BookEntity {
     @Column(name = "difficulty", nullable = false)
     private Integer difficulty;
 
-    @Column(name = "book_no", nullable = false)
+    @Column(name = "book_no", nullable = false, unique = true)
     private Long bookNo;
 
     @Column(name = "image_url", nullable = false)
@@ -58,4 +57,7 @@ public class BookEntity {
     @ColumnDefault("0")
     private Byte type;
 
+    @CreationTimestamp
+    @Column(name = "registered_at", nullable = false)
+    private LocalDateTime registeredAt;
 }
