@@ -2,6 +2,8 @@ package com.team.student_calendar.config.swagger;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,8 +31,16 @@ public class SwaggerConfig {
                 .version("v1.0.0")
                 .description("스웨거 API");
 
+        // X-Api-Token 헤더 보안 스킴 등록
+        SecurityScheme apiTokenScheme = new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name("X-Api-Token");
+
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(localServer, prodServer));
+                .servers(List.of(localServer, prodServer))
+                .addSecurityItem(new SecurityRequirement().addList("X-Api-Token"))
+                .schemaRequirement("X-Api-Token", apiTokenScheme);
     }
 }
