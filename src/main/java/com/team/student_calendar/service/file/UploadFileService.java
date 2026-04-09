@@ -63,7 +63,7 @@ public class UploadFileService {
     @Transactional
     public FileUploadRes uploadFile(Long bookId, MultipartFile file) {
 
-        log.debug("start uploadFile bookId={}", bookId);
+        log.info("start uploadFile bookId={}", bookId);
 
         /* 파일 없으면 throw */
         if (file == null || file.isEmpty()) {
@@ -97,11 +97,10 @@ public class UploadFileService {
         String mime = mimeType.toLowerCase();
         /* 확장자*/
         String extension = getFileExtension(originalFilename);
-        log.debug("originalName={}, mime={}, extension={}", originalFilename, mime, extension);
+        log.info("originalName={}, mime={}, extension={}", originalFilename, mime, extension);
 
         /* S3에 저장할 키 생성 */
         String s3Key = String.format("pdfs/%d_%s%s", bookId, UUID.randomUUID(), extension);
-        log.debug("s3Key={}", s3Key);
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
@@ -124,9 +123,7 @@ public class UploadFileService {
         } catch (IOException e) {
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
         }
-        log.debug("bucket putObject done key={}", s3Key);
-
-        log.debug("completed uploadFile bookId={}", bookId);
+        log.info("bucket putObject done key={}", s3Key);
 
         log.info("completed saved file entity id={}, bookId={}, s3Key={}, originalName={}, sizeBytes={}, contentType={}",
                 saved.getId(), bookId, s3Key, originalFilename, saved.getFileSize(), saved.getContentType());
