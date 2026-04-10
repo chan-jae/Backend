@@ -27,11 +27,6 @@ public class InsertBookService {
     @Transactional
     public UpsertResult saveBookList(List<BookCreateReq> bookList) {
 
-        if (bookList.isEmpty()) {
-            log.warn("book list is empty");
-            return new UpsertResult(0, 0, 0);
-        }
-
         log.info("try to save {} books", bookList.size());
 
         UpsertResult result = bookJdbcRepository.bulkInsertBooks(bookList);

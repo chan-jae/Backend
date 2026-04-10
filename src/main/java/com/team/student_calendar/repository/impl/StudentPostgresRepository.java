@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,48 +21,42 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StudentPostgresRepository implements StudentJdbcRepository {
 
-//    // insertSql() 호환용 단일 행 템플릿 (BookJdbcRepository 등 다른 곳에서 재사용 시 사용)
-//    private static final String INSERT_SQL_TEMPLATE = """
-//            INSERT INTO student_calendar.student
-//                (name, login_id, phone, grade, "level", account_no, state, joined_at)
-//            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-//            ON CONFLICT (account_no)
-//            DO UPDATE SET
-//                name     = EXCLUDED.name,
-//                login_id = EXCLUDED.login_id,
-//                phone    = EXCLUDED.phone,
-//                grade    = EXCLUDED.grade,
-//                "level"  = EXCLUDED."level",
-//                state    = EXCLUDED.state
-//            WHERE
-//                (student.name, student.login_id, student.phone, student.grade,
-//                 student."level", student.state)
-//                IS DISTINCT FROM
-//                (EXCLUDED.name, EXCLUDED.login_id, EXCLUDED.phone, EXCLUDED.grade,
-//                 EXCLUDED."level", EXCLUDED.state)
-//            """;
-
+    // // insertSql() 호환용 단일 행 템플릿 (BookJdbcRepository 등 다른 곳에서 재사용 시 사용)
+    // private static final String INSERT_SQL_TEMPLATE = """
+    // INSERT INTO student_calendar.student
+    // (name, login_id, phone, grade, "level", account_no, state, joined_at)
+    // VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    // ON CONFLICT (account_no)
+    // DO UPDATE SET
+    // name = EXCLUDED.name,
+    // login_id = EXCLUDED.login_id,
+    // phone = EXCLUDED.phone,
+    // grade = EXCLUDED.grade,
+    // "level" = EXCLUDED."level",
+    // state = EXCLUDED.state
+    // WHERE
+    // (student.name, student.login_id, student.phone, student.grade,
+    // student."level", student.state)
+    // IS DISTINCT FROM
+    // (EXCLUDED.name, EXCLUDED.login_id, EXCLUDED.phone, EXCLUDED.grade,
+    // EXCLUDED."level", EXCLUDED.state)
+    // """;
     private static final String INSERT_HEAD = """
             INSERT INTO student_calendar.student
-                (name, login_id, phone, grade, "level", account_no, state, joined_at)
+                (name, login_id, phone, grade, "level", account_no, state, joined_at, updated_at)
             VALUES
             """;
 
     private static final String UPSERT_SUFFIX = """
             ON CONFLICT (account_no)
             DO UPDATE SET
-                name     = EXCLUDED.name,
-                login_id = EXCLUDED.login_id,
-                phone    = EXCLUDED.phone,
-                grade    = EXCLUDED.grade,
-                "level"  = EXCLUDED."level",
-                state    = EXCLUDED.state
-            WHERE
-                (student.name, student.login_id, student.phone, student.grade,
-                 student."level", student.state)
-                IS DISTINCT FROM
-                (EXCLUDED.name, EXCLUDED.login_id, EXCLUDED.phone, EXCLUDED.grade,
-                 EXCLUDED."level", EXCLUDED.state)
+                name       = EXCLUDED.name,
+                login_id   = EXCLUDED.login_id,
+                phone      = EXCLUDED.phone,
+                grade      = EXCLUDED.grade,
+                "level"    = EXCLUDED."level",
+                state      = EXCLUDED.state,
+                updated_at = now()
             RETURNING (xmax = 0) AS is_new
             """;
 
@@ -72,13 +67,14 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-
     /**
      * 다중 VALUES + RETURNING + xmax 방식으로 UPSERT 실행.
+     * <p>
+     * 충돌 시 데이터 동일 여부와 관계없이 항상 updated_at을 갱신한다.
+     * </p>
      * <ul>
-     *   <li>xmax = 0  → 신규 삽입된 행</li>
-     *   <li>xmax ≠ 0  → 기존 행이 실제로 갱신된 행</li>
-     *   <li>RETURNING에 없는 행 → 충돌했지만 값이 동일해 스킵된 행</li>
+     * <li>xmax = 0 → 신규 삽입된 행</li>
+     * <li>xmax ≠ 0 → 충돌하여 갱신된 행 (데이터 변경 + 동일 모두 포함)</li>
      * </ul>
      */
     @Transactional
@@ -86,12 +82,14 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
     public UpsertResult bulkInsertStudents(List<StudentCreateReq> studentList) {
 
         if (studentList.isEmpty()) {
-            return new UpsertResult(0, 0, 0);
+            return new UpsertResult(0, 0, 0, null);
         }
 
-        // VALUES 절 동적 생성: (?,?,?,?,?,?,?,?), (?,?,?,?,?,?,?,?), ...
+        LocalDateTime updateBaseTime = jdbcTemplate.queryForObject("SELECT now()", LocalDateTime.class);
+
+        // VALUES 절 동적 생성
         String valuesClause = studentList.stream()
-                .map(b -> "(?, ?, ?, ?, ?, ?, ?, ?)")
+                .map(b -> "(?, ?, ?, ?, ?, ?, ?, ?, now())")
                 .collect(Collectors.joining(",\n"));
 
         String sql = INSERT_HEAD + valuesClause + "\n" + UPSERT_SUFFIX;
@@ -118,17 +116,13 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
         // true인 것만 실제로 삽입된 것
         long inserted = returning.stream().filter(v -> v).count();
         // false인 것은 수정된 것
-        long updated  = returning.size() - inserted;
-        // 유니크 키 충돌나서 스킵됬으니 애초에 리스트에 포함 안되서 전체 사이즈에서 빼면 됨
-        long skipped  = studentList.size() - returning.size();
+        long updated = returning.size() - inserted;
 
-        return new UpsertResult(inserted, updated, skipped);
+        return new UpsertResult(inserted, updated, 0, updateBaseTime);
     }
-
 
     @Override
     public void bulkDeleteStudent(Long id) {
-
 
     }
 }

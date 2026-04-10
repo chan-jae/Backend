@@ -1,5 +1,7 @@
 package com.team.student_calendar.repository.impl;
 
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
@@ -45,9 +47,10 @@ public class BookPostgresRepository implements BookJdbcRepository {
     @Transactional
     @Override
     public UpsertResult bulkInsertBooks(List<BookCreateReq> bookList) {
+
         int size = bookList.size();
         if (size == 0) {
-            return new UpsertResult(0, 0, 0);
+            return new UpsertResult(0, 0, 0, null);
         }
 
         // 배치 시작 직전 DB 서버 시각 확보 (JVM 시각 대신 DB 시각 사용 — 시차 오차 방지)
@@ -82,8 +85,10 @@ public class BookPostgresRepository implements BookJdbcRepository {
         }
 
         // 배치 후 SELECT — registered_at 기준으로 삽입 건수 산출
-        long inserted = Objects.requireNonNullElse(
-                jdbcTemplate.queryForObject(COUNT_INSERTED_SQL, Long.class, batchTime), -1L);
+        Long inserted = jdbcTemplate.queryForObject(COUNT_INSERTED_SQL, Long.class, batchTime);
+        if (inserted == null) {
+            throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
 
         long updated = 0;
         long skipped = size - inserted;
@@ -91,6 +96,6 @@ public class BookPostgresRepository implements BookJdbcRepository {
         log.debug("book upsert result — inserted: {}, updated: {}, skipped: {}",
                 inserted, updated, skipped);
 
-        return new UpsertResult(inserted, updated, skipped);
+        return new UpsertResult(inserted, updated, skipped, batchTime);
     }
 }

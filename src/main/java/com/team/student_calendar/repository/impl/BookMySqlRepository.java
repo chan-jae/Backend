@@ -44,9 +44,10 @@ public class BookMySqlRepository implements BookJdbcRepository {
     @Transactional
     @Override
     public UpsertResult bulkInsertBooks(List<BookCreateReq> bookList) {
+
         int size = bookList.size();
         if (size == 0) {
-            return new UpsertResult(0, 0, 0);
+            return new UpsertResult(0, 0, 0, null);
         }
 
         // 배치 시작 직전 DB 서버 시각 확보 (JVM 시각 대신 DB 시각 사용 — 시차 오차 방지)
@@ -91,6 +92,6 @@ public class BookMySqlRepository implements BookJdbcRepository {
         log.debug("book upsert result — inserted: {}, updated: {}, skipped: {}",
                 inserted, updated, skipped);
 
-        return new UpsertResult(inserted, updated, skipped);
+        return new UpsertResult(inserted, updated, skipped, batchTime);
     }
 }
