@@ -65,11 +65,11 @@ public class StudentApiController {
     }
 
 
-    @Operation(summary = "전체 학생 가져오기", description = "모든 학생들을 가져온다.")
+    @Operation(summary = "전체 학생을 최신순으로 가져오기", description = "모든 학생들을 가입일 내림차순으로 가져온다.")
     @GetMapping("/api/students")
     public ResponseEntity<ApiSuccessResponse<List<StudentEntity>>> selectAllStudents() {
 
-        List<StudentEntity> allStudents = selectStudentService.findAllStudents();
+        List<StudentEntity> allStudents = selectStudentService.findAllLatestStudents();
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(allStudents, "모든 학생 조회에 성공했습니다.", "SUCCESS"));

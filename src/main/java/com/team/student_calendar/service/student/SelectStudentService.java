@@ -38,9 +38,9 @@ public class SelectStudentService {
      * 모든 StudentEntity 가져오기
      */
     @Transactional(readOnly = true)
-    public List<StudentEntity> findAllStudents() {
+    public List<StudentEntity> findAllLatestStudents() {
 
-        return studentRepository.findAll();
+        return studentRepository.findAllByOrderByJoinedAtDesc();
     }
 
 
