@@ -65,6 +65,11 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
             RETURNING (xmax = 0) AS is_new
             """;
 
+    private static final String DELETE_SQL = """
+            DELETE FROM student_calendar.student_book
+            WHERE student_id = ?
+            """;
+
     private final JdbcTemplate jdbcTemplate;
 
 
@@ -118,5 +123,12 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
         long skipped  = studentList.size() - returning.size();
 
         return new UpsertResult(inserted, updated, skipped);
+    }
+
+
+    @Override
+    public void bulkDeleteStudent(Long id) {
+
+
     }
 }

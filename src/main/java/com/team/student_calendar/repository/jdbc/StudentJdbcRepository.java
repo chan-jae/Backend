@@ -11,4 +11,6 @@ public interface StudentJdbcRepository {
      * UPSERT 후 RETURNING + xmax 로 삽입/갱신/스킵 건수를 정확히 반환.
      */
     UpsertResult bulkInsertStudents(List<StudentCreateReq> studentList);
+
+    void bulkDeleteStudent(Long id);
 }

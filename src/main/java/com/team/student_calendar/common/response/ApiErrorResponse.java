@@ -30,12 +30,12 @@ public class ApiErrorResponse {
                 .build();
     }
 
-    public static ApiErrorResponse error(ErrorCode errorCode, String message) {
-        return ApiErrorResponse.builder()
-                .status(errorCode.getStatus().value())
-                .message(message)
-                .errorCode(errorCode.getCode())
-                .time(LocalDateTime.now())
-                .build();
-    }
+//    public static ApiErrorResponse error(ErrorCode errorCode, String message) {
+//        return ApiErrorResponse.builder()
+//                .status(errorCode.getStatus().value())
+//                .message(message)
+//                .errorCode(errorCode.getCode())
+//                .time(LocalDateTime.now())
+//                .build();
+//    }
 }

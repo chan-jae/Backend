@@ -50,4 +50,13 @@ public class SelectStudentService {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new BaseException(StudentErrorCode.STUDENT_NOT_FOUND));
     }
+
+
+    /**
+     * 학생 있는지 체크
+     */
+    public boolean existsById(Long id) {
+
+        return studentRepository.existsById(id);
+    }
 }

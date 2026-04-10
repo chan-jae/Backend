@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -41,6 +42,10 @@ public class FileEntity {
 
     @Column(name = "content_type", nullable = false, length = 55)
     private String contentType;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", insertable = false)
+    private LocalDateTime updatedAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP(6)")
     @Column(name = "registered_at", nullable = false)

@@ -7,6 +7,7 @@ import com.team.student_calendar.dto.FirstLevelReq;
 import com.team.student_calendar.dto.StudentCreateReq;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.StudentEntity;
+import com.team.student_calendar.service.student.DeleteStudentService;
 import com.team.student_calendar.service.student.InsertStudentService;
 import com.team.student_calendar.service.student.SelectStudentService;
 import com.team.student_calendar.service.student.UpdateStudentService;
@@ -32,6 +33,7 @@ public class StudentApiController {
     private final InsertStudentService insertStudentService;
     private final SelectStudentService selectStudentService;
     private final UpdateStudentService updateStudentService;
+    private final DeleteStudentService deleteStudentService;
 
 
     @Validated
@@ -85,5 +87,18 @@ public class StudentApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("초기 레벨 설정에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "학생 삭제", description = "학생과 관련된 데이터를 모두 지웁니다.")
+    @DeleteMapping("/api/students/{id}")
+    public ResponseEntity<ApiSuccessResponse<Void>> deleteStudent(
+        @PathVariable Long id
+    ) {
+
+        deleteStudentService.deleteStudent(id);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("학생 삭제에 성공했습니다.", "SUCCESS"));
     }
 }
