@@ -1,5 +1,6 @@
-package com.team.student_calendar.service.book;
+package com.team.student_calendar.service.student.book;
 
+import com.team.student_calendar.common.enums.StudentBookState;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.entity.StudentBookEntity;
@@ -16,12 +17,17 @@ public class UpdateStudentBookService {
     private final StudentBookRepository studentBookRepository;
 
     @Transactional
-    public void completeBook(Long studentId, Long bookId) {
+    public void updateBookState(Long studentId, Long bookId, String stateStr) {
         StudentBookEntity studentBook = studentBookRepository.findByStudentIdAndBookId(studentId, bookId)
                 .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
 
-        studentBook.setState((byte) 1);
+        Byte newState = StudentBookState.getStateFromString(stateStr);
 
-        studentBook.setReadAt(LocalDate.now());
+        studentBook.setState(newState);
+
+        // done이면 시간 기록
+        if (newState == (byte) StudentBookState.DONE.getState()) {
+            studentBook.setReadAt(LocalDate.now());
+        }
     }
 }

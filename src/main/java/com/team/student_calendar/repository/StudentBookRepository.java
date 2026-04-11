@@ -34,4 +34,14 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
     Slice<StudentBookEntity> findByStudentIdAndState(Long studentId,
                                                      Byte state,
                                                      Pageable pageable);
+
+    // Category 일치 = 문학
+    Optional<StudentBookEntity> findTopByStudentIdAndBook_CategoryAndStateOrderByReadAtDesc(
+            Long studentId, String category, Byte state);
+    // 불일치 = 비문학
+    Optional<StudentBookEntity> findTopByStudentIdAndBook_CategoryNotAndStateOrderByReadAtDesc(
+            Long studentId, String category, Byte state);
+
+    // 상태 조회
+    Slice<StudentBookEntity> findByStudentIdAndStateIn(Long studentId, List<Byte> states, Pageable pageable);
 }

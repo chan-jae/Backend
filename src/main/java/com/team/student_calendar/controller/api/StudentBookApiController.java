@@ -1,20 +1,17 @@
 package com.team.student_calendar.controller.api;
 
-import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.dto.ReadBooksSaveReq;
-import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
-import com.team.student_calendar.service.book.UpdateStudentBookService;
+import com.team.student_calendar.service.student.book.UpdateStudentBookService;
 import com.team.student_calendar.service.student.book.DeleteReadBookService;
 import com.team.student_calendar.service.student.book.InsertReadBookService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -112,15 +107,15 @@ public class StudentBookApiController {
                 .body(ApiSuccessResponse.ok("학생이 읽은 책 1권을 삭제했습니다.", "SUCCESS"));
     }
 
-    @Operation(summary = "도서 완료 처리", description = "학생이 읽은 책을 완료 상태(state=1)로 변경합니다.")
+    @Operation(summary = "도서 완료 처리", description = "학생이 읽은 책을 완료 상태(DONE)로 변경합니다.")
     @PatchMapping("/api/students/{studentId}/books/{bookId}/complete")
     public ResponseEntity<ApiSuccessResponse<Void>> completeReadBook(
             @PathVariable("studentId") Long studentId,
             @PathVariable("bookId") Long bookId
     ) {
-        updateStudentBookService.completeBook(studentId, bookId);
+        updateStudentBookService.updateBookState(studentId, bookId, "DONE");
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiSuccessResponse.ok("도서 완료 처리가 되었습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.ok(null, "도서 완료 처리가 되었습니다.", "SUCCESS"));
     }
 }
