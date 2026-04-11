@@ -57,7 +57,6 @@ public class BookEntity {
     @ColumnDefault("0")
     private Byte type;
 
-    @CreationTimestamp
-    @Column(name = "registered_at", nullable = false)
-    private LocalDateTime registeredAt;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }

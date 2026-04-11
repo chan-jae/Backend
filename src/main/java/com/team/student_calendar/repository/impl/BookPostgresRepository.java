@@ -29,17 +29,18 @@ public class BookPostgresRepository implements BookJdbcRepository {
     // registered_at 은 DB 함수 now() 로 세팅 — 파라미터(?) 수는 8개 그대로 유지
     private static final String INSERT_SQL = """
             INSERT INTO student_calendar.book
-            (title, author, publisher, category, "level", difficulty, book_no, image_url,
-             registered_at)
+            (title, author, publisher, category, "level", difficulty, book_no, image_url, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())
-            ON CONFLICT (book_no) DO NOTHING
+            ON CONFLICT (book_no)
+            DO UPDATE SET
+                updated_at = now()
             """;
 
     // registered_at >= batchTime 이면 이번 배치에서 새로 INSERT 된 행
     private static final String COUNT_INSERTED_SQL = """
             SELECT COUNT(*)
             FROM student_calendar.book
-            WHERE registered_at >= ?
+            WHERE updated_at >= ?
             """;
 
     private final JdbcTemplate jdbcTemplate;
