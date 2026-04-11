@@ -1,13 +1,11 @@
 package com.team.student_calendar.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.team.student_calendar.common.enums.StudentState;
 import com.team.student_calendar.entity.StudentEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -47,7 +45,7 @@ public class StudentCreateReq {
                 .grade(this.grade)
                 .level(this.level)
                 .accountNo(this.accountNo)
-                .state(StudentState.getStateFromString(this.stateStr))
+                .state(this.stateStr)
                 .joinedAt(this.joinedAt)
                 .build();
     }

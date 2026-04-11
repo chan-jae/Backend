@@ -2,10 +2,12 @@ package com.team.student_calendar.security.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+@Slf4j
 @Component
 public class ApiTokenInterceptor implements HandlerInterceptor {
 
@@ -23,6 +25,7 @@ public class ApiTokenInterceptor implements HandlerInterceptor {
 
         if (xApiToken == null || !xApiToken.equals(apiToken)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            log.warn("invalid api token");
             return false;
         }
         return true;

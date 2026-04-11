@@ -38,9 +38,9 @@ public class SelectStudentService {
      * 모든 StudentEntity 가져오기
      */
     @Transactional(readOnly = true)
-    public List<StudentEntity> findAllStudents() {
+    public List<StudentEntity> findAllLatestStudents() {
 
-        return studentRepository.findAll();
+        return studentRepository.findAllByOrderByJoinedAtDesc();
     }
 
 
@@ -49,5 +49,14 @@ public class SelectStudentService {
 
         return studentRepository.findById(id)
                 .orElseThrow(() -> new BaseException(StudentErrorCode.STUDENT_NOT_FOUND));
+    }
+
+
+    /**
+     * 학생 있는지 체크
+     */
+    public boolean existsById(Long id) {
+
+        return studentRepository.existsById(id);
     }
 }

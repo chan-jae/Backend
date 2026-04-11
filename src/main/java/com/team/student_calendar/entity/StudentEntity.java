@@ -1,15 +1,14 @@
 package com.team.student_calendar.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.team.student_calendar.common.enums.StudentState;
 import com.team.student_calendar.dto.StudentCreateReq;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,17 +47,18 @@ public class StudentEntity {
     @Column(name = "level", nullable = false, length = 10)
     private String level;
 
-    @Column(name = "account_no", nullable = false)
+    @Column(name = "account_no", nullable = false, unique = true)
     private Long accountNo;
 
-    @Column(name = "state", nullable = false)
-    @ColumnDefault("0")
-    private Byte state;
+    @Column(name = "state", nullable = false, length = 20)
+    private String state;
 
     @Column(name = "first_level", length = 10)
     private String firstLevel;
 
-    @CreationTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
 
@@ -71,6 +71,6 @@ public class StudentEntity {
         this.grade = req.getGrade();
         this.level = req.getLevel();
         this.accountNo = req.getAccountNo();
-        this.state = StudentState.getStateFromString(req.getStateStr());
+        this.state = req.getStateStr();
     }
 }

@@ -5,10 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.team.student_calendar.common.enums.BookType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @DynamicInsert
@@ -58,4 +57,6 @@ public class BookEntity {
     @ColumnDefault("0")
     private Byte type;
 
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }

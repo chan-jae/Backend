@@ -35,6 +35,8 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
                                                      Byte state,
                                                      Pageable pageable);
 
+    void deleteAllByStudent_Id(Long id);
+
     // Category 일치 = 문학
     Optional<StudentBookEntity> findTopByStudentIdAndBook_CategoryAndStateOrderByReadAtDesc(
             Long studentId, String category, Byte state);
