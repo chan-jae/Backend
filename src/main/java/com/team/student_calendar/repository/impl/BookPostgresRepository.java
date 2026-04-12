@@ -1,5 +1,6 @@
 package com.team.student_calendar.repository.impl;
 
+import com.team.student_calendar.common.constant.BookLevelMapping;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.dto.BookCreateReq;
@@ -18,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Profile("postgres")
@@ -29,8 +29,8 @@ public class BookPostgresRepository implements BookJdbcRepository {
     // registered_at 은 DB 함수 now() 로 세팅 — 파라미터(?) 수는 8개 그대로 유지
     private static final String INSERT_SQL = """
             INSERT INTO student_calendar.book
-            (title, author, publisher, category, "level", difficulty, book_no, image_url, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())
+            (title, author, publisher, category, "level", difficulty, book_no, image_url, c_level, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (book_no)
             DO UPDATE SET
                 updated_at = now()
@@ -76,6 +76,7 @@ public class BookPostgresRepository implements BookJdbcRepository {
                     ps.setInt(6, b.getDifficulty());
                     ps.setLong(7, b.getBookNo());
                     ps.setString(8, b.getImageUrl());
+                    ps.setByte(9, BookLevelMapping.customLevelOf(b.getLevel()));
                 }
 
                 @Override

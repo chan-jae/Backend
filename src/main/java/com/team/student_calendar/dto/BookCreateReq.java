@@ -34,7 +34,7 @@ public class BookCreateReq {
 
     private Byte type;
 
-    public BookEntity toEntity () {
+    public BookEntity toEntity() {
         return BookEntity.builder()
                 .title(this.title)
                 .author(this.author)

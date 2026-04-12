@@ -1,123 +1,115 @@
 package com.team.student_calendar.service.book;
 
-import com.team.student_calendar.dto.BookSliderRes;
+import com.team.student_calendar.common.constant.BookLevelMapping;
+import com.team.student_calendar.common.constant.LevelRegexPattern;
+import com.team.student_calendar.common.enums.BookCategory;
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.exception.domain.StudentErrorCode;
+import com.team.student_calendar.dto.BookDTO;
 import com.team.student_calendar.entity.BookEntity;
-import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
-import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.service.student.SelectStudentService;
+import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecommendBookService {
 
-    private final BookRepository bookRepository;
+    
+    private final SelectBookService selectBookService;
     private final SelectStudentService selectStudentService;
-    private final StudentBookRepository studentBookRepository;
+    private final SelectReadBookService selectReadBookService;
+
 
     /**
      * 책 추천 기능 (이전, 현재, 다음)
      */
     @Transactional(readOnly = true)
-    public List<BookSliderRes> getRecommendSliderBooks(Long studentId) {
-        StudentEntity student = selectStudentService.findById(studentId);
-        String studentLevel = student.getFirstLevel();
+    public BookDTO[][] recommendBookToRead(Long studentId) {
 
-        // 이전 책
-        StudentBookEntity progress = studentBookRepository.findByStudentIdAndState(
-                studentId, (byte) 1,
-                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "id"))
-        ).getContent().stream().findFirst().orElse(null);
+        StudentEntity studentEntity = selectStudentService.findById(studentId);
 
-        BookEntity previousBook = (progress != null) ? progress.getBook() : null;
+        BookDTO[] toReadLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.LITERATURE);
+        BookDTO[] toReadNonLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.NON_LITERATURE);
 
-        // 이전 책 문학이었는지 확인 + 처음 온 학생은 문학부터
-        boolean wasLiterature = (previousBook != null) && "LITERATURE".equals(previousBook.getCategory());
-
-        // 독서기록 가져오고 읽은 책 0권이면 -1L 하나 넣기
-        List<Long> readBookIds = studentBookRepository.findAllByStudentId(studentId).stream()
-                .map(sb -> sb.getBook().getId())
-                .collect(Collectors.toList());
-        if (readBookIds.isEmpty()) readBookIds.add(-1L);
-
-        StudentBookEntity readingProgress = studentBookRepository.findByStudentIdAndState(
-                studentId, (byte) 0, // 👈 state 0(읽는 중)인 것을 찾습니다.
-                PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "id"))
-        ).getContent().stream().findFirst().orElse(null);
-
-        BookEntity currentBook;
-        boolean isCurrentLiterature;
-
-        if (readingProgress != null) {
-            // 읽고 있는 책이 있으면 그 책을 현재 자리에 고정
-            currentBook = readingProgress.getBook();
-            isCurrentLiterature = "LITERATURE".equals(currentBook.getCategory());
-        } else {
-            // 읽고 있는 책이 없으면 다음책 가져옴
-            isCurrentLiterature = !wasLiterature; // 장르 교차 적용
-            String currentLevel = calculateTargetLevel(studentLevel, isCurrentLiterature);
-            currentBook = getSingleTargetBook(isCurrentLiterature, currentLevel, readBookIds);
-        }
-
-        // 현재 책 중복 방지로 미리 추가
-        if (currentBook != null) readBookIds.add(currentBook.getId());
-
-        // 다음
-        boolean isNextLiterature = !isCurrentLiterature; // 다시 장르 교차!
-        String nextLevel = calculateTargetLevel(studentLevel, isNextLiterature);
-        BookEntity nextBook = getSingleTargetBook(isNextLiterature, nextLevel, readBookIds);
-
-        return Arrays.asList(
-                convertToDto(previousBook, true),
-                convertToDto(currentBook, false),
-                convertToDto(nextBook, false)
-        );
+        return new BookDTO[][] {
+                {
+                        getPreviousReadBook(studentEntity, BookCategory.LITERATURE),
+                        toReadLiterature[0],
+                        toReadLiterature[1]
+                },
+                {
+                        getPreviousReadBook(studentEntity, BookCategory.NON_LITERATURE),
+                        toReadNonLiterature[0],
+                        toReadNonLiterature[1]
+                }
+        };
     }
 
     /**
-     * 문학/비문학 맞춰서 호출
+     * 마지막 수업에 읽었던 책
      */
-    private BookEntity getSingleTargetBook(boolean isLiterature, String targetLevel, List<Long> readBookIds) {
-        if (isLiterature) {
-            return bookRepository.findTop1ByCategoryAndLevelAndIdNotInOrderByDifficultyAsc(
-                    "LITERATURE", targetLevel, readBookIds).orElse(null);
-        } else {
-            return bookRepository.findTop1ByCategoryNotAndLevelAndIdNotInOrderByDifficultyAsc(
-                    "LITERATURE", targetLevel, readBookIds).orElse(null);
-        }
+    private BookDTO getPreviousReadBook(StudentEntity student, BookCategory category) {
+
+        return selectReadBookService.findPreviousBookToRead(student.getId(), category);
     }
 
+
     /**
-     * Entity -> DTO
+     * 오늘 수업에 읽어야 하는 책과 다음 수업에 읽어야 하는 책
+     * 
+     * @param student
+     * @param category
+     * @return BookDTO[]
+     *
+     * <p>
+     *     [0] - 오늘 수업에 읽어야 하는 책<br/>
+     *     [1] - 다음 수업에 읽어야 하는 책
+     * </p>
+     *
      */
-    private BookSliderRes convertToDto(BookEntity book, boolean realStatus) {
-        if (book == null) return null;
-        return new BookSliderRes(
-                book.getId(),book.getBookNo(), book.getTitle(), book.getAuthor(),
-                book.getCategory(), book.getImageUrl(), realStatus
-        );
+    private BookDTO[] getCurrentAndNextReadBook(StudentEntity student, BookCategory category) {
+
+        byte baseLevel = switch (category) {
+            case LITERATURE -> BookLevelMapping
+                    .customLevelOf(student.getFirstLevel());
+            case NON_LITERATURE -> BookLevelMapping
+                    .customLevelOf(convertNotLiteratureLevel(student.getFirstLevel()));
+            default -> throw new BaseException(BookErrorCode.INVALID_CATEGORY);
+        };
+
+        BookEntity[] books = selectBookService
+                .findBookToReadByDifficultyAsc(student.getId(), baseLevel, category);
+        if (books == null || books.length == 0) {
+            return new BookDTO[0];
+        }
+
+        return Arrays.stream(books)
+                .map(BookEntity::toDto)
+                .toArray(BookDTO[]::new);
     }
+
+
 
     /**
      * 문학/비문학 레벨 선택 로직
      */
-    private String calculateTargetLevel(String studentLevel, boolean isLiterature) {
-        if (isLiterature) {
-            return studentLevel;
+    private String convertNotLiteratureLevel(String firstLevel) {
+
+        if (!LevelRegexPattern.LEVEL.matches(firstLevel)) {
+            throw new BaseException(StudentErrorCode.INVALID_FIRST_LEVEL);
         }
 
-        String[] parts = studentLevel.split("_");
-
+        String[] parts = firstLevel.split("_");
         int number = Integer.parseInt(parts[1]);
 
         // 2B 이하 레벨

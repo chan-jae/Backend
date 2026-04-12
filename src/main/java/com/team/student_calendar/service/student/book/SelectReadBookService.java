@@ -4,7 +4,9 @@ import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
+import com.team.student_calendar.dto.BookDTO;
 import com.team.student_calendar.dto.ReadBooksRes;
+import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.repository.StudentBookRepository;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -103,5 +104,28 @@ public class SelectReadBookService {
 
         return studentBookRepository.findByStudentIdAndBookId(studentId, bookId)
                 .orElseThrow(() -> new BaseException(ReadBookErrorCode.READ_BOOK_NOT_FOUND));
+    }
+
+
+    /**
+     * 가장 최근에 읽었었던 책 가져오기
+     */
+    public BookDTO findPreviousBookToRead(Long studentId, BookCategory category) {
+
+        Sort sort = Sort.by(
+                Sort.Order.desc("readAt").nullsLast(),
+                Sort.Order.desc("registeredAt")
+        );
+
+        StudentBookEntity studentBookEntity = studentBookRepository
+                .findTopByStudent_IdAndBook_Category(studentId, category.name(), sort)
+                .orElse(null);
+        if (studentBookEntity == null) {
+            return null;
+        }
+
+        BookEntity book = studentBookEntity.getBook();
+
+        return book.toDto();
     }
 }

@@ -5,6 +5,7 @@ import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -36,4 +37,6 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
                                                      Pageable pageable);
 
     void deleteAllByStudent_Id(Long id);
+
+    Optional<StudentBookEntity> findTopByStudent_IdAndBook_Category(Long studentId, String category, Sort sort);
 }

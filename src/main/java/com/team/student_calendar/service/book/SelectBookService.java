@@ -1,5 +1,6 @@
 package com.team.student_calendar.service.book;
 
+import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.entity.BookEntity;
@@ -17,6 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class SelectBookService {
+
     private final BookRepository bookRepository;
 
     /**
@@ -43,11 +45,9 @@ public class SelectBookService {
     public List<BookEntity> findAllByDifficultyAscAndTitleAsc() {
         Sort sort = Sort.by(
                 Sort.Order.asc("difficulty"),
-                Sort.Order.asc("title")
-        );
+                Sort.Order.asc("title"));
         return bookRepository.findAll(sort);
     }
-
 
     @Transactional(readOnly = true)
     public BookEntity findById(Long id) {
@@ -56,12 +56,24 @@ public class SelectBookService {
                 .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
     }
 
-
     /**
      * 전체 책 개수 가져오기
      */
     @Transactional(readOnly = true)
     public long countAll() {
         return bookRepository.count();
+    }
+
+    /**
+     * 현재 수업에서 읽을 책 가져오기
+     */
+    public BookEntity[] findBookToReadByDifficultyAsc(
+            Long studentId,
+            Byte baseLevel,
+            BookCategory category
+    ) {
+
+        return bookRepository
+                .findFirstUnreadBookAboveCLevel(studentId, baseLevel, category.name());
     }
 }

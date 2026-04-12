@@ -2,7 +2,6 @@ package com.team.student_calendar.repository;
 
 import com.team.student_calendar.entity.BookEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.team.student_calendar.dto.BookSliderRes;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -32,4 +31,23 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
     // 비문학
     Optional<BookEntity> findTop1ByCategoryNotAndLevelAndIdNotInOrderByDifficultyAsc(
             String category, String level, List<Long> readBookIds);
+
+
+
+
+    @Query("""
+            SELECT
+            b FROM BookEntity b
+            LEFT JOIN StudentBookEntity sb ON b.id = sb.book.id
+            AND sb.student.id = :studentId
+            WHERE sb.id IS NULL
+            AND b.cLevel >= :baseLevel
+            AND b.category = :category
+            ORDER BY b.difficulty ASC, b.title ASC
+            LIMIT 2
+            """)
+    BookEntity[] findFirstUnreadBookAboveCLevel(
+            @Param("studentId") Long studentId,
+            @Param("baseLevel") Byte baseLevel,
+            @Param("category") String category);
 }
