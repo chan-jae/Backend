@@ -2,17 +2,13 @@ package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.common.enums.StudentBookState;
 import com.team.student_calendar.common.exception.BaseException;
-import com.team.student_calendar.common.exception.domain.BookErrorCode;
-import com.team.student_calendar.dto.BookReadAtReq;
-import com.team.student_calendar.dto.BookStateReq;
+import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
+import com.team.student_calendar.dto.ReadBookUpdateReq;
 import com.team.student_calendar.entity.StudentBookEntity;
-import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +19,29 @@ public class UpdateStudentBookService {
 
 
     @Transactional
-    public void changeState(Long studentId, Long bookId, BookStateReq req) {
+    public void updateReadBook(Long studentId, Long bookId, ReadBookUpdateReq req) {
+
+        boolean isChanged = false;
+
+        /* 상태 업데이트*/
+        if (req.getState() != null) {
+            changeState(studentId, bookId, req);
+            isChanged = true;
+        }
+
+        /* 읽은 날짜 업데이트*/
+        if (req.getReadAt() != null) {
+            changeReadAt(studentId, bookId, req);
+            isChanged = true;
+        }
+
+        if (!isChanged) {
+            throw new BaseException(ReadBookErrorCode.NO_DATA_TO_UPDATE);
+        }
+    }
+
+
+    private void changeState(Long studentId, Long bookId, ReadBookUpdateReq req) {
 
         StudentBookEntity studentBook = selectReadBookService.findByStudentAndBook(studentId, bookId);
 
@@ -32,8 +50,7 @@ public class UpdateStudentBookService {
     }
 
 
-    @Transactional
-    public void changeReadAt(Long studentId, Long bookId, BookReadAtReq req) {
+    private void changeReadAt(Long studentId, Long bookId, ReadBookUpdateReq req) {
 
         StudentBookEntity studentBook = selectReadBookService.findByStudentAndBook(studentId, bookId);
 

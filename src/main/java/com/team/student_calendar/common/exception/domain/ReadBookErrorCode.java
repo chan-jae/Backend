@@ -11,7 +11,8 @@ public enum ReadBookErrorCode implements ErrorCode {
 
     READ_BOOK_NOT_FOUND("RB001", HttpStatus.NOT_FOUND, "읽은 책을 찾을 수 없습니다."),
     READ_BOOK_INVALID_STATE("RB002", HttpStatus.BAD_REQUEST, "읽은 책이 가질 수 상태가 유효하지 않습니다."),
-    ALREADY_READ_BOOK("RB003", HttpStatus.CONFLICT, "이미 읽은 책이 포함되어 있습니다.");
+    ALREADY_READ_BOOK("RB003", HttpStatus.CONFLICT, "이미 읽은 책이 포함되어 있습니다."),
+    NO_DATA_TO_UPDATE("RB004", HttpStatus.BAD_REQUEST, "업데이트 할 데이터가 없습니다.");
 
 
 
