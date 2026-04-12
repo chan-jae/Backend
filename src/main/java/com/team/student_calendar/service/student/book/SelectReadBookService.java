@@ -117,9 +117,15 @@ public class SelectReadBookService {
                 Sort.Order.desc("registeredAt")
         );
 
-        StudentBookEntity studentBookEntity = studentBookRepository
-                .findTopByStudent_IdAndBook_Category(studentId, category.name(), sort)
-                .orElse(null);
+        StudentBookEntity studentBookEntity = switch (category) {
+            case LITERATURE -> studentBookRepository
+                    .findTopByStudent_IdAndBook_Category(studentId, category.name(), sort)
+                    .orElse(null);
+            case NON_LITERATURE -> studentBookRepository
+                    .findTopByStudent_IdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name(), sort)
+                    .orElse(null);
+            default -> null;
+        };
         if (studentBookEntity == null) {
             return null;
         }

@@ -1,6 +1,5 @@
 package com.team.student_calendar.service.book;
 
-import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.entity.BookEntity;
@@ -65,15 +64,27 @@ public class SelectBookService {
     }
 
     /**
-     * 현재 수업에서 읽을 책 가져오기
+     * 현재 수업에서 읽을 문학 책 가져오기
      */
-    public BookEntity[] findBookToReadByDifficultyAsc(
+    public BookEntity[] findLiteratureBookToRead(
             Long studentId,
-            Byte baseLevel,
-            BookCategory category
+            Byte baseLevel
     ) {
 
         return bookRepository
-                .findFirstUnreadBookAboveCLevel(studentId, baseLevel, category.name());
+                .findFirstUnreadBookAboveCLevelForLiterature(studentId, baseLevel);
+    }
+
+
+    /**
+     * 현재 수업에서 읽을 문학 책 가져오기
+     */
+    public BookEntity[] findNonLiteratureBookToRead(
+            Long studentId,
+            Byte baseLevel
+    ) {
+
+        return bookRepository
+                .findFirstUnreadBookAboveCLevelForNonLiterature(studentId, baseLevel);
     }
 }

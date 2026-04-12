@@ -107,8 +107,14 @@ public class RecommendBookService {
             default -> throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         };
 
-        BookEntity[] books = selectBookService
-                .findBookToReadByDifficultyAsc(student.getId(), baseLevel, category);
+        BookEntity[] books = switch (category) {
+            case LITERATURE -> selectBookService
+                    .findLiteratureBookToRead(student.getId(), baseLevel);
+            case NON_LITERATURE -> selectBookService
+                    .findNonLiteratureBookToRead(student.getId(), baseLevel);
+            default -> null;
+        };
+
         if (books == null || books.length == 0) {
             return new RecBookRes[0];
         }

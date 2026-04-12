@@ -39,4 +39,7 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
     void deleteAllByStudent_Id(Long id);
 
     Optional<StudentBookEntity> findTopByStudent_IdAndBook_Category(Long studentId, String category, Sort sort);
+
+    Optional<StudentBookEntity> findTopByStudent_IdAndBook_CategoryNot(Long studentId, String category, Sort sort);
+
 }
