@@ -3,6 +3,7 @@ package com.team.student_calendar.service.book;
 import com.team.student_calendar.common.enums.StudentBookState;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.dto.BookReadAtReq;
 import com.team.student_calendar.dto.BookStateReq;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.repository.StudentBookRepository;
@@ -28,5 +29,14 @@ public class UpdateStudentBookService {
 
         Byte stateFromString = StudentBookState.getStateFromString(req.getState());
         studentBook.setState(stateFromString);
+    }
+
+
+    @Transactional
+    public void changeReadAt(Long studentId, Long bookId, BookReadAtReq req) {
+
+        StudentBookEntity studentBook = selectReadBookService.findByStudentAndBook(studentId, bookId);
+
+        studentBook.setReadAt(req.getReadAt());
     }
 }

@@ -3,6 +3,7 @@ package com.team.student_calendar.controller.api;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.dto.BookReadAtReq;
 import com.team.student_calendar.dto.BookStateReq;
 import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.dto.ReadBooksSaveReq;
@@ -120,5 +121,19 @@ public class StudentBookApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("상태 변경에 성공하였습니다.", "SUCCESS"));
+    }
+
+    @Operation(summary = "학생이 읽은 책 날짜 지정", description = "학생이 읽은 책의 날짜를 정합니다.")
+    @PatchMapping("/api/students/{studentId}/books/{bookId}")
+    public ResponseEntity<ApiSuccessResponse<Void>> changeBookReadAt(
+            @PathVariable Long studentId,
+            @PathVariable Long bookId,
+            @RequestBody BookReadAtReq req
+    ) {
+
+        updateStudentBookService.changeReadAt(studentId, bookId, req);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("날짜 설정에 성공하였습니다.", "SUCCESS"));
     }
 }
