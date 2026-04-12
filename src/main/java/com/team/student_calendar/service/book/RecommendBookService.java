@@ -44,16 +44,37 @@ public class RecommendBookService {
         return new BookDTO[][] {
                 {
                         getPreviousReadBook(studentEntity, BookCategory.LITERATURE),
-                        toReadLiterature[0],
-                        toReadLiterature[1]
+                        getSafe(toReadLiterature, 0),
+                        getSafe(toReadLiterature, 1),
                 },
                 {
                         getPreviousReadBook(studentEntity, BookCategory.NON_LITERATURE),
-                        toReadNonLiterature[0],
-                        toReadNonLiterature[1]
+                        getSafe(toReadNonLiterature, 0),
+                        getSafe(toReadNonLiterature, 1),
                 }
         };
     }
+
+
+    /**
+     * 인덱스 없을수도 있는 것을 안전하게 가져오기
+     * @param books
+     * @param index
+     * @return BookDTO
+     */
+    private BookDTO getSafe(BookDTO[] books, int index) {
+
+        if (books == null || books.length == 0) {
+            return null;
+        }
+
+        try {
+            return books[index];
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 
     /**
      * 마지막 수업에 읽었던 책
