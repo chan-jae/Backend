@@ -37,6 +37,10 @@ public class RecommendBookService {
 
         StudentEntity studentEntity = selectStudentService.findById(studentId);
 
+        if (studentEntity.getFirstLevel() == null) {
+            return null;
+        }
+
         RecBookRes[] toReadLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.LITERATURE);
         RecBookRes[] toReadNonLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.NON_LITERATURE);
 

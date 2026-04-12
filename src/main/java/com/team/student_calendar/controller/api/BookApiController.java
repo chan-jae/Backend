@@ -82,6 +82,11 @@ public class BookApiController {
 
         RecBookRes[][] recommended = recommendBookService.recommendBookToRead(studentId);
 
+        if (recommended == null) {
+            return ResponseEntity.ok(
+                    ApiSuccessResponse.ok(null, "시작 레벨을 설정해주세요.", "FAIL"));
+        }
+
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(recommended, "추천 도서 조회에 성공했습니다.", "SUCCESS"));
     }
