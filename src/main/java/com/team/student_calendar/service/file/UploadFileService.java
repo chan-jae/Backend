@@ -6,7 +6,6 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.exception.domain.FileErrorCode;
 import com.team.student_calendar.config.S3Properties;
-import com.team.student_calendar.dto.FileUploadRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.FileEntity;
 import com.team.student_calendar.repository.FileRepository;

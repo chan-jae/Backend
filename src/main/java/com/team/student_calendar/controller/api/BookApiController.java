@@ -4,7 +4,7 @@ import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
-import com.team.student_calendar.dto.BookDTO;
+import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.InsertBookService;
@@ -76,11 +76,11 @@ public class BookApiController {
      */
     @Operation(summary = "도서 추천 조회", description = "문학, 비문학 각객 이전에 읽은 책, 현재 수업에 읽어야 하는 책, 다음 수업에 읽어야 하는 책을 가져온다.")
     @GetMapping("/api/students/{studentId}/books/recommend")
-    public ResponseEntity<ApiSuccessResponse<BookDTO[][]>> getSliderBooks(
+    public ResponseEntity<ApiSuccessResponse<RecBookRes[][]>> getSliderBooks(
             @PathVariable("studentId") Long studentId
     ) {
 
-        BookDTO[][] recommended = recommendBookService.recommendBookToRead(studentId);
+        RecBookRes[][] recommended = recommendBookService.recommendBookToRead(studentId);
 
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(recommended, "추천 도서 조회에 성공했습니다.", "SUCCESS"));

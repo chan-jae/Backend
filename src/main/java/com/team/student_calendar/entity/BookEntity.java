@@ -1,13 +1,12 @@
 package com.team.student_calendar.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.team.student_calendar.common.enums.BookType;
-import com.team.student_calendar.dto.BookDTO;
+import com.team.student_calendar.dto.RecBookRes;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -67,9 +66,9 @@ public class BookEntity {
 
 
 
-    public BookDTO toDto() {
+    public RecBookRes toRecBook(Byte state, LocalDate readAt) {
 
-        BookDTO dto = new BookDTO();
+        RecBookRes dto = new RecBookRes();
 
         dto.setId(this.id);
         dto.setTitle(this.title);
@@ -83,6 +82,9 @@ public class BookEntity {
         dto.setImageUrl(this.imageUrl);
         dto.setType(this.type);
         dto.setUpdatedAt(this.updatedAt);
+
+        dto.setState(state);
+        dto.setReadAt(readAt);
 
         return dto;
     }

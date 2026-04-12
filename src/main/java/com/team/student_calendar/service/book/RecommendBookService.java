@@ -6,10 +6,9 @@ import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.StudentErrorCode;
-import com.team.student_calendar.dto.BookDTO;
+import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentEntity;
-import com.team.student_calendar.repository.StudentBookRepository;
 import com.team.student_calendar.service.student.SelectStudentService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +33,14 @@ public class RecommendBookService {
      * 책 추천 기능 (이전, 현재, 다음)
      */
     @Transactional(readOnly = true)
-    public BookDTO[][] recommendBookToRead(Long studentId) {
+    public RecBookRes[][] recommendBookToRead(Long studentId) {
 
         StudentEntity studentEntity = selectStudentService.findById(studentId);
 
-        BookDTO[] toReadLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.LITERATURE);
-        BookDTO[] toReadNonLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.NON_LITERATURE);
+        RecBookRes[] toReadLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.LITERATURE);
+        RecBookRes[] toReadNonLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.NON_LITERATURE);
 
-        return new BookDTO[][] {
+        return new RecBookRes[][] {
                 {
                         getPreviousReadBook(studentEntity, BookCategory.LITERATURE),
                         getSafe(toReadLiterature, 0),
@@ -62,7 +61,7 @@ public class RecommendBookService {
      * @param index
      * @return BookDTO
      */
-    private BookDTO getSafe(BookDTO[] books, int index) {
+    private RecBookRes getSafe(RecBookRes[] books, int index) {
 
         if (books == null || books.length == 0) {
             return null;
@@ -79,7 +78,7 @@ public class RecommendBookService {
     /**
      * 마지막 수업에 읽었던 책
      */
-    private BookDTO getPreviousReadBook(StudentEntity student, BookCategory category) {
+    private RecBookRes getPreviousReadBook(StudentEntity student, BookCategory category) {
 
         return selectReadBookService.findPreviousBookToRead(student.getId(), category);
     }
@@ -98,7 +97,7 @@ public class RecommendBookService {
      * </p>
      *
      */
-    private BookDTO[] getCurrentAndNextReadBook(StudentEntity student, BookCategory category) {
+    private RecBookRes[] getCurrentAndNextReadBook(StudentEntity student, BookCategory category) {
 
         byte baseLevel = switch (category) {
             case LITERATURE -> BookLevelMapping
@@ -111,12 +110,12 @@ public class RecommendBookService {
         BookEntity[] books = selectBookService
                 .findBookToReadByDifficultyAsc(student.getId(), baseLevel, category);
         if (books == null || books.length == 0) {
-            return new BookDTO[0];
+            return new RecBookRes[0];
         }
 
         return Arrays.stream(books)
-                .map(BookEntity::toDto)
-                .toArray(BookDTO[]::new);
+                .map(b -> b.toRecBook(null, null))
+                .toArray(RecBookRes[]::new);
     }
 
 

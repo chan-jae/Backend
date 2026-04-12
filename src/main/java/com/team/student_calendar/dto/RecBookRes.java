@@ -3,10 +3,11 @@ package com.team.student_calendar.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
-public class BookDTO {
+public class RecBookRes {
 
     private Long id;
     private String title;
@@ -20,4 +21,7 @@ public class BookDTO {
     private String imageUrl;
     private Byte type;
     private LocalDateTime updatedAt;
+
+    private Byte state;
+    private LocalDate readAt;
 }

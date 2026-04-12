@@ -4,7 +4,7 @@ import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
-import com.team.student_calendar.dto.BookDTO;
+import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentBookEntity;
@@ -110,7 +110,7 @@ public class SelectReadBookService {
     /**
      * 가장 최근에 읽었었던 책 가져오기
      */
-    public BookDTO findPreviousBookToRead(Long studentId, BookCategory category) {
+    public RecBookRes findPreviousBookToRead(Long studentId, BookCategory category) {
 
         Sort sort = Sort.by(
                 Sort.Order.desc("readAt").nullsLast(),
@@ -126,6 +126,6 @@ public class SelectReadBookService {
 
         BookEntity book = studentBookEntity.getBook();
 
-        return book.toDto();
+        return book.toRecBook(studentBookEntity.getState(), studentBookEntity.getReadAt());
     }
 }
