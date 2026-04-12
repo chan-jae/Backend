@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class TaskEntity {
     @Column(name = "due_at")
     private LocalDateTime dueAt;
 
-    @CreationTimestamp
+    @CreationTimestamp(source = SourceType.DB )
     @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt;
 

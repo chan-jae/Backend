@@ -4,10 +4,7 @@ package com.team.student_calendar.entity;
 import com.team.student_calendar.dto.ReadBooksRes;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,7 +48,7 @@ public class StudentBookEntity {
     @Column(name = "read_at")
     private LocalDate readAt;
 
-    @CreationTimestamp
+    @CreationTimestamp(source = SourceType.DB)
     @Column(name = "registered_at", nullable = false)
     private LocalDateTime registeredAt;
 
