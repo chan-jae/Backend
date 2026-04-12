@@ -3,6 +3,7 @@ package com.team.student_calendar.service.student.book;
 import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
 import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
@@ -95,5 +96,12 @@ public class SelectReadBookService {
                 .map(StudentBookEntity::toReadBooksRes);
 
         return ReadBooksRes.of(studentId, books);
+    }
+
+
+    public StudentBookEntity findByStudentAndBook(Long studentId, Long bookId) {
+
+        return studentBookRepository.findByStudentIdAndBookId(studentId, bookId)
+                .orElseThrow(() -> new BaseException(ReadBookErrorCode.READ_BOOK_NOT_FOUND));
     }
 }

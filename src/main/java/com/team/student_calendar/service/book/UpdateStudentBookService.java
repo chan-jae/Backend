@@ -1,9 +1,12 @@
 package com.team.student_calendar.service.book;
 
+import com.team.student_calendar.common.enums.StudentBookState;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.dto.BookStateReq;
 import com.team.student_calendar.entity.StudentBookEntity;
 import com.team.student_calendar.repository.StudentBookRepository;
+import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,15 +16,17 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 public class UpdateStudentBookService {
-    private final StudentBookRepository studentBookRepository;
+
+    private final SelectReadBookService selectReadBookService;
+
+
 
     @Transactional
-    public void completeBook(Long studentId, Long bookId) {
-        StudentBookEntity studentBook = studentBookRepository.findByStudentIdAndBookId(studentId, bookId)
-                .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
+    public void changeState(Long studentId, Long bookId, BookStateReq req) {
 
-        studentBook.setState((byte) 1);
+        StudentBookEntity studentBook = selectReadBookService.findByStudentAndBook(studentId, bookId);
 
-        studentBook.setReadAt(LocalDate.now());
+        Byte stateFromString = StudentBookState.getStateFromString(req.getState());
+        studentBook.setState(stateFromString);
     }
 }

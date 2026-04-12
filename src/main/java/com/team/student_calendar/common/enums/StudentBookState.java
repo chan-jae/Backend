@@ -10,13 +10,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum StudentBookState {
 
-    WAITING(0),
-    READING(1),
-    WRITING(2),
-    DONE(3);
+    WAITING((byte) 0),
+    READING((byte) 1),
+    WRITING((byte) 2),
+    DONE((byte) 3);
 
 
-    private final int state;
+    private final byte state;
 
 
 
@@ -26,7 +26,7 @@ public enum StudentBookState {
         if (stateStr == null) return null;
 
         try {
-            return (byte) (StudentBookState.valueOf(stateStr.toUpperCase()).getState());
+            return StudentBookState.valueOf(stateStr.toUpperCase()).getState();
         } catch (Exception e) {
             throw new BaseException(ReadBookErrorCode.READ_BOOK_INVALID_STATE);
         }
