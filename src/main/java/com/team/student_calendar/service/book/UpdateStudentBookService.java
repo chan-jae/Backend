@@ -21,23 +21,13 @@ public class UpdateStudentBookService {
     @Transactional
     public void updateReadBook(Long studentId, Long bookId, ReadBookUpdateReq req) {
 
-        boolean isChanged = false;
-
         /* 상태 업데이트*/
         if (req.getState() != null) {
             changeState(studentId, bookId, req);
-            isChanged = true;
         }
 
         /* 읽은 날짜 업데이트*/
-        if (req.getReadAt() != null) {
-            changeReadAt(studentId, bookId, req);
-            isChanged = true;
-        }
-
-        if (!isChanged) {
-            throw new BaseException(ReadBookErrorCode.NO_DATA_TO_UPDATE);
-        }
+        changeReadAt(studentId, bookId, req);
     }
 
 

@@ -10,10 +10,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum StudentBookState {
 
-    WAITING((byte) 0),
-    READING((byte) 1),
-    WRITING((byte) 2),
-    DONE((byte) 3);
+    READING((byte) 0),
+    WRITING((byte) 1),
+    DONE((byte) 2);
 
 
     private final byte state;
