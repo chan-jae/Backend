@@ -57,4 +57,4 @@ jobs:
             [ -f "$HOME/.profile" ] && . "$HOME/.profile"
             set -e
             command -v java >/dev/null 2>&1 || { echo "java not in PATH"; exit 1; }
-            nohup java -jar sc-springboot-app.jar >> sc-app.log 2>&1 </dev/null &
+            nohup java -jar sc-springboot-app.jar &
