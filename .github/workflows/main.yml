@@ -49,8 +49,8 @@ jobs:
             set -e
             cd /home/ubuntu/student-calendar
             [ -f sc-springboot-app.jar ] || { echo "jar missing"; exit 1; }
-            if lsof -i:8081 -t >/dev/null 2>&1; then
-              kill -9 $(lsof -i:8081 -t)
+            if lsof -i:8080 -t >/dev/null 2>&1; then
+              kill -9 $(lsof -i:8080 -t)
             fi
             sleep 1
             set +e
