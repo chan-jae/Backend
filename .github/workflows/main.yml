@@ -46,6 +46,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            pkill -f sc-springboot-app.jar || true
             cd /home/ubuntu/student-calendar
-            nohup java -jar /home/ubuntu/student-calendar/sc-springboot-app.jar > sc-app.log 2>&1 &
+            pkill -f sc-springboot-app.jar || true
+            nohup java -jar sc-springboot-app.jar > sc-app.log 2>&1 &
