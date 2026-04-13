@@ -24,6 +24,9 @@ jobs:
       - name: 빌드 (테스트 제외)
         run: ./gradlew build -x test
 
+      - name: 빌드 결과 확인
+        run: ls -R build
+        
       - name: jar 이름 고정
         run: mv build/libs/*.jar sc-springboot-app.jar
 
