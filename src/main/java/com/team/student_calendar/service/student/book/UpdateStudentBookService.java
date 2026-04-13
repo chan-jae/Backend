@@ -1,15 +1,14 @@
-package com.team.student_calendar.service.book;
+package com.team.student_calendar.service.student.book;
 
 import com.team.student_calendar.common.enums.StudentBookState;
-import com.team.student_calendar.common.exception.BaseException;
-import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
 import com.team.student_calendar.dto.ReadBookUpdateReq;
 import com.team.student_calendar.entity.StudentBookEntity;
-import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UpdateStudentBookService {
@@ -21,6 +20,8 @@ public class UpdateStudentBookService {
     @Transactional
     public void updateReadBook(Long studentId, Long bookId, ReadBookUpdateReq req) {
 
+        log.info("try to update read book");
+
         /* 상태 업데이트*/
         if (req.getState() != null) {
             changeState(studentId, bookId, req);
@@ -28,6 +29,8 @@ public class UpdateStudentBookService {
 
         /* 읽은 날짜 업데이트*/
         changeReadAt(studentId, bookId, req);
+
+        log.info("complete update read book");
     }
 
 

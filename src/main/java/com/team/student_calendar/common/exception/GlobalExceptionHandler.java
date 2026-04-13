@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleException(Exception e) {
-        log.error("[GlobalExceptionHandler.handleException] Unexpected error occurred", e);
+        log.warn("[GlobalExceptionHandler.handleException] Unexpected error occurred", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiErrorResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR));
     }
