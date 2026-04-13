@@ -45,7 +45,17 @@ jobs:
           host: ${{ secrets.HOST_IP }}
           username: ubuntu
           key: ${{ secrets.PRIVATE_KEY }}
+          # 비대화형 SSH는 .profile / .bashrc를 안 읽는 경우가 많음 → java, 환경변수 누락
           script: |
+            set -e
             cd /home/ubuntu/student-calendar
+            [ -f sc-springboot-app.jar ] || { echo "jar missing"; exit 1; }
             pkill -f sc-springboot-app.jar || true
-            nohup java -jar sc-springboot-app.jar > sc-app.log 2>&1 &
+            sleep 1
+            set +e
+            [ -f "$HOME/.profile" ] && . "$HOME/.profile"
+            set -e
+            command -v java >/dev/null 2>&1 || { echo "java not in PATH (SSH non-interactive). Use full path or install default-jre."; exit 1; }
+            nohup java -jar sc-springboot-app.jar >> sc-app.log 2>&1 </dev/null &
+            sleep 3
+            pgrep -af sc-springboot-app.jar || { echo "process did not start"; tail -100 sc-app.log 2>/dev/null || true; exit 1; }
