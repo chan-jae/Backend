@@ -25,7 +25,6 @@ public class ApiTokenInterceptor implements HandlerInterceptor {
 
         if (xApiToken == null || !xApiToken.equals(apiToken)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            log.warn("invalid api token: {}", apiToken);
             return false;
         }
         return true;
