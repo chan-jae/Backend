@@ -2,7 +2,6 @@ package com.team.student_calendar.config;
 
 import com.team.student_calendar.common.filter.ApiLoggingFilter;
 import com.team.student_calendar.common.filter.MdcLoggingFilter;
-import com.team.student_calendar.security.interceptor.ActuatorTokenInterceptor;
 import com.team.student_calendar.security.interceptor.ApiTokenInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -27,10 +26,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // addInterceptors만으로는 적용되지 않는 경우가 많음 → MappedInterceptor 빈 필요
     }
 
-    @Bean
-    public MappedInterceptor actuatorTokenMappedInterceptor(ActuatorTokenInterceptor actuatorTokenInterceptor) {
-        return new MappedInterceptor(new String[] { "/actuator/**" }, actuatorTokenInterceptor);
-    }
+//    @Bean
+//    public MappedInterceptor actuatorTokenMappedInterceptor(ActuatorTokenInterceptor actuatorTokenInterceptor) {
+//        return new MappedInterceptor(new String[] { "/actuator/**" }, actuatorTokenInterceptor);
+//    }
 
     @Bean
     public FilterRegistrationBean<MdcLoggingFilter> mdcLoggingFilter() {
