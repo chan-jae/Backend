@@ -111,7 +111,7 @@ public class RecommendBookService {
             default -> throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         };
 
-        BookEntity[] books = switch (category) {
+        RecBookRes[] books = switch (category) {
             case LITERATURE -> selectBookService
                     .findLiteratureBookToRead(student.getId(), baseLevel);
             case NON_LITERATURE -> selectBookService
@@ -123,9 +123,7 @@ public class RecommendBookService {
             return new RecBookRes[0];
         }
 
-        return Arrays.stream(books)
-                .map(b -> b.toRecBook(null, null))
-                .toArray(RecBookRes[]::new);
+        return books;
     }
 
 

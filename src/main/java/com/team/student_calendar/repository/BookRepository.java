@@ -1,5 +1,6 @@
 package com.team.student_calendar.repository;
 
+import com.team.student_calendar.dto.RecBookMapping;
 import com.team.student_calendar.entity.BookEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -37,32 +38,32 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
 
     @Query("""
             SELECT
-            b FROM BookEntity b
+            b as book, sb.state as state, sb.readAt as readAt FROM BookEntity b
             LEFT JOIN StudentBookEntity sb ON b.id = sb.book.id
             AND sb.student.id = :studentId
-            WHERE sb.id IS NULL
+            WHERE (sb.state IS NULL OR sb.state != 2)
             AND b.cLevel >= :baseLevel
             AND b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
             ORDER BY b.difficulty ASC, b.title ASC
             LIMIT 2
             """)
-    BookEntity[] findFirstUnreadBookAboveCLevelForLiterature(
+    List<RecBookMapping> findFirstUnreadBookAboveCLevelForLiterature(
             @Param("studentId") Long studentId,
             @Param("baseLevel") Byte baseLevel
     );
 
     @Query("""
             SELECT
-            b FROM BookEntity b
+            b as book, sb.state as state, sb.readAt as readAt FROM BookEntity b
             LEFT JOIN StudentBookEntity sb ON b.id = sb.book.id
             AND sb.student.id = :studentId
-            WHERE sb.id IS NULL
+            WHERE (sb.state IS NULL OR sb.state != 2)
             AND b.cLevel >= :baseLevel
             AND b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
             ORDER BY b.difficulty ASC, b.title ASC
             LIMIT 2
             """)
-    BookEntity[] findFirstUnreadBookAboveCLevelForNonLiterature(
+    List<RecBookMapping> findFirstUnreadBookAboveCLevelForNonLiterature(
             @Param("studentId") Long studentId,
             @Param("baseLevel") Byte baseLevel
     );

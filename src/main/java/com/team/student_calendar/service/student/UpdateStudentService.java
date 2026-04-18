@@ -17,7 +17,6 @@ import static com.team.student_calendar.common.constant.LevelRegexPattern.*;
 @Service
 public class UpdateStudentService {
 
-    private final StudentRepository studentRepository;
     private final SelectStudentService selectStudentService;
 
 
@@ -31,8 +30,10 @@ public class UpdateStudentService {
 
         /* 레벨이 유효한지 체크*/
         String firstLevel = req.getFirstLevel();
-        if (!LEVEL.matches(firstLevel)) {
-            throw new BaseException(StudentErrorCode.INVALID_FIRST_LEVEL);
+        if (firstLevel != null) {
+            if (!LEVEL.matches(firstLevel)) {
+                throw new BaseException(StudentErrorCode.INVALID_FIRST_LEVEL);
+            }
         }
 
         /* 레벨 변경*/

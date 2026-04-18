@@ -2,9 +2,13 @@ package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.exception.domain.CommonErrorCode;
+import com.team.student_calendar.dto.RecBookMapping;
+import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -12,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -66,25 +72,50 @@ public class SelectBookService {
     /**
      * 현재 수업에서 읽을 문학 책 가져오기
      */
-    public BookEntity[] findLiteratureBookToRead(
+    public RecBookRes[] findLiteratureBookToRead(
             Long studentId,
             Byte baseLevel
     ) {
 
-        return bookRepository
+        List<RecBookMapping> bookMapping = bookRepository
                 .findFirstUnreadBookAboveCLevelForLiterature(studentId, baseLevel);
+
+        return mappingToDto(bookMapping);
     }
 
 
     /**
      * 현재 수업에서 읽을 문학 책 가져오기
      */
-    public BookEntity[] findNonLiteratureBookToRead(
+    public RecBookRes[] findNonLiteratureBookToRead(
             Long studentId,
             Byte baseLevel
     ) {
 
-        return bookRepository
+        List<RecBookMapping> bookMapping = bookRepository
                 .findFirstUnreadBookAboveCLevelForNonLiterature(studentId, baseLevel);
+
+        return mappingToDto(bookMapping);
+    }
+
+
+
+
+    private RecBookRes[] mappingToDto(List<RecBookMapping> bookMapping) {
+
+        return bookMapping.stream().map(m -> {
+           RecBookRes res = new RecBookRes();
+           BookEntity book = m.getBook();
+
+           try {
+               BeanUtils.copyProperties(book, res);
+               res.setState(m.getState());
+               res.setReadAt(m.getReadAt());
+           } catch (Exception e) {
+                throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+           }
+
+           return res;
+        }).toArray(RecBookRes[]::new);
     }
 }
