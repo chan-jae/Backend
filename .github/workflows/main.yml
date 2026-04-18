@@ -17,6 +17,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: gradlew 실행 권한 부여
         run: chmod +x gradlew
