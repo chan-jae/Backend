@@ -18,7 +18,15 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "book", schema = "student_calendar")
+@Table(
+        name = "book",
+        schema = "student_calendar",
+        indexes = {
+        @Index(
+                name = "idx_book_updated_title",
+                columnList = "difficulty ASC, title ASC"
+        )
+})
 public class BookEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
