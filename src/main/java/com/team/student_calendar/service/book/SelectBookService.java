@@ -16,9 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +76,7 @@ public class SelectBookService {
     ) {
 
         List<RecBookMapping> bookMapping = bookRepository
-                .findFirstUnreadBookAboveCLevelForLiterature(studentId, baseLevel);
+                .findFirstUnreadBookAboveCLevelForLiterature(studentId, baseLevel, recBookOrderOption());
 
         return mappingToDto(bookMapping);
     }
@@ -93,7 +91,7 @@ public class SelectBookService {
     ) {
 
         List<RecBookMapping> bookMapping = bookRepository
-                .findFirstUnreadBookAboveCLevelForNonLiterature(studentId, baseLevel);
+                .findFirstUnreadBookAboveCLevelForNonLiterature(studentId, baseLevel, recBookOrderOption());
 
         return mappingToDto(bookMapping);
     }
@@ -117,5 +115,17 @@ public class SelectBookService {
 
            return res;
         }).toArray(RecBookRes[]::new);
+    }
+
+
+    private Pageable recBookOrderOption() {
+
+        Sort sort = Sort.by(
+                Sort.Order.asc("sb.state").nullsLast(),
+                Sort.Order.asc("b.difficulty"),
+                Sort.Order.asc("b.title")
+        );
+
+        return PageRequest.of(0, 2, sort);
     }
 }

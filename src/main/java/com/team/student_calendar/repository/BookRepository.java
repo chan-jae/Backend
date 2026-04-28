@@ -3,6 +3,7 @@ package com.team.student_calendar.repository;
 import com.team.student_calendar.dto.RecBookMapping;
 import com.team.student_calendar.entity.BookEntity;
 import org.jspecify.annotations.NullMarked;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -52,12 +53,11 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
             WHERE (sb.state IS NULL OR sb.state != 2)
             AND b.cLevel >= :baseLevel
             AND b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
-            ORDER BY sb.state NULLS LAST, b.difficulty ASC, b.title ASC
-            LIMIT 2
             """)
     List<RecBookMapping> findFirstUnreadBookAboveCLevelForLiterature(
             @Param("studentId") Long studentId,
-            @Param("baseLevel") Byte baseLevel
+            @Param("baseLevel") Byte baseLevel,
+            Pageable pageable
     );
 
     @Query("""
@@ -68,11 +68,10 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
             WHERE (sb.state IS NULL OR sb.state != 2)
             AND b.cLevel >= :baseLevel
             AND b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
-            ORDER BY sb.state NULLS LAST, b.difficulty ASC, b.title ASC
-            LIMIT 2
             """)
     List<RecBookMapping> findFirstUnreadBookAboveCLevelForNonLiterature(
             @Param("studentId") Long studentId,
-            @Param("baseLevel") Byte baseLevel
+            @Param("baseLevel") Byte baseLevel,
+            Pageable pageable
     );
 }
