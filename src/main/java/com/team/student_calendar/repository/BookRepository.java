@@ -52,7 +52,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
             WHERE (sb.state IS NULL OR sb.state != 2)
             AND b.cLevel >= :baseLevel
             AND b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
-            ORDER BY b.difficulty ASC, b.title ASC
+            ORDER BY sb.state NULLS LAST, b.difficulty ASC, b.title ASC
             LIMIT 2
             """)
     List<RecBookMapping> findFirstUnreadBookAboveCLevelForLiterature(
@@ -68,7 +68,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
             WHERE (sb.state IS NULL OR sb.state != 2)
             AND b.cLevel >= :baseLevel
             AND b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
-            ORDER BY b.difficulty ASC, b.title ASC
+            ORDER BY sb.state NULLS LAST, b.difficulty ASC, b.title ASC
             LIMIT 2
             """)
     List<RecBookMapping> findFirstUnreadBookAboveCLevelForNonLiterature(
