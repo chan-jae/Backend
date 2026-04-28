@@ -62,6 +62,7 @@ public class SelectReadBookService {
         /* 기본 정렬 지정*/
         if (pageable.getSort().isUnsorted()) {
             Sort defaultSort = Sort.by(
+                    Sort.Order.asc("state"),
                     Sort.Order.desc("readAt").nullsLast(),
                     Sort.Order.desc("registeredAt")
             );
