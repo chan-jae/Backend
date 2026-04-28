@@ -1,6 +1,9 @@
 package com.team.student_calendar.entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.team.student_calendar.dto.RecBookRes;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,9 +36,10 @@ public class BookEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "book")
-    private List<StudentBookEntity> studentBooks;
+    @OneToOne(mappedBy = "book")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
+    private FileEntity file;
 
     @Column(name = "title", nullable = false, length = 50)
     private String title;
