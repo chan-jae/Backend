@@ -26,7 +26,7 @@ import java.util.List;
         schema = "student_calendar",
         indexes = {
         @Index(
-                name = "idx_book_updated_title",
+                name = "idx_book_difficulty_title",
                 columnList = "difficulty ASC, title ASC"
         )
 })
