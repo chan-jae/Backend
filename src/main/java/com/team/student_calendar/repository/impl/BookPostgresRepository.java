@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Profile("postgres")
@@ -36,12 +37,7 @@ public class BookPostgresRepository implements BookJdbcRepository {
                 updated_at = now()
             """;
 
-    // registered_at >= batchTime 이면 이번 배치에서 새로 INSERT 된 행
-    private static final String COUNT_INSERTED_SQL = """
-            SELECT COUNT(*)
-            FROM student_calendar.book
-            WHERE updated_at >= ?
-            """;
+
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -56,6 +52,9 @@ public class BookPostgresRepository implements BookJdbcRepository {
 
         // 배치 시작 직전 DB 서버 시각 확보 (JVM 시각 대신 DB 시각 사용 — 시차 오차 방지)
         LocalDateTime batchTime = jdbcTemplate.queryForObject("SELECT now()", LocalDateTime.class);
+
+        long baseSize = Optional.ofNullable(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM student_calendar.book", Long.class))
+                        .orElse(0L);
 
         log.debug("batchTime: {}", batchTime);
 
@@ -86,14 +85,12 @@ public class BookPostgresRepository implements BookJdbcRepository {
             });
         }
 
-        // 배치 후 SELECT — registered_at 기준으로 삽입 건수 산출
-        Long inserted = jdbcTemplate.queryForObject(COUNT_INSERTED_SQL, Long.class, batchTime);
-        if (inserted == null) {
-            throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR);
-        }
+        long afterSize = Optional.ofNullable(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM student_calendar.book", Long.class))
+                .orElse(0L);
 
+        long inserted = afterSize - baseSize;
         long updated = 0;
-        long skipped = size - inserted;
+        long skipped = baseSize;
 
         log.debug("book upsert result — inserted: {}, updated: {}, skipped: {}",
                 inserted, updated, skipped);
