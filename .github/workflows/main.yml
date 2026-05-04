@@ -62,4 +62,4 @@ jobs:
             set -e
             command -v java >/dev/null 2>&1 || { echo "java not in PATH"; exit 1; }
             # SSH에 stdout/stderr 묶이면 Actions가 대기 → 출력은 버림
-            nohup java -jar -Xms700m -Xmx700m -Dspring.profiles.active=prod -Duser.timezone=Asia/Seoul sc-springboot-app.jar >/dev/null 2>&1 &
+            nohup java -jar -Xms600m -Xmx600m -Dspring.profiles.active=prod -Duser.timezone=Asia/Seoul sc-springboot-app.jar >/dev/null 2>&1 &
