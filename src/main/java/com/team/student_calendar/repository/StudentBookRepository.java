@@ -30,11 +30,11 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
 
     long deleteByStudentAndBook(StudentEntity student, BookEntity book);
 
-    List<StudentBookEntity> findAllByStudentId(Long studentId);
-
-    Slice<StudentBookEntity> findByStudentIdAndState(Long studentId,
-                                                     Byte state,
-                                                     Pageable pageable);
+//    List<StudentBookEntity> findAllByStudentId(Long studentId);
+//
+//    Slice<StudentBookEntity> findByStudentIdAndState(Long studentId,
+//                                                     Byte state,
+//                                                     Pageable pageable);
 
     void deleteAllByStudent_Id(Long id);
 

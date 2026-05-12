@@ -66,7 +66,7 @@ public class StudentBookEntity {
         resBook.setBookNo(book.getBookNo());
         resBook.setImageUrl(book.getImageUrl());
         resBook.setType(book.getType());
-        resBook.setState(state);
+        resBook.setState(this.state);
         resBook.setReadAt(this.readAt);
 
         return resBook;

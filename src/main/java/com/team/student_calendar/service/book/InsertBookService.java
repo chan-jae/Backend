@@ -18,11 +18,9 @@ public class InsertBookService {
     private final BookJdbcRepository bookJdbcRepository;
 
     /**
-     * 책 list 저장.
-     * registered_at / updated_at 기반 SELECT 로 삽입/갱신/스킵 건수를 정확히 반환.
-     *
+     * 책 list 저장
      * @param bookList 책 list
-     * @return 삽입·갱신·스킵 건수
+     * @return 삽입,갱신,스킵 건수
      */
     @Transactional
     public UpsertResult saveBookList(List<BookCreateReq> bookList) {

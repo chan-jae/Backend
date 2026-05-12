@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @Slf4j
 @Profile("postgres")
-@Repository("bookPostgresRepository")
+@Repository
 @RequiredArgsConstructor
 public class BookPostgresRepository implements BookJdbcRepository {
 

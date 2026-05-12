@@ -22,26 +22,28 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         @NullMarked
         List<BookEntity> findAll(Sort sort);
 
-        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
+//        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
 
-        List<BookEntity> findAllByIdIn(List<Long> idList);
+//        List<BookEntity> findAllByIdIn(List<Long> idList);
 
-        long countAllByIdIn(List<Long> idList);
+//        long countAllByIdIn(List<Long> idList);
 
-        // 검색
-        @Query("SELECT b FROM BookEntity b WHERE REPLACE(b.title, ' ', '') LIKE %:keyword% " +
-                        "OR REPLACE(b.author, ' ', '') LIKE %:keyword% " +
-                        "OR REPLACE(b.publisher, ' ', '') LIKE %:keyword%")
-        List<BookEntity> searchBooksByKeyword(@Param("keyword") String keyword);
+//        // 검색
+//        @Query("SELECT b FROM BookEntity b WHERE REPLACE(b.title, ' ', '') LIKE %:keyword% " +
+//                        "OR REPLACE(b.author, ' ', '') LIKE %:keyword% " +
+//                        "OR REPLACE(b.publisher, ' ', '') LIKE %:keyword%")
+//        List<BookEntity> searchBooksByKeyword(@Param("keyword") String keyword);
 
-        // 문학, 안 읽은 책 중 난이도 최하 1권
-        Optional<BookEntity> findTop1ByCategoryAndLevelAndIdNotInOrderByDifficultyAsc(
-                        String category, String level, List<Long> readBookIds);
+//        // 문학, 안 읽은 책 중 난이도 최하 1권
+//        Optional<BookEntity> findTop1ByCategoryAndLevelAndIdNotInOrderByDifficultyAsc(
+//                        String category, String level, List<Long> readBookIds);
+//
+//        // 비문학
+//        Optional<BookEntity> findTop1ByCategoryNotAndLevelAndIdNotInOrderByDifficultyAsc(
+//                        String category, String level, List<Long> readBookIds);
 
-        // 비문학
-        Optional<BookEntity> findTop1ByCategoryNotAndLevelAndIdNotInOrderByDifficultyAsc(
-                        String category, String level, List<Long> readBookIds);
 
+        // 읽어야 하는 문학 옵션에 따라 가져오기
         @Query("""
                         SELECT
                         b as book, sb.state as state, sb.readAt as readAt FROM BookEntity b
@@ -50,7 +52,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         WHERE b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
-                            OR\s
+                            OR
                             (sb.state != 2)
                         )
         """)
@@ -60,6 +62,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         Pageable pageable
         );
 
+        // 읽어야 하는 비문학 옵션에 따라 가져오기
         @Query("""
                         SELECT
                         b as book, sb.state as state, sb.readAt as readAt FROM BookEntity b
@@ -68,7 +71,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         WHERE b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
-                            OR\s
+                            OR
                             (sb.state != 2)
                         )
         """)

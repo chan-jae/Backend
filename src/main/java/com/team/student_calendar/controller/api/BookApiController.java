@@ -42,13 +42,9 @@ public class BookApiController {
 
 
 
-    /**
-     * 책 여러개 생성
-     *
-     * @param bookCreateReqList 책 정보 List
-     */
+
     @Validated
-    @Operation(summary = "여러책 삽입", description = "List 타입 책 삽입")
+    @Operation(summary = "책 일괄 등록", description = "List 타입 책 삽입")
     @PostMapping("/api/books")
     public ResponseEntity<ApiSuccessResponse<UpsertResult>> createBook(
             @RequestBody List<@Valid BookCreateReq> bookCreateReqList,
@@ -62,19 +58,19 @@ public class BookApiController {
 
         // 책 List 저장
         UpsertResult upsertResult = insertBookService.saveBookList(bookCreateReqList);
+
         // 삽입된 데이터가 없으면 200 응답
         if (upsertResult.insertedCount() == 0) {
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiSuccessResponse.created(upsertResult, "책 리스트가 없거나 모두 중복된 책입니다.", "SUCCESS"));
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ApiSuccessResponse.created(upsertResult, "추가한 책이 없습니다.", "SUCCESS"));
         }
         // 삽입된 데이터가 있으면 201 응답
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiSuccessResponse.created(upsertResult, "책 여러권 삽입에 성공했습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.created(upsertResult, "책 추가에 성공했습니다.", "SUCCESS"));
     }
-    /**
-     * 도서 추천
-     */
-    @Operation(summary = "도서 추천 조회", description = "문학, 비문학 각객 이전에 읽은 책, 현재 수업에 읽어야 하는 책, 다음 수업에 읽어야 하는 책을 가져온다.")
+
+
+    @Operation(summary = "도서 추천 조회", description = "문학, 비문학 각객 이전에 읽은 책, 현재 수업에 읽어야 하는 책, 다음 수업에 읽어야 하는 책 추천")
     @GetMapping("/api/students/{studentId}/books/recommend")
     public ResponseEntity<ApiSuccessResponse<RecBookRes[][]>> getSliderBooks(
             @PathVariable("studentId") Long studentId
@@ -90,6 +86,7 @@ public class BookApiController {
         return ResponseEntity.ok(
                 ApiSuccessResponse.ok(recommended, "추천 도서 조회에 성공했습니다.", "SUCCESS"));
     }
+
 
     @Operation(summary = "난이도순으로 책 가져오기", description = "난이도, 제목순으로 책 가져오기")
     @GetMapping("/api/books/by-difficulty")

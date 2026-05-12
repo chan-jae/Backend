@@ -41,7 +41,9 @@ public class RecommendBookService {
             return null;
         }
 
+        /* 읽어야 하는 문학 책 가져오기*/
         RecBookRes[] toReadLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.LITERATURE);
+        /* 읽어야 하는 비문학 책 가져오기*/
         RecBookRes[] toReadNonLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.NON_LITERATURE);
 
         return new RecBookRes[][] {
@@ -60,9 +62,9 @@ public class RecommendBookService {
 
 
     /**
-     * 인덱스 없을수도 있는 것을 안전하게 가져오기
-     * @param books
-     * @param index
+     * 인덱스로 참조 안전하게 하기
+     * @param books 책
+     * @param index 인덱스
      * @return BookDTO
      */
     private RecBookRes getSafe(RecBookRes[] books, int index) {
@@ -80,7 +82,9 @@ public class RecommendBookService {
 
 
     /**
-     * 마지막 수업에 읽었던 책
+     * 마지막에 읽었던 책
+     * @param student 학생
+     * @param category 카테고리
      */
     private RecBookRes getPreviousReadBook(StudentEntity student, BookCategory category) {
 
@@ -90,10 +94,9 @@ public class RecommendBookService {
 
     /**
      * 오늘 수업에 읽어야 하는 책과 다음 수업에 읽어야 하는 책
-     * 
-     * @param student
-     * @param category
-     * @return BookDTO[]
+     * @param student 학생
+     * @param category 카테고리
+     * @return 책 array
      *
      * <p>
      *     [0] - 오늘 수업에 읽어야 하는 책<br/>
@@ -129,15 +132,17 @@ public class RecommendBookService {
 
 
     /**
-     * 문학/비문학 레벨 선택 로직
+     * 비문학 레벨 변환
+     * @param baseLevel 기준 레벨
+     * @return 비문학 레벨
      */
-    private String convertNotLiteratureLevel(String firstLevel) {
+    private String convertNotLiteratureLevel(String baseLevel) {
 
-        if (!LevelRegexPattern.LEVEL.matches(firstLevel)) {
+        if (!LevelRegexPattern.LEVEL.matches(baseLevel)) {
             throw new BaseException(StudentErrorCode.INVALID_FIRST_LEVEL);
         }
 
-        String[] parts = firstLevel.split("_");
+        String[] parts = baseLevel.split("_");
         int number = Integer.parseInt(parts[1]);
 
         // 2B 이하 레벨

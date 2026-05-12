@@ -4,6 +4,7 @@ import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
+import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.dto.ReadBooksRes;
 import com.team.student_calendar.entity.BookEntity;
@@ -57,7 +58,8 @@ public class SelectReadBookService {
     ) {
 
         /* 학생 찾기*/
-        StudentEntity student = selectStudentService.findById(studentId);
+        boolean isExistStudent = selectStudentService.existsById(studentId);
+        if (!isExistStudent) throw new BaseException(StudentErrorCode.STUDENT_NOT_FOUND);
 
         /* 기본 정렬 지정*/
         if (pageable.getSort().isUnsorted()) {
@@ -93,7 +95,7 @@ public class SelectReadBookService {
                     .findByStudentIdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name(), pageable);
         };
 
-        /* 필요한 부분만 추출*/
+        /* 필요한 필드 추가*/
         Slice<ReadBooksRes.Book> books = readBookList
                 .map(StudentBookEntity::toReadBooksRes);
 
@@ -110,14 +112,19 @@ public class SelectReadBookService {
 
     /**
      * 가장 최근에 읽었었던 책 가져오기
+     * @param studentId 학생 pk
+     * @param category 카테고리
+     * @return 책
      */
     public RecBookRes findPreviousBookToRead(Long studentId, BookCategory category) {
 
+        /* 읽은순, 등록순으로 가져오기*/
         Sort sort = Sort.by(
                 Sort.Order.desc("readAt").nullsLast(),
                 Sort.Order.desc("registeredAt")
         );
 
+        /* 최근에 읽었던 책 가져오기*/
         StudentBookEntity studentBookEntity = switch (category) {
             case LITERATURE -> studentBookRepository
                     .findTopByStudent_IdAndBook_Category(studentId, category.name(), sort)
@@ -133,6 +140,7 @@ public class SelectReadBookService {
 
         BookEntity book = studentBookEntity.getBook();
 
+        /* entity를 RecBookRes로 변환*/
         return book.toRecBook(studentBookEntity.getState(), studentBookEntity.getReadAt());
     }
 }
