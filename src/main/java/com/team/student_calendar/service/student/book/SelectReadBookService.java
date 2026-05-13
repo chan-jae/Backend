@@ -48,6 +48,8 @@ public class SelectReadBookService {
     /**
      * 학생이 읽은 책 가져오기
      * @param studentId 학생 pk
+     * @param category 카테고리
+     * @param pageable 페이지 옵션
      * @return ReadBooksRes
      */
     @Transactional(readOnly = true)

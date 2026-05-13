@@ -16,7 +16,12 @@ public class UpdateStudentBookService {
     private final SelectReadBookService selectReadBookService;
 
 
-
+    /**
+     * 읽은 책 상태 변경
+     * @param studentId 학생 pk
+     * @param bookId 책 pk
+     * @param req 상태 변경 요청 정보(state, readAt)
+     */
     @Transactional
     public void updateReadBook(Long studentId, Long bookId, ReadBookUpdateReq req) {
 

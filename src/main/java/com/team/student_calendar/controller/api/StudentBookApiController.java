@@ -37,7 +37,7 @@ public class StudentBookApiController {
 
 
     @Validated
-    @Operation(summary = "읽은 책 저장", description = "학생이 읽은 책을 저장한다.")
+    @Operation(summary = "읽은 책 저장", description = "학생이 읽은 책 저장")
     @PostMapping("/api/student-books")
     public ResponseEntity<ApiSuccessResponse<Void>> saveStudentBooks(
             @RequestBody ReadBooksSaveReq req,
@@ -62,7 +62,7 @@ public class StudentBookApiController {
     }
 
 
-    @Operation(summary = "읽은 책 가져오기", description = "학생이 읽었던 책들을 모두 가져온다.")
+    @Operation(summary = "읽은 책 가져오기", description = "학생이 읽었던 책 가져오기")
     @GetMapping("/api/student-books/students/{id}")
     public ResponseEntity<ApiSuccessResponse<ReadBooksRes>> selectReadBooks(
             @PathVariable("id") Long studentId,
@@ -93,7 +93,7 @@ public class StudentBookApiController {
     }
 
 
-    @Operation(summary = "학생이 읽은 책 1권 지우기", description = "학생이 읽은 책 1권 지우기")
+    @Operation(summary = "읽은 책 1권 지우기", description = "학생이 읽은 책 1권 지우기")
     @DeleteMapping("/api/students/{studentId}/books/{bookId}")
     public ResponseEntity<ApiSuccessResponse<Void>> deleteReadBook(
             @PathVariable("studentId") Long studentId,
@@ -108,7 +108,7 @@ public class StudentBookApiController {
                 .body(ApiSuccessResponse.ok("학생이 읽은 책 1권을 삭제했습니다.", "SUCCESS"));
     }
 
-    @Operation(summary = "학생이 읽은 책 상태 변경", description = "학생이 읽은 책을의 상태를 변경합니다.")
+    @Operation(summary = "읽은 책 상태 변경", description = "학생이 읽은 책 상태 변경")
     @PatchMapping("/api/students/{studentId}/books/{bookId}")
     public ResponseEntity<ApiSuccessResponse<Void>> changeReadBookState(
             @PathVariable Long studentId,
