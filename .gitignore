@@ -40,3 +40,5 @@ out/
 /logs/
 
 **/src/main/resources
+
+**/src/test/http

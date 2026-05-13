@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: 코드 가져오기
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: '${{ secrets.PAT_REPO_TOKEN }}'
 
       - name: JDK 설치
         uses: actions/setup-java@v4
