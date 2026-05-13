@@ -107,7 +107,7 @@ public class StudentPostgresRepository implements StudentJdbcRepository {
             args.add(b.getJoinedAt());
         }
 
-        // RETURNING 결과를 is_new(boolean) 목록으로 수신
+        // RETURNING 결과 list
         List<Boolean> returning = jdbcTemplate.query(
                 sql,
                 (rs, rowNum) -> rs.getBoolean("is_new"),

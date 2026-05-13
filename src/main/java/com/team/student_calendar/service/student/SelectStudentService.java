@@ -17,25 +17,26 @@ public class SelectStudentService {
     private final StudentRepository studentRepository;
 
 
+//    /**
+//     * 같은 accountNo를 가지는 StudentEntity 가져오기
+//     * */
+//    @Transactional(readOnly = true)
+//    public List<StudentEntity> findAllByAccountNoList(List<Long> bookNoList) {
+//
+//        return studentRepository.findAllByAccountNoIn(bookNoList);
+//    }
+//
+//
+//    @Transactional(readOnly = true)
+//    public long countAll() {
+//
+//        return studentRepository.count();
+//    }
+
+
     /**
-     * 같은 accountNo를 가지는 StudentEntity 가져오기
-     * */
-    @Transactional(readOnly = true)
-    public List<StudentEntity> findAllByAccountNoList(List<Long> bookNoList) {
-
-        return studentRepository.findAllByAccountNoIn(bookNoList);
-    }
-
-
-    @Transactional(readOnly = true)
-    public long countAll() {
-
-        return studentRepository.count();
-    }
-
-
-    /**
-     * 모든 StudentEntity 가져오기
+     * 최근 가입 순으로 학생 가져오기
+     * @return 학생 entity list
      */
     @Transactional(readOnly = true)
     public List<StudentEntity> findAllLatestStudents() {
@@ -52,9 +53,6 @@ public class SelectStudentService {
     }
 
 
-    /**
-     * 학생 있는지 체크
-     */
     public boolean existsById(Long id) {
 
         return studentRepository.existsById(id);

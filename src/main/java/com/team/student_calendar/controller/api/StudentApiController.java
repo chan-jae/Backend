@@ -37,7 +37,7 @@ public class StudentApiController {
 
 
     @Validated
-    @Operation(summary = "여러 학생 추가", description = "List 타입 학생들을 추가한다.")
+    @Operation(summary = "학생 일괄 등록", description = "List 타입 학생 추가")
     @PostMapping("/api/students")
     public ResponseEntity<ApiSuccessResponse<UpsertResult>> createStudent(
             @RequestBody List<@Valid StudentCreateReq> studentCreateReqList,
@@ -65,7 +65,7 @@ public class StudentApiController {
     }
 
 
-    @Operation(summary = "전체 학생을 최신순으로 가져오기", description = "모든 학생들을 가입일 내림차순으로 가져온다.")
+    @Operation(summary = "전체 학생을 최신순으로 가져오기", description = "모든 학생들을 가입일 내림차순으로 가져오기")
     @GetMapping("/api/students")
     public ResponseEntity<ApiSuccessResponse<List<StudentEntity>>> selectAllStudents() {
 
@@ -76,7 +76,7 @@ public class StudentApiController {
     }
 
 
-    @Operation(summary = "학생 초기레벨 설정", description = "학생 초기레벨을 설정한다.")
+    @Operation(summary = "학생 초기레벨 설정", description = "학생 초기레벨 업데이트")
     @PatchMapping("/api/students/{id}/first-level")
     public ResponseEntity<ApiSuccessResponse<Void>> updateStudentFirstLevel(
             @PathVariable("id") Long studentId,
@@ -90,7 +90,7 @@ public class StudentApiController {
     }
 
 
-    @Operation(summary = "학생 삭제", description = "학생과 관련된 데이터를 모두 지웁니다.")
+    @Operation(summary = "학생 삭제", description = "학생과 관련된 데이터 모두 삭제")
     @DeleteMapping("/api/students/{id}")
     public ResponseEntity<ApiSuccessResponse<Void>> deleteStudent(
         @PathVariable Long id
