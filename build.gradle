@@ -62,3 +62,16 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+
+// 빌드할 때 submodule에 있는 것을 프로젝트 resources에 추가하기
+tasks.register('copyPrivateYml', Copy) {
+	from './submodule-yml'
+	include "**/*.yaml", "**/*.yml", "**/*.xml"
+	into 'src/main/resources'
+}
+
+// 빌드(processResources) 전에 이 작업이 실행되도록 연결
+tasks.named('processResources') {
+	dependsOn 'copyPrivateYml'
+}

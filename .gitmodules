@@ -1,0 +1,3 @@
+[submodule "submodule-yml"]
+	path = submodule-yml
+	url = git@github.com:chan-jae/submodule-yml.git
