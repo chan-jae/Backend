@@ -28,7 +28,9 @@ public class SelectFileService {
 
 
     /**
-     *
+     * 책이 가지고 있는 파일 가져오기
+     * @param bookId 책 pk
+     * @return fileEntity
      */
     @Transactional(readOnly = true)
     public FileEntity findFirstByBookId(Long bookId) {

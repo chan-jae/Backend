@@ -31,7 +31,7 @@ public class FileApiController {
 
 
 
-    @Operation(summary = "파일 업로드", description = "책(book)별 파일(이미지·PDF 등)을 S3에 업로드하고 메타데이터를 저장합니다.")
+    @Operation(summary = "파일 업로드", description = "책 pdf를 S3에 업로드하고 메타데이터를 저장")
     @PostMapping(value = "/api/books/{bookId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiSuccessResponse<Void>> uploadBookFile(
             @Parameter(description = "책 ID") @PathVariable("bookId") Long bookId,
@@ -45,7 +45,7 @@ public class FileApiController {
     }
 
 
-    @Operation(summary = "파일 Presigned URL 발급", description = "업로드된 파일에 대한 S3 GET Presigned URL을 발급합니다.")
+    @Operation(summary = "파일 Presigned URL 발급", description = "S3 Presigned URL을 발급")
     @GetMapping("/api/books/{bookId}/file-url")
     public ResponseEntity<ApiSuccessResponse<PresignedUrlRes>> getBookFilePresignedUrl(
             @Parameter(description = "책 ID") @PathVariable("bookId") Long bookId
@@ -64,7 +64,7 @@ public class FileApiController {
     }
 
 
-    @Operation(summary = "파일 삭제 기능", description = "업로드된 파일에 대한 S3 GET Presigned URL을 발급합니다.")
+    @Operation(summary = "파일 삭제 기능", description = "S3 파일 및 메타데이터 삭제")
     @DeleteMapping("/api/books/{bookId}")
     public ResponseEntity<ApiSuccessResponse<Void>> deleteBookFile(
             @PathVariable Long bookId
@@ -77,7 +77,7 @@ public class FileApiController {
     }
 
 
-    @Operation(summary = "파일 변경 기능", description = "s3 key는 그대로 놔두고 파일만 변경합니다.")
+    @Operation(summary = "파일 변경 기능", description = "s3 key는 그대로 놔두고 파일만 변경")
     @PatchMapping("/api/books/{bookId}/files")
     public ResponseEntity<ApiSuccessResponse<Void>> patchBookFile(
             @PathVariable @Parameter(description = "책 ID") Long bookId,

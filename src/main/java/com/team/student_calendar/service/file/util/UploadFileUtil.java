@@ -23,27 +23,29 @@ public class UploadFileUtil {
 
 
 
-    /**
-     * . 뒤에 있는 파일 확장자 가져오기
-     * */
-    public String getFileExtension(String originalFilename) {
-        if (!StringUtils.hasText(originalFilename)) {
-            return "";
-        }
-        String base = StringUtils.getFilename(originalFilename);
-        if (!StringUtils.hasText(base)) {
-            return "";
-        }
-        int dot = base.lastIndexOf('.');
-        if (dot < 0 || dot == base.length() - 1) {
-            return "";
-        }
-        return base.substring(dot).toLowerCase();
-    }
+//    /**
+//     * . 뒤에 있는 파일 확장자 가져오기
+//     * */
+//    public String getFileExtension(String originalFilename) {
+//        if (!StringUtils.hasText(originalFilename)) {
+//            return "";
+//        }
+//        String base = StringUtils.getFilename(originalFilename);
+//        if (!StringUtils.hasText(base)) {
+//            return "";
+//        }
+//        int dot = base.lastIndexOf('.');
+//        if (dot < 0 || dot == base.length() - 1) {
+//            return "";
+//        }
+//        return base.substring(dot).toLowerCase();
+//    }
 
-    /*
-    *
-    * */
+    /**
+     * 파일의 MIME type 가져오기
+     * @param file 파일
+     * @return MIME type
+     */
     public String checkFileTypeValidation(MultipartFile file) {
 
         /* mime 가져오기*/
@@ -58,6 +60,12 @@ public class UploadFileUtil {
     }
 
 
+    /**
+     * S3에 삽입하기 위한 메타데이터 만들기
+     * @param fileSize 파일 길이
+     * @param mimeType MIME type
+     * @return objectMetadata
+     */
     public ObjectMetadata makeMetaData(Long fileSize, String mimeType) {
 
         ObjectMetadata metadata = new ObjectMetadata();

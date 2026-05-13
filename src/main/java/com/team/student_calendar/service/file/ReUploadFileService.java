@@ -58,7 +58,7 @@ public class ReUploadFileService {
         Long fileSize = file.getSize();
         log.info("originalName={}", originalFilename);
 
-        /* 파일 가져와서 수정하기*/
+        /* 파일 메타데이터 가져와서 수정하기*/
         FileEntity fileEntity = selectFileService.findFirstByBookId(bookId);
         fileEntity.setOriginalName(originalFilename);
         fileEntity.setFileSize(fileSize);

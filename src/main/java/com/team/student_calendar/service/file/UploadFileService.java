@@ -43,6 +43,7 @@ public class UploadFileService {
 
         /* 파일 없으면 throw */
         if (file == null || file.isEmpty()) {
+            log.warn("no selected file");
             throw new BaseException(FileErrorCode.EMPTY_FILE);
         }
 
@@ -67,6 +68,7 @@ public class UploadFileService {
         /* S3에 저장할 키 생성 */
         String s3Key = String.format("pdfs/%d_%s", bookId, UUID.randomUUID());
 
+        /* 메타 데이터 설정*/
         ObjectMetadata metadata = uploadFileUtil.makeMetaData(fileSize, mimeType);
 
         /* 메타데이터 db 저장*/
@@ -84,11 +86,12 @@ public class UploadFileService {
         try (InputStream in = file.getInputStream()) {
             amazonS3.putObject(s3Properties.getBucket(), s3Key, in, metadata);
         } catch (IOException e) {
+            log.warn("failed file save");
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
         }
         log.info("bucket putObject done key={}", s3Key);
 
-        log.info("completed saved file id={}, bookId={}, s3Key={}, originalName={}, sizeBytes={}, contentType={}",
+        log.info("completed file save id={}, bookId={}, s3Key={}, originalName={}, sizeBytes={}, contentType={}",
                 saved.getId(), bookId, s3Key, originalFilename, saved.getFileSize(), saved.getContentType());
 
 //        return FileUploadRes.builder()
