@@ -3,6 +3,7 @@ package com.team.student_calendar.repository;
 import com.team.student_calendar.dto.RecBookMapping;
 import com.team.student_calendar.entity.BookEntity;
 import org.jspecify.annotations.NullMarked;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -20,6 +21,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         @Override
         @EntityGraph(attributePaths = { "file" })
         @NullMarked
+        @Cacheable(cacheNames = "books", key = "'all'")
         List<BookEntity> findAll(Sort sort);
 
 //        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);

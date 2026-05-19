@@ -9,6 +9,7 @@ import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -41,8 +42,9 @@ public class BookPostgresRepository implements BookJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Transactional
     @Override
+    @Transactional
+    @CacheEvict(cacheNames = "books", allEntries = true)
     public UpsertResult bulkInsertBooks(List<BookCreateReq> bookList) {
 
         int size = bookList.size();
