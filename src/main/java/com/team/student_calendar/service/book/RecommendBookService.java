@@ -145,12 +145,7 @@ public class RecommendBookService {
         String[] parts = baseLevel.split("_");
         int number = Integer.parseInt(parts[1]);
 
-        // 2B 이하 레벨
-        if (number <= 2) {
-            return "A_0";
-        }
-
-        // 3A 이상
-        return "A_" + (number - 1);
+        if (number == 0) return parts[0] + "_" + number;
+        return parts[0] + "_" + (number - 1);
     }
 }
