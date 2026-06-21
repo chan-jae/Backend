@@ -35,10 +35,16 @@ public class BookPostgresRepository implements BookJdbcRepository {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (book_no)
             DO UPDATE SET
-                updated_at = now()
+                updated_at = now(),
+                state = 0
             """;
 
-
+    // 이번 배치에서 갱신되지 않은 책은 state를 1로 표시
+    private static final String MARK_STALE_BOOKS_SQL = """
+            UPDATE student_calendar.book
+            SET state = 1
+            WHERE updated_at < ?
+            """;
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -90,8 +96,10 @@ public class BookPostgresRepository implements BookJdbcRepository {
         long afterSize = Optional.ofNullable(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM student_calendar.book", Long.class))
                 .orElse(0L);
 
+        int staleCount = jdbcTemplate.update(MARK_STALE_BOOKS_SQL, batchTime);
+
         long inserted = afterSize - baseSize;
-        long updated = 0;
+        long updated = staleCount;
         long skipped = baseSize;
 
         log.debug("book upsert result — inserted: {}, updated: {}, skipped: {}",

@@ -53,6 +53,10 @@ public class BookEntity {
     @Column(name = "category", nullable = false, length = 20)
     private String category;
 
+    @Column(name = "state", nullable = false)
+    @ColumnDefault("0")
+    private Byte state;
+
     @Column(name = "level", nullable = false, length = 10)
     private String level;
 
