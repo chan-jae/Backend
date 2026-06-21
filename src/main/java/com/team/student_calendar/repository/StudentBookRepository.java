@@ -26,6 +26,20 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
                                                                String category,
                                                                Pageable pageable);
 
+    Slice<StudentBookEntity> findByStudentIdAndBook_TitleContainingIgnoreCase(Long studentId,
+                                                                             String title,
+                                                                             Pageable pageable);
+
+    Slice<StudentBookEntity> findByStudentIdAndBook_CategoryAndBook_TitleContainingIgnoreCase(Long studentId,
+                                                                                              String category,
+                                                                                              String title,
+                                                                                              Pageable pageable);
+
+    Slice<StudentBookEntity> findByStudentIdAndBook_CategoryNotAndBook_TitleContainingIgnoreCase(Long studentId,
+                                                                                                 String category,
+                                                                                                 String title,
+                                                                                                 Pageable pageable);
+
     long deleteAllByStudent(StudentEntity student);
 
     long deleteByStudentAndBook(StudentEntity student, BookEntity book);
