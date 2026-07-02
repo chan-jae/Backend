@@ -8,6 +8,7 @@ import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.entity.BookEntity;
+import com.team.student_calendar.entity.CustomBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.service.student.SelectStudentService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,6 +29,7 @@ public class RecommendBookService {
     private final SelectBookService selectBookService;
     private final SelectStudentService selectStudentService;
     private final SelectReadBookService selectReadBookService;
+    private final CustomBookService customBookService;
 
 
     /**
@@ -122,11 +125,35 @@ public class RecommendBookService {
             default -> null;
         };
 
-        if (books == null || books.length == 0) {
-            return new RecBookRes[0];
+        int curriculumCount = (books == null) ? 0 : books.length;
+
+        if (curriculumCount >= 2) {
+            // 현재 읽을 책과 다음 읽을 책의 레벨이 다르면 레벨 사이에 custom 책을 끼워 넣는다.
+            // custom 책이 없으면 원래 다음 레벨 커리큘럼을 그대로 유지
+            String currentLevel = books[0].getLevel();
+            String nextLevel    = books[1].getLevel();
+            boolean levelTransition = currentLevel != null && !currentLevel.equals(nextLevel);
+
+            if (levelTransition) {
+                List<CustomBookEntity> customs = customBookService.findForRecommend(category.name(), 1);
+                if (!customs.isEmpty()) {
+                    books[1] = customs.get(0).toRecBook();
+                }
+            }
+            return books;
         }
 
-        return books;
+        int need = 2 - curriculumCount;
+        List<CustomBookEntity> customs = customBookService.findForRecommend(category.name(), need);
+
+        RecBookRes[] merged = new RecBookRes[curriculumCount + customs.size()];
+        if (curriculumCount > 0) {
+            System.arraycopy(books, 0, merged, 0, curriculumCount);
+        }
+        for (int i = 0; i < customs.size(); i++) {
+            merged[curriculumCount + i] = customs.get(i).toRecBook();
+        }
+        return merged;
     }
 
 
