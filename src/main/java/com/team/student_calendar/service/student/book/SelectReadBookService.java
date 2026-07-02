@@ -49,6 +49,7 @@ public class SelectReadBookService {
      * 학생이 읽은 책 가져오기
      * @param studentId 학생 pk
      * @param category 카테고리
+     * @param title 검색할 책 제목 (없으면 전체)
      * @param pageable 페이지 옵션
      * @return ReadBooksRes
      */
@@ -56,6 +57,7 @@ public class SelectReadBookService {
     public ReadBooksRes findReadBooksByStudentId(
             Long studentId,
             String category,
+            String title,
             Pageable pageable
     ) {
 
@@ -84,17 +86,24 @@ public class SelectReadBookService {
             throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         }
 
+        boolean hasTitle = title != null && !title.isBlank();
+
         /* 카테고리별로 분기*/
         Slice<StudentBookEntity> readBookList = switch (bookCategory) {
-            // 읽은 책 목록 모두 가져오기
-            case ALL -> studentBookRepository
-                    .findByStudentId(studentId, pageable);
-            // 문학만 가져오기
-            case LITERATURE -> studentBookRepository
-                    .findByStudentIdAndBook_Category(studentId, BookCategory.LITERATURE.name(), pageable);
-            // 비문학만 가져오기
-            case NON_LITERATURE -> studentBookRepository
-                    .findByStudentIdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name(), pageable);
+            // 읽은 책 목록 모두 가져오기 (제목 검색 포함)
+            case ALL -> hasTitle
+                    ? studentBookRepository.findByStudentIdAndBook_TitleContainingIgnoreCase(studentId, title, pageable)
+                    : studentBookRepository.findByStudentId(studentId, pageable);
+            // 문학만 가져오기 (제목 검색 포함)
+            case LITERATURE -> hasTitle
+                    ? studentBookRepository.findByStudentIdAndBook_CategoryAndBook_TitleContainingIgnoreCase(
+                            studentId, BookCategory.LITERATURE.name(), title, pageable)
+                    : studentBookRepository.findByStudentIdAndBook_Category(studentId, BookCategory.LITERATURE.name(), pageable);
+            // 비문학만 가져오기 (제목 검색 포함)
+            case NON_LITERATURE -> hasTitle
+                    ? studentBookRepository.findByStudentIdAndBook_CategoryNotAndBook_TitleContainingIgnoreCase(
+                            studentId, BookCategory.LITERATURE.name(), title, pageable)
+                    : studentBookRepository.findByStudentIdAndBook_CategoryNot(studentId, BookCategory.LITERATURE.name(), pageable);
         };
 
         /* 필요한 필드 추가*/

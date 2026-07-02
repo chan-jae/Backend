@@ -62,16 +62,17 @@ public class StudentBookApiController {
     }
 
 
-    @Operation(summary = "읽은 책 가져오기", description = "학생이 읽었던 책 가져오기")
+    @Operation(summary = "읽은 책 가져오기", description = "학생이 읽었던 책 가져오기 (title로 제목 검색 가능)")
     @GetMapping("/api/student-books/students/{id}")
     public ResponseEntity<ApiSuccessResponse<ReadBooksRes>> selectReadBooks(
             @PathVariable("id") Long studentId,
             @RequestParam(name = "category", required = false, defaultValue = "ALL") String category,
+            @RequestParam(name = "title", required = false) String title,
             @PageableDefault(size = 10, page = 0) Pageable pageable
             ) {
 
         ReadBooksRes res = selectReadBookService
-                .findReadBooksByStudentId(studentId, category, pageable);
+                .findReadBooksByStudentId(studentId, category, title, pageable);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "학생이 읽은 책을 가져왔습니다.", "SUCCESS"));
