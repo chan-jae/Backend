@@ -22,27 +22,17 @@ public class CustomBookCreateReq {
     @NotBlank(message = "카테고리는 필수 항목입니다.")
     private String category;
 
-    /**
-     * 직접 등록 책을 기존 book 테이블에 저장하기 위해 BookEntity 로 변환한다.
-     * <p>
-     * book 테이블의 NOT NULL 컬럼(author/publisher/book_no/image_url/level/c_level/state/updated_at)을
-     * DB 스키마 수정 없이 통과시키기 위해 더미 값을 강제 매핑한다. {@code type=CUSTOM(1)} 으로 구분한다.
-     * </p>
-     */
     public BookEntity toEntity() {
         return BookEntity.builder()
                 .title(this.title)
                 .category(this.category)
                 .difficulty(this.difficulty)
-                .type((byte) BookType.CUSTOM.getType())   // 1 = 직접 등록
+                .type((byte) BookType.CUSTOM.getType())
                 .author("자체 등록")
                 .publisher("용천점")
-                .level("CUSTOM_" + this.difficulty)
                 .cLevel((byte) 99)
-                .bookNo(System.currentTimeMillis())        // unique 제약 회피용
-                .imageUrl("")
-                .state((byte) 0)                           // NOT NULL — 기본 상태
-                .updatedAt(LocalDateTime.now())            // NOT NULL — 자동 타임스탬프 없음
+                .state((byte) 0)
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 }

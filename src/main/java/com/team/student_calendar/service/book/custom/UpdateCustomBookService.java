@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class UpdateCustomBookService {
+public class    UpdateCustomBookService {
 
     private final SelectCustomBookService selectCustomBookService;
 
@@ -31,7 +31,6 @@ public class UpdateCustomBookService {
         entity.setTitle(req.getTitle());
         entity.setDifficulty(req.getDifficulty());
         entity.setCategory(req.getCategory());
-        entity.setLevel("CUSTOM_" + req.getDifficulty());
         entity.setUpdatedAt(LocalDateTime.now());
         return entity;
     }
