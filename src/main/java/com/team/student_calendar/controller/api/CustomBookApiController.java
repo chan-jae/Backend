@@ -4,8 +4,11 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.CustomBookCreateReq;
-import com.team.student_calendar.dto.CustomBookRes;
-import com.team.student_calendar.service.book.CustomBookService;
+import com.team.student_calendar.dto.RecBookRes;
+import com.team.student_calendar.service.book.custom.DeleteCustomBookService;
+import com.team.student_calendar.service.book.custom.InsertCustomBookService;
+import com.team.student_calendar.service.book.custom.SelectCustomBookService;
+import com.team.student_calendar.service.book.custom.UpdateCustomBookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,11 +27,14 @@ import java.util.List;
 @Tag(name = "직접 등록 책", description = "CustomBookApiController")
 public class CustomBookApiController {
 
-    private final CustomBookService customBookService;
+    private final InsertCustomBookService insertCustomBookService;
+    private final SelectCustomBookService selectCustomBookService;
+    private final UpdateCustomBookService updateCustomBookService;
+    private final DeleteCustomBookService deleteCustomBookService;
 
     @Operation(summary = "직접 등록 책 추가", description = "티칭오션에 없는 책을 제목/난이도/카테고리로 직접 등록")
     @PostMapping("/api/custom-books")
-    public ResponseEntity<ApiSuccessResponse<CustomBookRes>> createCustomBook(
+    public ResponseEntity<ApiSuccessResponse<RecBookRes>> createCustomBook(
             @RequestBody @Valid CustomBookCreateReq req,
             BindingResult bindingResult) {
 
@@ -37,7 +43,7 @@ public class CustomBookApiController {
                     bindingResult.getFieldError().getDefaultMessage());
         }
 
-        CustomBookRes res = CustomBookRes.from(customBookService.create(req));
+        RecBookRes res = insertCustomBookService.create(req).toRecBook(null, null);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiSuccessResponse.created(res, "책 직접 등록에 성공했습니다.", "SUCCESS"));
@@ -45,10 +51,10 @@ public class CustomBookApiController {
 
     @Operation(summary = "직접 등록 책 목록 조회", description = "카테고리·난이도순으로 직접 등록 책 가져오기")
     @GetMapping("/api/custom-books")
-    public ResponseEntity<ApiSuccessResponse<List<CustomBookRes>>> getCustomBooks() {
+    public ResponseEntity<ApiSuccessResponse<List<RecBookRes>>> getCustomBooks() {
 
-        List<CustomBookRes> list = customBookService.findAll().stream()
-                .map(CustomBookRes::from)
+        List<RecBookRes> list = selectCustomBookService.findAll().stream()
+                .map(book -> book.toRecBook(null, null))
                 .toList();
 
         return ResponseEntity.status(HttpStatus.OK)
@@ -57,10 +63,10 @@ public class CustomBookApiController {
 
     @Operation(summary = "직접 등록 책 단건 조회", description = "id로 직접 등록 책 가져오기")
     @GetMapping("/api/custom-books/{id}")
-    public ResponseEntity<ApiSuccessResponse<CustomBookRes>> getCustomBook(
+    public ResponseEntity<ApiSuccessResponse<RecBookRes>> getCustomBook(
             @PathVariable("id") Long id) {
 
-        CustomBookRes res = CustomBookRes.from(customBookService.findById(id));
+        RecBookRes res = selectCustomBookService.findById(id).toRecBook(null, null);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "직접 등록 책 조회에 성공했습니다.", "SUCCESS"));
@@ -68,7 +74,7 @@ public class CustomBookApiController {
 
     @Operation(summary = "직접 등록 책 수정", description = "제목/난이도/카테고리 수정")
     @PutMapping("/api/custom-books/{id}")
-    public ResponseEntity<ApiSuccessResponse<CustomBookRes>> updateCustomBook(
+    public ResponseEntity<ApiSuccessResponse<RecBookRes>> updateCustomBook(
             @PathVariable("id") Long id,
             @RequestBody @Valid CustomBookCreateReq req,
             BindingResult bindingResult) {
@@ -78,7 +84,7 @@ public class CustomBookApiController {
                     bindingResult.getFieldError().getDefaultMessage());
         }
 
-        CustomBookRes res = CustomBookRes.from(customBookService.update(id, req));
+        RecBookRes res = updateCustomBookService.update(id, req).toRecBook(null, null);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "직접 등록 책 수정에 성공했습니다.", "SUCCESS"));
@@ -89,7 +95,7 @@ public class CustomBookApiController {
     public ResponseEntity<ApiSuccessResponse<Void>> deleteCustomBook(
             @PathVariable("id") Long id) {
 
-        customBookService.delete(id);
+        deleteCustomBookService.delete(id);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("직접 등록 책 삭제에 성공했습니다.", "SUCCESS"));

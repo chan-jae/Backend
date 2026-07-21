@@ -24,6 +24,18 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         @Cacheable(cacheNames = "books", key = "'all'")
         List<BookEntity> findAll(Sort sort);
 
+
+        // ===== 직접 등록(custom) 책 CRUD 용 (type = CUSTOM(1)) =====
+
+        // custom 책 전체 (목록 조회)
+        List<BookEntity> findAllByType(Byte type, Sort sort);
+
+        // custom 책 단건 (id 로 조회하되 custom 인지 함께 검증)
+        Optional<BookEntity> findByIdAndType(Long id, Byte type);
+
+        // 추천 fallback 용 — 카테고리별 custom 책 상위 N권
+        List<BookEntity> findByTypeAndCategory(Byte type, String category, Pageable pageable);
+
 //        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
 
 //        List<BookEntity> findAllByIdIn(List<Long> idList);
@@ -53,6 +65,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         AND sb.student.id = :studentId
                         WHERE b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND b.state = 0
+                        AND b.type = 0
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
                             OR
@@ -73,6 +86,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         AND sb.student.id = :studentId
                         WHERE b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND b.state = 0
+                        AND b.type = 0
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
                             OR

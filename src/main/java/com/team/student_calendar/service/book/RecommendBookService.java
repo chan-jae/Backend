@@ -8,8 +8,8 @@ import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.entity.BookEntity;
-import com.team.student_calendar.entity.CustomBookEntity;
 import com.team.student_calendar.entity.StudentEntity;
+import com.team.student_calendar.service.book.custom.SelectCustomBookService;
 import com.team.student_calendar.service.student.SelectStudentService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class RecommendBookService {
     private final SelectBookService selectBookService;
     private final SelectStudentService selectStudentService;
     private final SelectReadBookService selectReadBookService;
-    private final CustomBookService customBookService;
+    private final SelectCustomBookService selectCustomBookService;
 
 
     /**
@@ -135,23 +135,23 @@ public class RecommendBookService {
             boolean levelTransition = currentLevel != null && !currentLevel.equals(nextLevel);
 
             if (levelTransition) {
-                List<CustomBookEntity> customs = customBookService.findForRecommend(category.name(), 1);
+                List<BookEntity> customs = selectCustomBookService.findForRecommend(category.name(), 1);
                 if (!customs.isEmpty()) {
-                    books[1] = customs.get(0).toRecBook();
+                    books[1] = customs.get(0).toRecBook(null, null);
                 }
             }
             return books;
         }
 
         int need = 2 - curriculumCount;
-        List<CustomBookEntity> customs = customBookService.findForRecommend(category.name(), need);
+        List<BookEntity> customs = selectCustomBookService.findForRecommend(category.name(), need);
 
         RecBookRes[] merged = new RecBookRes[curriculumCount + customs.size()];
         if (curriculumCount > 0) {
             System.arraycopy(books, 0, merged, 0, curriculumCount);
         }
         for (int i = 0; i < customs.size(); i++) {
-            merged[curriculumCount + i] = customs.get(i).toRecBook();
+            merged[curriculumCount + i] = customs.get(i).toRecBook(null, null);
         }
         return merged;
     }
