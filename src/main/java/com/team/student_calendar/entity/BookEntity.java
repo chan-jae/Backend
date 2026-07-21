@@ -57,7 +57,7 @@ public class BookEntity {
     @ColumnDefault("0")
     private Byte state;
 
-    @Column(name = "level", nullable = false, length = 10)
+    @Column(name = "level", length = 10)
     private String level;
 
     @Column(name = "difficulty", nullable = false)
@@ -66,10 +66,10 @@ public class BookEntity {
     @Column(name = "c_level", nullable = false)
     private Byte cLevel;
 
-    @Column(name = "book_no", nullable = false, unique = true)
+    @Column(name = "book_no", unique = true)
     private Long bookNo;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Column(name = "type", nullable = false)
