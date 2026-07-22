@@ -33,8 +33,22 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         // custom 책 단건 (id 로 조회하되 custom 인지 함께 검증)
         Optional<BookEntity> findByIdAndType(Long id, Byte type);
 
-        // 추천 fallback 용 — 카테고리별 custom 책 상위 N권
-        List<BookEntity> findByTypeAndCategory(Byte type, String category, Pageable pageable);
+        // custom 책 등록/수정 시 같은 카테고리의 type=0 중 difficulty가 가장 가까운 책으로 c_level 설정
+        @Query("""
+                        SELECT b FROM BookEntity b
+                        WHERE b.type = 0
+                        AND (
+                            (b.category = :category)
+                            OR
+                            (:category = 'NON_LITERATURE' AND b.category != 'LITERATURE')
+                        )
+                        ORDER BY ABS(b.difficulty - :difficulty) ASC, b.difficulty ASC
+        """)
+        List<BookEntity> findNearestTeachingOceanBookByDifficulty(
+                        @Param("category") String category,
+                        @Param("difficulty") Integer difficulty,
+                        Pageable pageable
+        );
 
 //        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
 
@@ -65,7 +79,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         AND sb.student.id = :studentId
                         WHERE b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND b.state = 0
-                        AND b.type = 0
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
                             OR
@@ -86,7 +99,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         AND sb.student.id = :studentId
                         WHERE b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND b.state = 0
-                        AND b.type = 0
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
                             OR

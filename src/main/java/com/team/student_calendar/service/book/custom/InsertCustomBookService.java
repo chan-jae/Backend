@@ -1,7 +1,6 @@
 package com.team.student_calendar.service.book.custom;
 
 import com.team.student_calendar.common.enums.BookCategory;
-import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.dto.CustomBookCreateReq;
@@ -19,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InsertCustomBookService {
 
     private final BookRepository bookRepository;
-
-    private static final Byte CUSTOM_TYPE = (byte) BookType.CUSTOM.getType();
+    private final SelectCustomBookService selectCustomBookService;
 
     /**
      * 직접 등록 책 저장
@@ -33,7 +31,10 @@ public class InsertCustomBookService {
 
         validateCategory(req.getCategory());
 
-        BookEntity saved = bookRepository.save(req.toEntity());
+        BookEntity entity = req.toEntity();
+        entity.setCLevel(selectCustomBookService.resolveCLevel(req.getCategory(), req.getDifficulty()));
+
+        BookEntity saved = bookRepository.save(entity);
         log.info("custom book created — id: {}, title: {}", saved.getId(), saved.getTitle());
         return saved;
     }

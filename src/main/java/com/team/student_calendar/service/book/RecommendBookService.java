@@ -7,9 +7,7 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.dto.RecBookRes;
-import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentEntity;
-import com.team.student_calendar.service.book.custom.SelectCustomBookService;
 import com.team.student_calendar.service.student.SelectStudentService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
 import lombok.RequiredArgsConstructor;
@@ -17,19 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecommendBookService {
 
-    
     private final SelectBookService selectBookService;
     private final SelectStudentService selectStudentService;
     private final SelectReadBookService selectReadBookService;
-    private final SelectCustomBookService selectCustomBookService;
 
 
     /**
@@ -117,43 +110,14 @@ public class RecommendBookService {
             default -> throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         };
 
-        RecBookRes[] books = switch (category) {
+        // custom 책도 c_level을 가지므로, 커리큘럼 책과 함께 같은 쿼리에서 difficulty 순으로 자연스럽게 섞여 나온다.
+        return switch (category) {
             case LITERATURE -> selectBookService
                     .findLiteratureBookToRead(student.getId(), baseLevel);
             case NON_LITERATURE -> selectBookService
                     .findNonLiteratureBookToRead(student.getId(), baseLevel);
             default -> null;
         };
-
-        int curriculumCount = (books == null) ? 0 : books.length;
-
-        if (curriculumCount >= 2) {
-            // 현재 읽을 책과 다음 읽을 책의 레벨이 다르면 레벨 사이에 custom 책을 끼워 넣는다.
-            // custom 책이 없으면 원래 다음 레벨 커리큘럼을 그대로 유지
-            String currentLevel = books[0].getLevel();
-            String nextLevel    = books[1].getLevel();
-            boolean levelTransition = currentLevel != null && !currentLevel.equals(nextLevel);
-
-            if (levelTransition) {
-                List<BookEntity> customs = selectCustomBookService.findForRecommend(category.name(), 1);
-                if (!customs.isEmpty()) {
-                    books[1] = customs.get(0).toRecBook(null, null);
-                }
-            }
-            return books;
-        }
-
-        int need = 2 - curriculumCount;
-        List<BookEntity> customs = selectCustomBookService.findForRecommend(category.name(), need);
-
-        RecBookRes[] merged = new RecBookRes[curriculumCount + customs.size()];
-        if (curriculumCount > 0) {
-            System.arraycopy(books, 0, merged, 0, curriculumCount);
-        }
-        for (int i = 0; i < customs.size(); i++) {
-            merged[curriculumCount + i] = customs.get(i).toRecBook(null, null);
-        }
-        return merged;
     }
 
 

@@ -31,6 +31,7 @@ public class    UpdateCustomBookService {
         entity.setTitle(req.getTitle());
         entity.setDifficulty(req.getDifficulty());
         entity.setCategory(req.getCategory());
+        entity.setCLevel(selectCustomBookService.resolveCLevel(req.getCategory(), req.getDifficulty()));
         entity.setUpdatedAt(LocalDateTime.now());
         return entity;
     }

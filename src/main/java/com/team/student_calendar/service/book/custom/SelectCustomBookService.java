@@ -11,7 +11,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -44,17 +43,15 @@ public class SelectCustomBookService {
                 .orElseThrow(() -> new BaseException(BookErrorCode.CUSTOM_BOOK_NOT_FOUND));
     }
 
+    /**
+     * type=0 중 difficulty가 가장 가까운 책의 c_level을 그대로 차용
+     */
     @Transactional(readOnly = true)
-    public List<BookEntity> findForRecommend(String category, int limit) {
-
-        if (limit <= 0) {
-            return Collections.emptyList();
-        }
-
-        Sort sort = Sort.by(
-                Sort.Order.asc("difficulty"),
-                Sort.Order.asc("title"));
-
-        return bookRepository.findByTypeAndCategory(CUSTOM_TYPE, category, PageRequest.of(0, limit, sort));
+    public Byte resolveCLevel(String category, Integer difficulty) {
+        return bookRepository.findNearestTeachingOceanBookByDifficulty(category, difficulty, PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .map(BookEntity::getCLevel)
+                .orElseThrow(() -> new BaseException(BookErrorCode.LEVEL_RESOLUTION_FAILED));
     }
 }

@@ -11,7 +11,8 @@ public enum BookErrorCode implements ErrorCode {
 
     BOOK_NOT_FOUND("B001", HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다."),
     INVALID_CATEGORY("B002", HttpStatus.BAD_REQUEST, "유효한 카테고리 분류가 아닙니다."),
-    CUSTOM_BOOK_NOT_FOUND("B003", HttpStatus.NOT_FOUND, "직접 등록한 책을 찾을 수 없습니다.");
+    CUSTOM_BOOK_NOT_FOUND("B003", HttpStatus.NOT_FOUND, "직접 등록한 책을 찾을 수 없습니다."),
+    LEVEL_RESOLUTION_FAILED("B004", HttpStatus.BAD_REQUEST, "해당 난이도와 비교할 기존 책이 없어 레벨을 계산할 수 없습니다.");
 
     private final String code;
     private final HttpStatus status;

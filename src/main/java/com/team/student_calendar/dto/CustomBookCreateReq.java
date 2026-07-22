@@ -30,7 +30,6 @@ public class CustomBookCreateReq {
                 .type((byte) BookType.CUSTOM.getType())
                 .author("자체 등록")
                 .publisher("용천점")
-                .cLevel((byte) 99)
                 .state((byte) 0)
                 .updatedAt(LocalDateTime.now())
                 .build();
