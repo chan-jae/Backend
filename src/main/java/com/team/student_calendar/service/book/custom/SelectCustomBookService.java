@@ -2,7 +2,7 @@ package com.team.student_calendar.service.book.custom;
 
 import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.exception.BaseException;
-import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.exception.domain.CustomBookErrorCode;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class SelectCustomBookService {
     @Transactional(readOnly = true)
     public BookEntity findById(Long id) {
         return bookRepository.findByIdAndType(id, CUSTOM_TYPE)
-                .orElseThrow(() -> new BaseException(BookErrorCode.CUSTOM_BOOK_NOT_FOUND));
+                .orElseThrow(() -> new BaseException(CustomBookErrorCode.CUSTOM_BOOK_NOT_FOUND));
     }
 
     /**
@@ -52,6 +52,6 @@ public class SelectCustomBookService {
                 .stream()
                 .findFirst()
                 .map(BookEntity::getCLevel)
-                .orElseThrow(() -> new BaseException(BookErrorCode.LEVEL_RESOLUTION_FAILED));
+                .orElseThrow(() -> new BaseException(CustomBookErrorCode.LEVEL_RESOLUTION_FAILED));
     }
 }
