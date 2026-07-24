@@ -43,6 +43,9 @@ public class InsertCustomBookService {
         return saved;
     }
 
+    /**
+     * 카테고리 유효성 검사
+     */
     private void validateCategory(String category) {
         try {
             BookCategory parsed = BookCategory.valueOf(category);

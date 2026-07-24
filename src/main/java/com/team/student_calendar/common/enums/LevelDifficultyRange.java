@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * 레벨별 실제 티칭오션 책 difficulty 최소/최대값.
+ * 레벨별 difficulty 최소/최대값.
  */
 @Getter
 @AllArgsConstructor
