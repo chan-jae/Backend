@@ -1,9 +1,11 @@
 package com.team.student_calendar.controller.api;
 
+import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.CustomBookCreateReq;
+import com.team.student_calendar.dto.LevelDifficultyRangeRes;
 import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.service.book.custom.DeleteCustomBookService;
 import com.team.student_calendar.service.book.custom.InsertCustomBookService;
@@ -32,7 +34,19 @@ public class CustomBookApiController {
     private final UpdateCustomBookService updateCustomBookService;
     private final DeleteCustomBookService deleteCustomBookService;
 
-    @Operation(summary = "직접 등록 책 추가", description = "티칭오션에 없는 책을 제목/난이도/카테고리로 직접 등록")
+    @Operation(summary = "레벨별 난이도 범위 조회", description = "프론트 슬라이더의 min/max 값 제공 (level: A_0~A_8, B_0~B_8)")
+    @GetMapping("/api/custom-books/level-range")
+    public ResponseEntity<ApiSuccessResponse<LevelDifficultyRangeRes>> getLevelRange(
+            @RequestParam("level") String level) {
+
+        LevelDifficultyRange range = LevelDifficultyRange.of(level);
+        LevelDifficultyRangeRes res = new LevelDifficultyRangeRes(range.getLow(), range.getHigh());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(res, "레벨별 난이도 범위 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+    @Operation(summary = "직접 등록 책 추가", description = "티칭오션에 없는 책을 제목/레벨/난이도/카테고리로 직접 등록")
     @PostMapping("/api/custom-books")
     public ResponseEntity<ApiSuccessResponse<RecBookRes>> createCustomBook(
             @RequestBody @Valid CustomBookCreateReq req,

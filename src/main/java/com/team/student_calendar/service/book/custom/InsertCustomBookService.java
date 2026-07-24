@@ -1,5 +1,7 @@
 package com.team.student_calendar.service.book.custom;
 
+import com.team.student_calendar.common.constant.BookLevelMapping;
+import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
@@ -18,11 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class InsertCustomBookService {
 
     private final BookRepository bookRepository;
-    private final SelectCustomBookService selectCustomBookService;
 
     /**
      * 직접 등록 책 저장
-     * @param req 제목, 난이도, 카테고리
+     * @param req 제목, 레벨, 난이도, 카테고리
      * @return 저장된 BookEntity (type=CUSTOM)
      */
     @Transactional
@@ -31,8 +32,11 @@ public class InsertCustomBookService {
 
         validateCategory(req.getCategory());
 
+        LevelDifficultyRange range = LevelDifficultyRange.of(req.getLevel());
+        range.validateDifficulty(req.getDifficulty());
+
         BookEntity entity = req.toEntity();
-        entity.setCLevel(selectCustomBookService.resolveCLevel(req.getCategory(), req.getDifficulty()));
+        entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
 
         BookEntity saved = bookRepository.save(entity);
         log.info("custom book created — id: {}, title: {}", saved.getId(), saved.getTitle());

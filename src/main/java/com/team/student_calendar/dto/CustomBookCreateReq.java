@@ -15,6 +15,9 @@ public class CustomBookCreateReq {
     @NotBlank(message = "제목은 필수 항목입니다.")
     private String title;
 
+    @NotBlank(message = "레벨은 필수 항목입니다.")
+    private String level;
+
     @NotNull(message = "난이도는 필수 항목입니다.")
     @Positive(message = "난이도는 0 이상의 정수여야 합니다.")
     private Integer difficulty;
@@ -26,6 +29,7 @@ public class CustomBookCreateReq {
         return BookEntity.builder()
                 .title(this.title)
                 .category(this.category)
+                .level(this.level)
                 .difficulty(this.difficulty)
                 .type((byte) BookType.CUSTOM.getType())
                 .author("자체 등록")

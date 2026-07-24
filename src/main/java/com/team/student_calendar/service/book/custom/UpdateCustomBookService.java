@@ -1,5 +1,7 @@
 package com.team.student_calendar.service.book.custom;
 
+import com.team.student_calendar.common.constant.BookLevelMapping;
+import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
@@ -27,11 +29,15 @@ public class    UpdateCustomBookService {
 
         validateCategory(req.getCategory());
 
+        LevelDifficultyRange range = LevelDifficultyRange.of(req.getLevel());
+        range.validateDifficulty(req.getDifficulty());
+
         BookEntity entity = selectCustomBookService.findById(id);
         entity.setTitle(req.getTitle());
         entity.setDifficulty(req.getDifficulty());
         entity.setCategory(req.getCategory());
-        entity.setCLevel(selectCustomBookService.resolveCLevel(req.getCategory(), req.getDifficulty()));
+        entity.setLevel(req.getLevel());
+        entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
         entity.setUpdatedAt(LocalDateTime.now());
         return entity;
     }
