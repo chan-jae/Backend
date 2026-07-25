@@ -19,7 +19,6 @@ public class SelectCustomBookService {
     private static final Byte CUSTOM_TYPE = (byte) BookType.CUSTOM.getType();
 
     private static final Sort DEFAULT_SORT = Sort.by(
-            Sort.Order.asc("category"),
             Sort.Order.asc("difficulty"),
             Sort.Order.asc("title"));
 

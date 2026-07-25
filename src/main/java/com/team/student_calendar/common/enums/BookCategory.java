@@ -7,13 +7,10 @@ public enum BookCategory {
 
     ALL, LITERATURE, NON_LITERATURE;
 
-    public static void validate(String category) {
+    public static BookCategory of(String category) {
         try {
-            BookCategory parsed = BookCategory.valueOf(category);
-            if (parsed == ALL) {
-                throw new BaseException(BookErrorCode.INVALID_CATEGORY);
-            }
-        } catch (IllegalArgumentException e) {
+            return BookCategory.valueOf(category.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
             throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         }
     }
