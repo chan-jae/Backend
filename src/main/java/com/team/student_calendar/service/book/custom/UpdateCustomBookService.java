@@ -1,10 +1,8 @@
 package com.team.student_calendar.service.book.custom;
 
 import com.team.student_calendar.common.constant.BookLevelMapping;
-import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.common.enums.BookCategory;
-import com.team.student_calendar.common.exception.BaseException;
-import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.dto.CustomBookCreateReq;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.service.book.SelectBookService;
@@ -21,17 +19,12 @@ public class UpdateCustomBookService {
 
     private final SelectBookService selectBookService;
 
-    /**
-     * 직접 등록 책 수정
-     */
     @Transactional
     @CacheEvict(cacheNames = "books", allEntries = true)
     public BookEntity update(Long id, CustomBookCreateReq req) {
 
-        validateCategory(req.getCategory());
-
-        LevelDifficultyRange range = LevelDifficultyRange.of(req.getLevel());
-        range.validateDifficulty(req.getDifficulty());
+        BookCategory.validate(req.getCategory());
+        LevelDifficultyRange.validate(req.getLevel(), req.getDifficulty());
 
         BookEntity entity = selectBookService.findById(id);
         entity.setTitle(req.getTitle());
@@ -41,19 +34,5 @@ public class UpdateCustomBookService {
         entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
         entity.setUpdatedAt(LocalDateTime.now());
         return entity;
-    }
-
-    /**
-     * 카테고리 유효성 검사
-     */
-    private void validateCategory(String category) {
-        try {
-            BookCategory parsed = BookCategory.valueOf(category);
-            if (parsed == BookCategory.ALL) {
-                throw new BaseException(BookErrorCode.INVALID_CATEGORY);
-            }
-        } catch (IllegalArgumentException e) {
-            throw new BaseException(BookErrorCode.INVALID_CATEGORY);
-        }
     }
 }

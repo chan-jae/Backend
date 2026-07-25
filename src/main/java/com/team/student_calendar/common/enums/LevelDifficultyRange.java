@@ -1,5 +1,6 @@
 package com.team.student_calendar.common.enums;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CustomBookErrorCode;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum LevelDifficultyRange {
 
     A_0(0, 90),
@@ -44,8 +46,9 @@ public enum LevelDifficultyRange {
         }
     }
 
-    public void validateDifficulty(int difficulty) {
-        if (difficulty < low || difficulty > high) {
+    public static void validate(String level, int difficulty) {
+        LevelDifficultyRange range = of(level);
+        if (difficulty < range.low || difficulty > range.high) {
             throw new BaseException(CustomBookErrorCode.DIFFICULTY_OUT_OF_RANGE);
         }
     }
