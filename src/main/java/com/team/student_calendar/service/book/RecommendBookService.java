@@ -109,15 +109,20 @@ public class RecommendBookService {
                     .customLevelOf(convertNotLiteratureLevel(student.getFirstLevel()));
             default -> throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         };
-
-        // custom 책도 c_level을 가지므로, 커리큘럼 책과 함께 같은 쿼리에서 difficulty 순으로 자연스럽게 섞여 나온다.
-        return switch (category) {
+        
+        RecBookRes[] books = switch (category) {
             case LITERATURE -> selectBookService
                     .findLiteratureBookToRead(student.getId(), baseLevel);
             case NON_LITERATURE -> selectBookService
                     .findNonLiteratureBookToRead(student.getId(), baseLevel);
             default -> null;
         };
+
+        if (books == null || books.length == 0) {
+            return new RecBookRes[0];
+        }
+
+        return books;
     }
 
 
