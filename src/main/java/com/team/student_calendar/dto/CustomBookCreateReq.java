@@ -1,5 +1,6 @@
 package com.team.student_calendar.dto;
 
+import com.team.student_calendar.common.constant.BookLevelMapping;
 import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.entity.BookEntity;
 import jakarta.validation.constraints.NotBlank;
@@ -31,6 +32,7 @@ public class CustomBookCreateReq {
                 .category(this.category)
                 .level(this.level)
                 .difficulty(this.difficulty)
+                .cLevel(BookLevelMapping.customLevelOf(this.level))
                 .type((byte) BookType.CUSTOM.getType())
                 .author("자체 등록")
                 .publisher("용천점")

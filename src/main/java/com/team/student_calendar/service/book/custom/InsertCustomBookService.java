@@ -1,6 +1,5 @@
 package com.team.student_calendar.service.book.custom;
 
-import com.team.student_calendar.common.constant.BookLevelMapping;
 import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.exception.BaseException;
@@ -35,10 +34,7 @@ public class InsertCustomBookService {
         LevelDifficultyRange range = LevelDifficultyRange.of(req.getLevel());
         range.validateDifficulty(req.getDifficulty());
 
-        BookEntity entity = req.toEntity();
-        entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
-
-        BookEntity saved = bookRepository.save(entity);
+        BookEntity saved = bookRepository.save(req.toEntity());
         log.info("custom book created — id: {}, title: {}", saved.getId(), saved.getTitle());
         return saved;
     }
