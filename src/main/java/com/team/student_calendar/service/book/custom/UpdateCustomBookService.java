@@ -31,6 +31,8 @@ public class UpdateCustomBookService {
 
         BookEntity entity = selectBookService.findById(id);
         entity.setTitle(req.getTitle());
+        entity.setAuthor(req.getAuthor());
+        entity.setPublisher(req.getPublisher());
         entity.setDifficulty(req.getDifficulty());
         entity.setCategory(req.getCategory());
         entity.setLevel(req.getLevel());

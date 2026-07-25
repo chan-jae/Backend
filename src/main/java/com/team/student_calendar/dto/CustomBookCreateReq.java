@@ -16,6 +16,12 @@ public class CustomBookCreateReq {
     @NotBlank(message = "제목은 필수 항목입니다.")
     private String title;
 
+    @NotBlank(message = "저자는 필수 항목입니다.")
+    private String author;
+
+    @NotBlank(message = "출판사는 필수 항목입니다.")
+    private String publisher;
+
     @NotBlank(message = "레벨은 필수 항목입니다.")
     private String level;
 
@@ -29,13 +35,13 @@ public class CustomBookCreateReq {
     public BookEntity toEntity() {
         return BookEntity.builder()
                 .title(this.title)
+                .author(this.author)
+                .publisher(this.publisher)
                 .category(this.category)
                 .level(this.level)
                 .difficulty(this.difficulty)
                 .cLevel(BookLevelMapping.customLevelOf(this.level))
                 .type((byte) BookType.CUSTOM.getType())
-                .author("자체 등록")
-                .publisher("용천점")
                 .state((byte) 0)
                 .updatedAt(LocalDateTime.now())
                 .build();
