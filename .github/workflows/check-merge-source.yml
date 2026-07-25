@@ -1,0 +1,16 @@
+# develop 브랜치에서만 main merge 가능
+name: Check PR source branch
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if source branch is not develop
+        if: github.head_ref != 'develop'
+        run: |
+          echo "❌ main 머지는 develop 브랜치에서만 가능합니다. 현재: ${{ github.head_ref }}"
+          exit 1
