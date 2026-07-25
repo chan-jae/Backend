@@ -7,6 +7,7 @@ import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.CustomBookCreateReq;
 import com.team.student_calendar.dto.LevelDifficultyRangeRes;
 import com.team.student_calendar.dto.RecBookRes;
+import com.team.student_calendar.service.book.SelectBookService;
 import com.team.student_calendar.service.book.custom.DeleteCustomBookService;
 import com.team.student_calendar.service.book.custom.InsertCustomBookService;
 import com.team.student_calendar.service.book.custom.SelectCustomBookService;
@@ -31,6 +32,7 @@ public class CustomBookApiController {
 
     private final InsertCustomBookService insertCustomBookService;
     private final SelectCustomBookService selectCustomBookService;
+    private final SelectBookService selectBookService;
     private final UpdateCustomBookService updateCustomBookService;
     private final DeleteCustomBookService deleteCustomBookService;
 
@@ -80,7 +82,7 @@ public class CustomBookApiController {
     public ResponseEntity<ApiSuccessResponse<RecBookRes>> getCustomBook(
             @PathVariable("id") Long id) {
 
-        RecBookRes res = selectCustomBookService.findById(id).toRecBook(null, null);
+        RecBookRes res = selectBookService.findById(id).toRecBook(null, null);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "직접 등록 책 조회에 성공했습니다.", "SUCCESS"));

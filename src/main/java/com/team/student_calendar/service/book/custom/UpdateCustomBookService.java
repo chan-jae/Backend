@@ -7,6 +7,7 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.dto.CustomBookCreateReq;
 import com.team.student_calendar.entity.BookEntity;
+import com.team.student_calendar.service.book.SelectBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,9 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-public class    UpdateCustomBookService {
+public class UpdateCustomBookService {
 
-    private final SelectCustomBookService selectCustomBookService;
+    private final SelectBookService selectBookService;
 
     /**
      * 직접 등록 책 수정
@@ -32,7 +33,7 @@ public class    UpdateCustomBookService {
         LevelDifficultyRange range = LevelDifficultyRange.of(req.getLevel());
         range.validateDifficulty(req.getDifficulty());
 
-        BookEntity entity = selectCustomBookService.findById(id);
+        BookEntity entity = selectBookService.findById(id);
         entity.setTitle(req.getTitle());
         entity.setDifficulty(req.getDifficulty());
         entity.setCategory(req.getCategory());

@@ -13,7 +13,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
@@ -30,8 +29,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         // custom 책 전체 (목록 조회)
         List<BookEntity> findAllByType(Byte type, Sort sort);
 
-        // custom 책 단건 (id 로 조회하되 custom 인지 함께 검증)
-        Optional<BookEntity> findByIdAndType(Long id, Byte type);
 
 //        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
 
