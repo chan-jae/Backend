@@ -24,4 +24,5 @@ public class RecBookRes {
 
     private Byte state;
     private LocalDate readAt;
+    // custom 책 여부는 type 필드로 구분 (BookType.CUSTOM == 1)
 }

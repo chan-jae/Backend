@@ -13,7 +13,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
@@ -23,6 +22,13 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         @NullMarked
         @Cacheable(cacheNames = "books", key = "'all'")
         List<BookEntity> findAll(Sort sort);
+
+
+        // ===== 직접 등록(custom) 책 CRUD 용 (type = CUSTOM(1)) =====
+
+        // custom 책 전체 (목록 조회)
+        List<BookEntity> findAllByType(Byte type, Sort sort);
+
 
 //        List<BookEntity> findAllByBookNoIn(List<Long> bookNoList);
 

@@ -7,7 +7,6 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.StudentErrorCode;
 import com.team.student_calendar.dto.RecBookRes;
-import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.StudentEntity;
 import com.team.student_calendar.service.student.SelectStudentService;
 import com.team.student_calendar.service.student.book.SelectReadBookService;
@@ -16,14 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecommendBookService {
 
-    
     private final SelectBookService selectBookService;
     private final SelectStudentService selectStudentService;
     private final SelectReadBookService selectReadBookService;
@@ -113,7 +109,7 @@ public class RecommendBookService {
                     .customLevelOf(convertNotLiteratureLevel(student.getFirstLevel()));
             default -> throw new BaseException(BookErrorCode.INVALID_CATEGORY);
         };
-
+        
         RecBookRes[] books = switch (category) {
             case LITERATURE -> selectBookService
                     .findLiteratureBookToRead(student.getId(), baseLevel);
