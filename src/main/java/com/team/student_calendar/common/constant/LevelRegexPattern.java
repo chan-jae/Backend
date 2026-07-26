@@ -1,5 +1,7 @@
 package com.team.student_calendar.common.constant;
 
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import lombok.Getter;
 
 import java.util.regex.Pattern;
@@ -24,4 +26,10 @@ public enum LevelRegexPattern {
         return input != null && this.compiledPattern.matcher(input).matches();
     }
 
+    public static void validate(String level) {
+
+        if (!LEVEL.matches(level)) {
+            throw new BaseException(BookErrorCode.INVALID_LEVEL);
+        }
+    }
 }

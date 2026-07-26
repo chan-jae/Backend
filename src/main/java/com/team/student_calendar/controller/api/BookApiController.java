@@ -1,16 +1,15 @@
 package com.team.student_calendar.controller.api;
 
+import com.team.student_calendar.common.enums.LevelDifficultyRange;
 import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.dto.ManualBookDto;
 import com.team.student_calendar.dto.RecBookRes;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
-import com.team.student_calendar.service.book.InsertBookService;
-import com.team.student_calendar.service.book.RecommendBookService;
-//import com.team.student_calendar.service.book.SelectBookService;
-import com.team.student_calendar.service.book.SelectBookService;
+import com.team.student_calendar.service.book.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -39,6 +38,92 @@ public class BookApiController {
     private final SelectBookService selectBookService;
 //    private final SearchBookService searchBookService;
     private final RecommendBookService recommendBookService;
+    private final UpdateBookService updateBookService;
+    private final DeleteBookService deleteBookService;
+
+
+
+
+
+
+    @Validated
+    @Operation(summary = "책 레벨 난이도 범위 가져오기", description = "레벨에 해당하는 난이도 범위 반환")
+    @GetMapping("/api/books/difficulty-range")
+    public ResponseEntity<ApiSuccessResponse<LevelDifficultyRange>> getDifficultyRange(
+            @RequestParam("level") String level
+    ) {
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(LevelDifficultyRange.of(level), "레벨별 난이도 범위 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Validated
+    @Operation(summary = "책 1권 수동 등록", description = "자동 등록이 아닌 수동 등록")
+    @PostMapping("/api/books/manual")
+    public ResponseEntity<ApiSuccessResponse<Void>> selfCreateBook(
+            @RequestBody @Valid ManualBookDto req,
+            BindingResult bindingResult
+    ) {
+
+        // valid 검증에 실패했으면 해당 메시지로 에러 던지기
+        if (bindingResult.hasFieldErrors()) {
+            throw new BaseException(CommonErrorCode.PARAMETER_ERROR,
+                    bindingResult.getFieldError().getDefaultMessage());
+        }
+
+        insertBookService.saveBook(req);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiSuccessResponse.created("책 추가에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "책 1권 조회", description = "책 1권 조회")
+    @GetMapping("/api/books/{id}")
+    public ResponseEntity<ApiSuccessResponse<BookEntity>> getBook(
+            @PathVariable("id") Long id
+    ) {
+
+        BookEntity bookEntity = selectBookService.findById(id);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(bookEntity, "책 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "책 1권 업데이트(커스텀 책만)", description = "책 1권 업데이트(커스텀 책만)")
+    @PutMapping("/api/books/{id}")
+    public ResponseEntity<ApiSuccessResponse<Void>> patchBook(
+            @PathVariable("id") Long id,
+            @RequestBody ManualBookDto req
+    ) {
+
+        updateBookService.updateBook(id, req);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("책 업데이트에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "책 1권 삭제(커스텀 책만)", description = "책 1권 삭제(커스텀 책만)")
+    @DeleteMapping("/api/books/{id}")
+    public ResponseEntity<ApiSuccessResponse<Void>> deleteCustomBook(
+            @PathVariable("id") Long id) {
+
+        deleteBookService.deleteBook(id);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("직접 등록 책 삭제에 성공했습니다.", "SUCCESS"));
+    }
+
+
+
+
+
+
+
+
 
 
 

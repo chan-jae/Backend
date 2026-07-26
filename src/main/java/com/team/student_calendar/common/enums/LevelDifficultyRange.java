@@ -2,8 +2,8 @@ package com.team.student_calendar.common.enums;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
-import com.team.student_calendar.common.exception.domain.CustomBookErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -43,7 +43,7 @@ public enum LevelDifficultyRange {
         try {
             return LevelDifficultyRange.valueOf(level.toUpperCase());
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new BaseException(CustomBookErrorCode.INVALID_LEVEL);
+            throw new BaseException(BookErrorCode.INVALID_LEVEL);
         } catch (Exception e) {
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
@@ -52,7 +52,7 @@ public enum LevelDifficultyRange {
     public static void validate(String level, int difficulty) {
         LevelDifficultyRange range = of(level);
         if (difficulty < range.low || difficulty > range.high) {
-            throw new BaseException(CustomBookErrorCode.DIFFICULTY_OUT_OF_RANGE);
+            throw new BaseException(BookErrorCode.DIFFICULTY_OUT_OF_RANGE);
         }
     }
 }

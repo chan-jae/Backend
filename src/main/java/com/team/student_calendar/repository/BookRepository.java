@@ -24,9 +24,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         List<BookEntity> findAll(Sort sort);
 
 
-        // ===== 직접 등록(custom) 책 CRUD 용 (type = CUSTOM(1)) =====
-
-        // custom 책 전체 (목록 조회)
         List<BookEntity> findAllByType(Byte type, Sort sort);
 
 

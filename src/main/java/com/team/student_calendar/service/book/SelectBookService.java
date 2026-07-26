@@ -68,6 +68,18 @@ public class SelectBookService {
     }
 
 
+    /**
+     * 레벨에 해당하는 난이도 범위 반환
+     * @param level 레벨(ex: A_0, B_2)
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public void findDifficultyRange(String level) {
+
+    }
+
+
+
 //    /**
 //     * 전체 책 개수 가져오기
 //     */
