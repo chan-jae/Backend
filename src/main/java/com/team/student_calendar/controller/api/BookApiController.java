@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,12 +50,10 @@ public class BookApiController {
     @Validated
     @Operation(summary = "책 레벨 난이도 범위 가져오기", description = "레벨에 해당하는 난이도 범위 반환")
     @GetMapping("/api/books/difficulty-range")
-    public ResponseEntity<ApiSuccessResponse<LevelDifficultyRange>> getDifficultyRange(
-            @RequestParam("level") String level
-    ) {
+    public ResponseEntity<ApiSuccessResponse<Map<String, LevelDifficultyRange>>> getDifficultyRange() {
 
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiSuccessResponse.ok(LevelDifficultyRange.of(level), "레벨별 난이도 범위 조회에 성공했습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.ok(LevelDifficultyRange.asMap(), "레벨별 난이도 범위 조회에 성공했습니다.", "SUCCESS"));
     }
 
 
