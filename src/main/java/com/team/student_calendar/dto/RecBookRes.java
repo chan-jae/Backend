@@ -20,6 +20,7 @@ public class RecBookRes {
     private Long bookNo;
     private String imageUrl;
     private Byte type;
+    private Byte isActive;
     private LocalDateTime updatedAt;
 
     private Byte state;

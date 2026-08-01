@@ -24,9 +24,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         List<BookEntity> findAll(Sort sort);
 
 
-        // ===== 직접 등록(custom) 책 CRUD 용 (type = CUSTOM(1)) =====
-
-        // custom 책 전체 (목록 조회)
         List<BookEntity> findAllByType(Byte type, Sort sort);
 
 
@@ -58,9 +55,9 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         LEFT JOIN StudentBookEntity sb ON b.id = sb.book.id
                         AND sb.student.id = :studentId
                         WHERE b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
-                        AND b.state = 0
+                        AND b.state = 0 AND (b.isActive IS NULL OR b.isActive == 1)
                         AND (
-                            (sb.state IS NULL AND b.cLevel >= :baseLevel)
+                            (b.cLevel >= :baseLevel)
                             OR
                             (sb.state != 2)
                         )
@@ -71,16 +68,21 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         Pageable pageable
         );
 
-        // 읽어야 하는 비문학 옵션에 따라 가져오기
+        /**
+         * 읽어야 하는 비문학 옵션에 따라 가져오기
+         * b.state -> 티칭오션 보유도서 체크용 필드
+         * b.active -> 명시적 활성화 여부(0: 비활성화, 1: 활성화)
+         * sb.state -> 학생 읽은책 상태(0: 읽는중, 1:쓰는중, 2: 완료)
+          */
         @Query("""
                         SELECT
                         b as book, sb.state as state, sb.readAt as readAt FROM BookEntity b
                         LEFT JOIN StudentBookEntity sb ON b.id = sb.book.id
                         AND sb.student.id = :studentId
                         WHERE b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
-                        AND b.state = 0
+                        AND b.state = 0 AND (b.isActive IS NULL OR b.isActive == 1)
                         AND (
-                            (sb.state IS NULL AND b.cLevel >= :baseLevel)
+                            (b.cLevel >= :baseLevel)
                             OR
                             (sb.state != 2)
                         )
