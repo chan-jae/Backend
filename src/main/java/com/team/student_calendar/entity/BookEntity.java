@@ -76,6 +76,9 @@ public class BookEntity {
     @ColumnDefault("0")
     private Byte type;
 
+    @Column(name = "is_active")
+    private Byte isActive;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -97,6 +100,7 @@ public class BookEntity {
         dto.setBookNo(this.bookNo);
         dto.setImageUrl(this.imageUrl);
         dto.setType(this.type);
+        dto.setIsActive(this.isActive);
         dto.setUpdatedAt(this.updatedAt);
 
         dto.setState(state);

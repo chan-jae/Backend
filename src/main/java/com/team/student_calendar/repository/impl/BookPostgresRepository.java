@@ -43,7 +43,7 @@ public class BookPostgresRepository implements BookJdbcRepository {
     private static final String MARK_STALE_BOOKS_SQL = """
             UPDATE student_calendar.book
             SET state = 1
-            WHERE updated_at < ?
+            WHERE type = 0 AND updated_at < ?
             """;
 
     private final JdbcTemplate jdbcTemplate;

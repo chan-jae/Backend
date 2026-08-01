@@ -38,6 +38,10 @@ public class ManualBookDto {
     @Size(max = 20, message = "타입은 20자 이하로 입력해주세요.")
     private String type;
 
+    @NotBlank(message = "활성화 여부는 필수 항목입니다.")
+    @Pattern(regexp = "true|false", message = "올바른 활성화 여부가 아닙니다.")
+    private String isActive;
+
 
 
     public void validate() {

@@ -42,6 +42,8 @@ public class UpdateBookService {
         }
         log.info("check custom book complete");
 
+        byte isActive = (byte) (Boolean.parseBoolean(req.getIsActive()) ? 1 : 0);
+
         entity.setTitle(req.getTitle());
         entity.setAuthor(req.getAuthor());
         entity.setPublisher(req.getPublisher());
@@ -49,6 +51,8 @@ public class UpdateBookService {
         entity.setCategory(req.getCategory());
         entity.setLevel(req.getLevel());
         entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
+        entity.setUpdatedAt(LocalDateTime.now());
+        entity.setIsActive(isActive);
         entity.setUpdatedAt(LocalDateTime.now());
 
         log.info("book update complete - book: {}", id);

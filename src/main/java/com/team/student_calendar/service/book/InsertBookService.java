@@ -61,6 +61,8 @@ public class InsertBookService {
         // 카테고리, 레벨, 난이도, 타입 검증
         req.validate();
 
+        byte isActive = (byte) (Boolean.parseBoolean(req.getIsActive()) ? 1 : 0);
+
         BookEntity bookEntity = BookEntity.builder()
                 .title(req.getTitle())
                 .author(req.getAuthor())
@@ -70,6 +72,7 @@ public class InsertBookService {
                 .difficulty(req.getDifficulty())
                 .cLevel(BookLevelMapping.customLevelOf(req.getLevel()))
                 .type(BookType.of(req.getType()).getType())
+                .isActive(isActive)
                 .updatedAt(LocalDateTime.now())
                 .build();
 
