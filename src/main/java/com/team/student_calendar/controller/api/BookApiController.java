@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,18 @@ public class BookApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("직접 등록 책 삭제에 성공했습니다.", "SUCCESS"));
+    }
+
+    @Operation(summary = "엑셀 파일로 책 등록", description = "엑셀 파일 1건을 받아 행 데이터를 추출")
+    @PostMapping(value = "/api/books/excel", consumes = "multipart/form-data")
+    public ResponseEntity<ApiSuccessResponse<Void>> createBookByExcel(
+            @RequestParam("file") MultipartFile file
+    ) {
+
+        insertBookService.saveBookByExcel(file);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("엑셀 파일 처리에 성공했습니다.", "SUCCESS"));
     }
 
 

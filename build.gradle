@@ -49,6 +49,8 @@ dependencies {
 
 	// Source: https://mvnrepository.com/artifact/org.apache.poi/poi
 	implementation("org.apache.poi:poi:5.5.1")
+	implementation("org.apache.poi:poi-ooxml:5.5.1")
+
 
 
 

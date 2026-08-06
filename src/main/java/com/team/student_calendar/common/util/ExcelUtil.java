@@ -2,12 +2,18 @@ package com.team.student_calendar.common.util;
 
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ExcelUtil {
 
@@ -53,5 +59,36 @@ public class ExcelUtil {
         }
 
         return workbook;
+    }
+
+
+    /**
+     * Workbook의 첫 번째 시트를 행 단위로 읽어, 각 행의 0번째 열부터 columnCount번째 열 전까지의 셀 값을 List로 담는다.
+     * @param workbook 액셀 Workbook
+     * @param columnCount 읽을 열 개수 (0번 열부터 columnCount - 1번 열까지)
+     * @return 행마다 셀 값 List를 담은 배열
+     */
+    public static List<String>[] extractCellData(Workbook workbook, int columnCount) {
+
+        Sheet sheet = workbook.getSheetAt(0);
+        DataFormatter dataFormatter = new DataFormatter();
+
+        @SuppressWarnings("unchecked")
+        List<String>[] rows = new List[sheet.getPhysicalNumberOfRows()];
+
+        int idx = 0;
+        for (Row row : sheet) {
+            if (row == null || row.getPhysicalNumberOfCells() == 0) {
+                continue;
+            }
+            List<String> cellValues = new ArrayList<>();
+            for (int col = 0; col < columnCount; col++) {
+                cellValues.add(dataFormatter.formatCellValue(row.getCell(col)));
+            }
+            rows[idx++] = cellValues;
+        }
+
+        // continue 됬을때 남아있는 null값 다듬고 넘기기
+        return idx == rows.length ? rows : Arrays.copyOf(rows, idx);
     }
 }

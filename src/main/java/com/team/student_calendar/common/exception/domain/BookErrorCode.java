@@ -18,7 +18,9 @@ public enum BookErrorCode implements ErrorCode {
     NOT_EXCEL_FILE("B007", HttpStatus.BAD_REQUEST, "액셀 파일이 아닙니다."),
     EXCEL_NO_DATA("B008", HttpStatus.BAD_REQUEST, "액셀 파일에 데이터가 없습니다."),
     EXCEL_CANT_READ("B009", HttpStatus.BAD_REQUEST, "엑셀 파일을 읽을 수 없습니다. 파일이 손상되었거나 암호화되어 있습니다."),
-    EXCEL_ERROR("B010", HttpStatus.BAD_REQUEST, "파일 처리 중 오류가 발생했습니다.");
+    EXCEL_ERROR("B010", HttpStatus.BAD_REQUEST, "파일 처리 중 오류가 발생했습니다."),
+    TOO_MANY_EXCEL_DATA("B011", HttpStatus.BAD_REQUEST, "액셀에 데이터가 너무 많이 있습니다.");
+
 
     private final String code;
     private final HttpStatus status;
