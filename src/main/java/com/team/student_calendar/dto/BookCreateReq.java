@@ -3,9 +3,11 @@ package com.team.student_calendar.dto;
 import com.team.student_calendar.entity.BookEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class BookCreateReq {
 
     @NotBlank(message = "제목은 필수 항목입니다.")
@@ -34,17 +36,5 @@ public class BookCreateReq {
 
     private Byte type;
 
-    public BookEntity toEntity() {
-        return BookEntity.builder()
-                .title(this.title)
-                .author(this.author)
-                .publisher(this.publisher)
-                .category(this.category)
-                .level(this.level)
-                .difficulty(this.difficulty)
-                .bookNo(this.bookNo)
-                .imageUrl(this.imageUrl)
-                .type(this.type)
-                .build();
-    }
+    private Byte isActive;
 }

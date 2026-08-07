@@ -4,13 +4,18 @@ import com.team.student_calendar.common.constant.BookLevelMapping;
 import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.exception.domain.CommonErrorCode;
+import com.team.student_calendar.common.util.DtoValidator;
 import com.team.student_calendar.common.util.ExcelUtil;
 import com.team.student_calendar.dto.BookCreateReq;
+import com.team.student_calendar.dto.ExcelBookDto;
 import com.team.student_calendar.dto.ManualBookDto;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -20,7 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -29,6 +36,8 @@ public class InsertBookService {
 
     private final BookRepository bookRepository;
     private final BookJdbcRepository bookJdbcRepository;
+    private final DtoValidator dtoValidator;
+
 
     /**
      * 책 list 저장
@@ -96,16 +105,48 @@ public class InsertBookService {
 
         Workbook workbook = ExcelUtil.convertToWorkbook(file);
 
-        // 실제 작성된 행이 100건 이하만 통과
-        if (workbook.getSheetAt(0).getPhysicalNumberOfRows() > 100) {
-            throw new BaseException(BookErrorCode.TOO_MANY_EXCEL_DATA, "데이터가 담긴 행이 100개 이하만 가능합니다,");
+        // 실제 작성된 행이 200건 이하만 통과
+        if (workbook.getSheetAt(0).getPhysicalNumberOfRows() > 200) {
+            throw new BaseException(BookErrorCode.TOO_MANY_EXCEL_DATA, "데이터가 담긴 행이 200개 이하만 가능합니다,");
         }
 
-        // title, author, publisher, category, level, tisActive
-        List<String>[] rows = ExcelUtil.extractCellData(workbook, 3);
+        // title, author, publisher, category, level, isActive
+        List<String>[] rows = ExcelUtil.extractCellData(workbook, 6);
+
+        List<BookCreateReq> bookCreateReqList = toBookCreateReqList(rows);
+
+        for (BookCreateReq bookCreateReq : bookCreateReqList) {
+            System.out.println(bookCreateReq);
+        }
+    }
+
+
+    private List<BookCreateReq> toBookCreateReqList(List<String>[] rows) {
+
+        List<BookCreateReq> bookCreateReqList = new ArrayList<>();
 
         for (List<String> row : rows) {
-            System.out.println(row);
+            ExcelBookDto excelBookDto = toExcelBookDto(row);
+
+            dtoValidator.validate(excelBookDto);
+
+            bookCreateReqList.add(excelBookDto.toBookCreateReq());
         }
+
+        return bookCreateReqList;
+    }
+
+
+    private ExcelBookDto toExcelBookDto(List<String> row) {
+
+        ExcelBookDto excelBookDto = new ExcelBookDto();
+        excelBookDto.setTitle(row.get(0));
+        excelBookDto.setAuthor(row.get(1));
+        excelBookDto.setPublisher(row.get(2));
+        excelBookDto.setCategory(row.get(3));
+        excelBookDto.setLevel(row.get(4));
+        excelBookDto.setIsActive(row.get(5));
+
+        return excelBookDto;
     }
 }
