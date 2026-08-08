@@ -5,6 +5,7 @@ import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.util.BookHashUtil;
 import com.team.student_calendar.repository.BookRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

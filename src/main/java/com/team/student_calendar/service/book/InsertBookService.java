@@ -43,6 +43,7 @@ public class InsertBookService {
      * @param bookList 책 list
      * @return 삽입,갱신,스킵 건수
      */
+    @CacheEvict(cacheNames = "books", allEntries = true)
     @Transactional
     public UpsertResult saveBookList(List<BookCreateReq> bookList) {
 
@@ -102,6 +103,8 @@ public class InsertBookService {
      * 엑셀 파일 1개를 받아 행 단위 데이터를 추출
      * @param file 엑셀 파일
      */
+    @CacheEvict(cacheNames = "books", allEntries = true)
+    @Transactional
     public UpsertResult saveBookByExcel(MultipartFile file) {
 
         log.info("file name: {}", file.getOriginalFilename());

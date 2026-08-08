@@ -58,8 +58,6 @@ public class BookPostgresRepository implements BookJdbcRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    @Transactional
-    @CacheEvict(cacheNames = "books", allEntries = true)
     public UpsertResult bulkInsertBooks(List<BookCreateReq> bookList) {
 
         int size = bookList.size();
@@ -120,8 +118,6 @@ public class BookPostgresRepository implements BookJdbcRepository {
 
 
     @Override
-    @Transactional
-    @CacheEvict(cacheNames = "books", allEntries = true)
     public UpsertResult bulkInsertBooksByExcel(List<BookCreateReq> bookList) {
 
         int size = bookList.size();
