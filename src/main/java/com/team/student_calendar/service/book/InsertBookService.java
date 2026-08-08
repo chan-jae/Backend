@@ -1,11 +1,15 @@
 package com.team.student_calendar.service.book;
 
 import com.team.student_calendar.common.constant.BookLevelMapping;
-import com.team.student_calendar.common.constant.LevelRegexPattern;
-import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.enums.BookType;
-import com.team.student_calendar.common.enums.LevelDifficultyRange;
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.BookErrorCode;
+import com.team.student_calendar.common.exception.domain.CommonErrorCode;
+import com.team.student_calendar.common.util.BookHashUtil;
+import com.team.student_calendar.common.util.DtoValidator;
+import com.team.student_calendar.common.util.ExcelUtil;
 import com.team.student_calendar.dto.BookCreateReq;
+import com.team.student_calendar.dto.ExcelBookReq;
 import com.team.student_calendar.dto.ManualBookDto;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
@@ -13,11 +17,14 @@ import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -27,6 +34,9 @@ public class InsertBookService {
 
     private final BookRepository bookRepository;
     private final BookJdbcRepository bookJdbcRepository;
+    private final DtoValidator dtoValidator;
+    private final ValidateBookDupService validateBookDupService;
+
 
     /**
      * 책 list 저장
@@ -58,8 +68,11 @@ public class InsertBookService {
 
         log.info("try to save [{}] book", req.getTitle());
 
-        // 카테고리, 레벨, 난이도, 타입 검증
+        // 필드 검증
         req.validate();
+
+        // 등록된 책인지 체크
+        validateBookDupService.checkBookDuplication(req.getTitle(), req.getAuthor());
 
         byte isActive = (byte) (Boolean.parseBoolean(req.getIsActive()) ? 1 : 0);
 
@@ -73,6 +86,7 @@ public class InsertBookService {
                 .cLevel(BookLevelMapping.customLevelOf(req.getLevel()))
                 .type(BookType.of(req.getType()).getType())
                 .isActive(isActive)
+                .bHash(BookHashUtil.generateBookHashKey(req.getTitle(), req.getAuthor()))
                 .updatedAt(LocalDateTime.now())
                 .build();
 
@@ -81,5 +95,84 @@ public class InsertBookService {
         log.info("book save complete - [{}]", req.getTitle());
 
         return bookEntity;
+    }
+
+
+    /**
+     * 엑셀 파일 1개를 받아 행 단위 데이터를 추출
+     * @param file 엑셀 파일
+     */
+    public UpsertResult saveBookByExcel(MultipartFile file) {
+
+        log.info("file name: {}", file.getOriginalFilename());
+
+        Workbook workbook = ExcelUtil.convertToWorkbook(file);
+
+        // 실제 작성된 행이 200건 이하만 통과
+        if (workbook.getSheetAt(0).getPhysicalNumberOfRows() > 200) {
+            throw new BaseException(BookErrorCode.TOO_MANY_EXCEL_DATA, "데이터가 담긴 행이 200개 이하만 가능합니다,");
+        }
+
+        // title, author, publisher, category, level, isActive
+        List<String>[] rows = ExcelUtil.extractCellData(workbook, 6);
+
+        List<BookCreateReq> bookCreateReqList = toBookCreateReqList(rows);
+
+//        for (BookCreateReq bookCreateReq : bookCreateReqList) {
+//            System.out.println(bookCreateReq);
+//        }
+
+        UpsertResult result = bookJdbcRepository.bulkInsertBooksByExcel(bookCreateReqList);
+
+        log.info("book save complete — inserted: {}", result.insertedCount());
+
+        return result;
+    }
+
+
+
+
+
+
+    private List<BookCreateReq> toBookCreateReqList(List<String>[] rows) {
+
+        List<BookCreateReq> bookCreateReqList = new ArrayList<>();
+
+        int i = 1;
+        for (List<String> row : rows) {
+            ExcelBookReq excelBookReq = toExcelBookReq(row);
+
+            // 필드 검증
+            dtoValidator.validate(excelBookReq);
+
+            // 등록된 책인지 검증
+            try {
+                validateBookDupService.checkBookDuplication(excelBookReq.getTitle(), excelBookReq.getAuthor());
+            } catch (BaseException e) {
+                String s = String.format("%d행에 중복된 책이 있습니다.", i);
+                throw new BaseException(BookErrorCode.ALREADY_EXIST_BOOK, s);
+            } catch (Exception e) {
+                throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            }
+
+            bookCreateReqList.add(excelBookReq.toBookCreateReq());
+            i++;
+        }
+
+        return bookCreateReqList;
+    }
+
+
+    private ExcelBookReq toExcelBookReq(List<String> row) {
+
+        ExcelBookReq excelBookReq = new ExcelBookReq();
+        excelBookReq.setTitle(row.get(0));
+        excelBookReq.setAuthor(row.get(1));
+        excelBookReq.setPublisher(row.get(2));
+        excelBookReq.setCategory(row.get(3));
+        excelBookReq.setLevel(row.get(4));
+        excelBookReq.setIsActive(row.get(5));
+
+        return excelBookReq;
     }
 }
