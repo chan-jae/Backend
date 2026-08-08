@@ -12,6 +12,7 @@ import com.team.student_calendar.service.book.SelectBookService;
 import com.team.student_calendar.service.file.util.UploadFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +32,7 @@ public class ReUploadFileService {
     private final S3Properties s3Properties;
 
 
-
+    @CacheEvict(cacheNames = "books", allEntries = true)
     @Transactional
     public void reuploadFile(Long bookId, MultipartFile file) {
 
