@@ -3,11 +3,15 @@ package com.team.student_calendar.dto;
 import com.team.student_calendar.entity.BookEntity;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class BookCreateReq {
 
     @NotBlank(message = "제목은 필수 항목입니다.")
