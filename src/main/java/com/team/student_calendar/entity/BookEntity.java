@@ -79,6 +79,9 @@ public class BookEntity {
     @Column(name = "is_active")
     private Byte isActive;
 
+    @Column(name = "b_hash", length = 64)
+    private String bHash;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 

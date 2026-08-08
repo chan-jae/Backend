@@ -94,4 +94,9 @@ public class BookMySqlRepository implements BookJdbcRepository {
 
         return new UpsertResult(inserted, updated, skipped, batchTime);
     }
+
+    @Override
+    public UpsertResult bulkInsertBooksByExcel(List<BookCreateReq> bookList) {
+        return null;
+    }
 }

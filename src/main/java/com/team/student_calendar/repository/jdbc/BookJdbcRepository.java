@@ -1,6 +1,7 @@
 package com.team.student_calendar.repository.jdbc;
 
 import com.team.student_calendar.dto.BookCreateReq;
+import com.team.student_calendar.dto.ExcelBookReq;
 import com.team.student_calendar.dto.UpsertResult;
 
 import java.util.List;
@@ -14,4 +15,9 @@ public interface BookJdbcRepository {
      * registered_at / updated_at 컬럼 기반 SELECT로 삽입/갱신/스킵 건수를 반환.
      */
     UpsertResult bulkInsertBooks(List<BookCreateReq> bookList);
+
+    /**
+     * 액셀에 입력한 책들 삽입
+     */
+    UpsertResult bulkInsertBooksByExcel(List<BookCreateReq> bookList);
 }
