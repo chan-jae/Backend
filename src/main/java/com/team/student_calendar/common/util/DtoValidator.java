@@ -20,10 +20,11 @@ public class DtoValidator {
      * @param dto
      * @param dto 타입
      */
-    public <T> void validate(T dto) {
+    public <T> void validate(T dto, int i) {
         Set<ConstraintViolation<T>> violations = validator.validate(dto);
         if (!violations.isEmpty()) {
-            String message = violations.iterator().next().getMessage();
+            String err = violations.iterator().next().getMessage();
+            String message = String.format("%d행에 문제 발견: %s", i, err);
             throw new BaseException(CommonErrorCode.PARAMETER_ERROR, message);
         }
     }

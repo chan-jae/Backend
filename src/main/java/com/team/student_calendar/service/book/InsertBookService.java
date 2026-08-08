@@ -143,7 +143,7 @@ public class InsertBookService {
             ExcelBookReq excelBookReq = toExcelBookReq(row);
 
             // 필드 검증
-            dtoValidator.validate(excelBookReq);
+            dtoValidator.validate(excelBookReq, i);
 
             // 등록된 책인지 검증
             try {
