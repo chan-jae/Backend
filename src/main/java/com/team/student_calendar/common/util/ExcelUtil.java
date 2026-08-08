@@ -27,17 +27,17 @@ public class ExcelUtil {
 
         // 파일 자체가 있는지 체크
         if (file == null || file.isEmpty()) {
-            throw new BaseException(BookErrorCode.EXCEL_FILE_EMPTY);
+            throw new BaseException(BookErrorCode.INVALID_EXCEL_FILE, "업로드된 액셀 파일이 없습니다.");
         }
 
         // 액셀파일이 맞는지 체크
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.lastIndexOf(".") == -1) {
-            throw new BaseException(BookErrorCode.NOT_EXCEL_FILE);
+            throw new BaseException(BookErrorCode.INVALID_EXCEL_FILE, "액셀 파일이 아닙니다.");
         }
         String extension = fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase();
         if (!("xlsx".equals(extension) || "xls".equals(extension))) {
-            throw new BaseException(BookErrorCode.NOT_EXCEL_FILE);
+            throw new BaseException(BookErrorCode.INVALID_EXCEL_FILE, "액셀 파일이 아닙니다.");
         }
 
         // Workbook으로 변환
@@ -45,17 +45,17 @@ public class ExcelUtil {
         try (InputStream is = file.getInputStream()) {
             workbook = WorkbookFactory.create(is);
         } catch (Exception e) {
-            throw new BaseException(BookErrorCode.EXCEL_CANT_READ);
+            throw new BaseException(BookErrorCode.INVALID_EXCEL_FILE, "엑셀 파일을 읽을 수 없습니다. 파일이 손상되었거나 암호화되어 있습니다.");
         }
 
         // 시트 및 행이 실제로 존재하는지 체크 (내용이 빈 액셀)
         try (workbook) {
             Sheet sheet = workbook.getSheetAt(0);
             if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
-                throw new BaseException(BookErrorCode.EXCEL_NO_DATA);
+                throw new BaseException(BookErrorCode.INVALID_EXCEL_FILE, "액셀 파일에 데이터가 없습니다.");
             }
         } catch (Exception e) {
-            throw new BaseException(BookErrorCode.EXCEL_ERROR);
+            throw new BaseException(BookErrorCode.INVALID_EXCEL_FILE, "파일 처리 중 오류가 발생했습니다.");
         }
 
         return workbook;

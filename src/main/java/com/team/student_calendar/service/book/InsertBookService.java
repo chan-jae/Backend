@@ -5,17 +5,16 @@ import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
+import com.team.student_calendar.common.util.BookHashUtil;
 import com.team.student_calendar.common.util.DtoValidator;
 import com.team.student_calendar.common.util.ExcelUtil;
 import com.team.student_calendar.dto.BookCreateReq;
-import com.team.student_calendar.dto.ExcelBookDto;
+import com.team.student_calendar.dto.ExcelBookReq;
 import com.team.student_calendar.dto.ManualBookDto;
 import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -27,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,6 +35,7 @@ public class InsertBookService {
     private final BookRepository bookRepository;
     private final BookJdbcRepository bookJdbcRepository;
     private final DtoValidator dtoValidator;
+    private final ValidateBookDupService validateBookDupService;
 
 
     /**
@@ -69,8 +68,11 @@ public class InsertBookService {
 
         log.info("try to save [{}] book", req.getTitle());
 
-        // 카테고리, 레벨, 난이도, 타입 검증
+        // 필드 검증
         req.validate();
+
+        // 등록된 책인지 체크
+        validateBookDupService.checkBookDuplication(req.getTitle(), req.getAuthor());
 
         byte isActive = (byte) (Boolean.parseBoolean(req.getIsActive()) ? 1 : 0);
 
@@ -84,6 +86,7 @@ public class InsertBookService {
                 .cLevel(BookLevelMapping.customLevelOf(req.getLevel()))
                 .type(BookType.of(req.getType()).getType())
                 .isActive(isActive)
+                .bHash(BookHashUtil.generateBookHashKey(req.getTitle(), req.getAuthor()))
                 .updatedAt(LocalDateTime.now())
                 .build();
 
@@ -99,7 +102,7 @@ public class InsertBookService {
      * 엑셀 파일 1개를 받아 행 단위 데이터를 추출
      * @param file 엑셀 파일
      */
-    public void saveBookByExcel(MultipartFile file) {
+    public UpsertResult saveBookByExcel(MultipartFile file) {
 
         log.info("file name: {}", file.getOriginalFilename());
 
@@ -115,38 +118,61 @@ public class InsertBookService {
 
         List<BookCreateReq> bookCreateReqList = toBookCreateReqList(rows);
 
-        for (BookCreateReq bookCreateReq : bookCreateReqList) {
-            System.out.println(bookCreateReq);
-        }
+//        for (BookCreateReq bookCreateReq : bookCreateReqList) {
+//            System.out.println(bookCreateReq);
+//        }
+
+        UpsertResult result = bookJdbcRepository.bulkInsertBooksByExcel(bookCreateReqList);
+
+        log.info("book save complete — inserted: {}", result.insertedCount());
+
+        return result;
     }
+
+
+
+
 
 
     private List<BookCreateReq> toBookCreateReqList(List<String>[] rows) {
 
         List<BookCreateReq> bookCreateReqList = new ArrayList<>();
 
+        int i = 1;
         for (List<String> row : rows) {
-            ExcelBookDto excelBookDto = toExcelBookDto(row);
+            ExcelBookReq excelBookReq = toExcelBookReq(row);
 
-            dtoValidator.validate(excelBookDto);
+            // 필드 검증
+            dtoValidator.validate(excelBookReq);
 
-            bookCreateReqList.add(excelBookDto.toBookCreateReq());
+            // 등록된 책인지 검증
+            try {
+                validateBookDupService.checkBookDuplication(excelBookReq.getTitle(), excelBookReq.getAuthor());
+            } catch (BaseException e) {
+                String s = String.format("%d행에 중복된 책이 있습니다.", i);
+                throw new BaseException(BookErrorCode.ALREADY_EXIST_BOOK, s);
+            } catch (Exception e) {
+                throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            }
+
+            bookCreateReqList.add(excelBookReq.toBookCreateReq());
+            i++;
         }
 
         return bookCreateReqList;
     }
 
 
-    private ExcelBookDto toExcelBookDto(List<String> row) {
+    private ExcelBookReq toExcelBookReq(List<String> row) {
 
-        ExcelBookDto excelBookDto = new ExcelBookDto();
-        excelBookDto.setTitle(row.get(0));
-        excelBookDto.setAuthor(row.get(1));
-        excelBookDto.setPublisher(row.get(2));
-        excelBookDto.setCategory(row.get(3));
-        excelBookDto.setLevel(row.get(4));
-        excelBookDto.setIsActive(row.get(5));
+        ExcelBookReq excelBookReq = new ExcelBookReq();
+        excelBookReq.setTitle(row.get(0));
+        excelBookReq.setAuthor(row.get(1));
+        excelBookReq.setPublisher(row.get(2));
+        excelBookReq.setCategory(row.get(3));
+        excelBookReq.setLevel(row.get(4));
+        excelBookReq.setIsActive(row.get(5));
 
-        return excelBookDto;
+        return excelBookReq;
     }
 }

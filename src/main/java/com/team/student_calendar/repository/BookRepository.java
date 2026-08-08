@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
@@ -92,4 +93,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         @Param("baseLevel") Byte baseLevel,
                         Pageable pageable
         );
+
+        @Query("SELECT b.bHash FROM BookEntity b")
+        Set<String> findAllBookHash();
 }

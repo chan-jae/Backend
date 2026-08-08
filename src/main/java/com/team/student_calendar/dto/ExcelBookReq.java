@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ExcelBookDto {
+public class ExcelBookReq {
 
     @NotBlank(message = "제목은 필수 항목입니다.")
     @Size(max = 50, message = "제목은 50자 이하로 입력해주세요.")
@@ -37,7 +37,6 @@ public class ExcelBookDto {
     @Pattern(regexp = "[10]", message = "활성화 여부는 1, 0 중에서만 입력해주세요.")
     private String isActive;
 
-    private Byte type;
 
 
     public BookCreateReq toBookCreateReq() {
