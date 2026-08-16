@@ -55,15 +55,7 @@ jobs:
           script: |
             set -e
             cd /home/seochanhuck/student-calendar
-            [ -f sc-springboot-app.jar ] || { echo "jar missing"; exit 1; }
-            if lsof -i:8080 -t >/dev/null 2>&1; then
-              kill -9 $(lsof -i:8080 -t)
-            fi
-            sleep 1
-            set +e
-            [ -f "$HOME/.profile" ] && . "$HOME/.profile"
-            set -e
-            command -v java >/dev/null 2>&1 || { echo "java not in PATH"; exit 1; }
-            # SSH에 stdout/stderr 묶이면 Actions가 대기 → 출력은 버림
-            nohup java -jar -Xms1G -Xmx1G -Dspring.profiles.active=prod -Duser.timezone=Asia/Seoul sc-springboot-app.jar >/dev/null 2>&1 &
+            [ -f student-calendar/sc-springboot-app.jar ] || { echo "jar missing"; exit 1; }
+            cd /home/seochanhuck/docker-migration
+            docker compose up -d --build sc-app
 
