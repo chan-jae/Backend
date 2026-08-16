@@ -37,16 +37,16 @@ jobs:
       - name: jar 이름 고정
         run: mv build/libs/*SNAPSHOT.jar sc-springboot-app.jar
 
-      - name: EC2로 파일 전송
+      - name: 서버로 파일 전송
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST_IP }}
           username: seochanhuck
           key: ${{ secrets.PRIVATE_KEY }}
           source: "sc-springboot-app.jar"
-          target: "/home/seochanhuck/student-calendar"
+          target: "/home/seochanhuck/docker-migration/student-calendar/"
 
-      - name: EC2에서 실행
+      - name: 서버에서 실행
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST_IP }}
