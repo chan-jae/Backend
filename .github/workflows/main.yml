@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: 코드 가져오기
@@ -44,7 +44,7 @@ jobs:
           username: seochanhuck
           key: ${{ secrets.PRIVATE_KEY }}
           source: "sc-springboot-app.jar"
-          target: "/home/seochanhuck/docker-migration/student-calendar/"
+          target: "/home/seochanhuck/docker-migration/student-calendar"
 
       - name: 서버에서 실행
         uses: appleboy/ssh-action@v1.0.3
