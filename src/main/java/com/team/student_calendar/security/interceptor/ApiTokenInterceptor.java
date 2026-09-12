@@ -21,6 +21,10 @@ public class ApiTokenInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         String xApiToken = request.getHeader("X-Api-Token");
 
         if (xApiToken == null || !xApiToken.equals(apiToken)) {
