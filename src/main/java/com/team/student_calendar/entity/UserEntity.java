@@ -4,6 +4,11 @@ import com.team.student_calendar.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -25,4 +30,12 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role = UserRole.USER;
+
+    @UpdateTimestamp(source = SourceType.DB)
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @CreationTimestamp(source = SourceType.DB)
+    @Column(name = "registered_at", nullable = false)
+    private LocalDateTime registeredAt;
 }

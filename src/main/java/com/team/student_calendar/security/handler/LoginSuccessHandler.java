@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -33,11 +35,14 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         refreshTokenService.insertRefreshToken(username, refreshToken);
 
+        ResponseCookie refreshCookie = jwtUtil.createCookie("refreshToken", refreshToken, "/api/tokens/reissue");
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
         // 응답
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        String json = String.format("{\"accessToken\":\"%s\",\"refreshToken\":\"%s\"}", accessToken, refreshToken);
+        String json = String.format("{\"accessToken\":\"%s\"}", accessToken);
         response.getWriter().write(json);
         response.getWriter().flush();
     }

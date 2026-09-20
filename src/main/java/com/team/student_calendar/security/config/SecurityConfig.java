@@ -100,9 +100,8 @@ public class SecurityConfig {
         // 경로별 인가
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/join").permitAll()
-                        .requestMatchers("/api/v1/").permitAll()
-                        .requestMatchers("/api/access-token/reissue").permitAll()
+                        .requestMatchers("/api/users").permitAll()
+                        .requestMatchers("/api/tokens/reissue").permitAll()
 
                         .requestMatchers("/api/v1/user").hasRole("USER")
                         .anyRequest().hasRole("ADMIN")

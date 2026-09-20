@@ -3,11 +3,14 @@ package com.team.student_calendar.security.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 
 @Component
@@ -15,6 +18,7 @@ public class JWTUtil {
 
     private final SecretKey key;
     private final long accessTokenExpireTime;
+    @Getter
     private final long refreshTokenExpireTime;
 
 
@@ -87,5 +91,18 @@ public class JWTUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+
+    // 프론트/백엔드가 서로 다른 도메인(cross-site)이라 SameSite=None + Secure 필요.
+    // SameSite=None 은 CSRF 방어 효과가 없으므로 재발급 엔드포인트에서 커스텀 헤더로 별도 방어함.
+    public ResponseCookie createCookie(String name, String value, String path) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path(path)
+                .maxAge(Duration.ofMillis(refreshTokenExpireTime))
+                .build();
     }
 }
