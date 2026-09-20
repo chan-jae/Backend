@@ -2,7 +2,7 @@ package com.team.student_calendar.config;
 
 import com.team.student_calendar.common.filter.ApiLoggingFilter;
 import com.team.student_calendar.common.filter.MdcLoggingFilter;
-import com.team.student_calendar.security.interceptor.ApiTokenInterceptor;
+//import com.team.student_calendar.security.interceptor.ApiTokenInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -17,21 +17,21 @@ import org.springframework.web.servlet.handler.MappedInterceptor;
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private final ApiTokenInterceptor apiTokenInterceptor;
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(apiTokenInterceptor)
-                .addPathPatterns("/api/**");
-        // Actuator는 WebMvcEndpointHandlerMapping 등 별도 매핑을 쓰므로
-        // addInterceptors만으로는 적용되지 않는 경우가 많음 → MappedInterceptor 빈 필요
-    }
+//    private final ApiTokenInterceptor apiTokenInterceptor;
+//
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        registry.addInterceptor(apiTokenInterceptor)
+//                .addPathPatterns("/api/**");
+//        // Actuator는 WebMvcEndpointHandlerMapping 등 별도 매핑을 쓰므로
+//        // addInterceptors만으로는 적용되지 않는 경우가 많음 → MappedInterceptor 빈 필요
+//    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins("http://localhost:5173")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("*")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
