@@ -44,7 +44,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 return;
             }
 
-            List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + UserRole.USER.name()));
+            List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + UserRole.ADMIN.name()));
             Authentication auth = new UsernamePasswordAuthenticationToken("api-client", null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
 

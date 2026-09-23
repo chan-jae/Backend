@@ -103,6 +103,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/api/tokens/reissue").permitAll()
 
+                        .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/v1/user").hasRole("USER")
                         .anyRequest().hasRole("ADMIN")
                 );
