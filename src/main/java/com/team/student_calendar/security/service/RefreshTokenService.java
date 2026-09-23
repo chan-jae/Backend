@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -71,19 +72,25 @@ public class RefreshTokenService {
 
 
     @Transactional
-    public void cleanupRefreshTokens() {
+    public void cleanupRefreshTokens(String username) {
 
         LocalDateTime cutoff = LocalDateTime.now().minus(Duration.ofMillis(jwtUtil.getRefreshTokenExpireTime()));
 
-        List<String> usernames = refreshTokenRepository.findDistinctUsernames();
+        List<String> usernames;
+        if (username == null) {
+            usernames = refreshTokenRepository.findDistinctUsernames();
+        }
+        else {
+            usernames = Collections.singletonList(username);
+        }
 
-        for (String username : usernames) {
+        for (String name : usernames) {
 
             // refreshTokenExpireTime 이 지난 토큰 삭제
-            refreshTokenRepository.deleteByUsernameAndRegisteredAtBefore(username, cutoff);
+            refreshTokenRepository.deleteByUsernameAndRegisteredAtBefore(name, cutoff);
 
             // 남은 토큰이 5개를 초과하면 오래된 순으로 초과분 삭제
-            List<RefreshTokenEntity> remaining = refreshTokenRepository.findByUsernameOrderByRegisteredAtDesc(username);
+            List<RefreshTokenEntity> remaining = refreshTokenRepository.findByUsernameOrderByRegisteredAtDesc(name);
 
             if (remaining.size() > MAX_REFRESH_TOKENS_PER_USER) {
                 List<RefreshTokenEntity> excess = remaining.subList(MAX_REFRESH_TOKENS_PER_USER, remaining.size());

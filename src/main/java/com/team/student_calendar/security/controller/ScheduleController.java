@@ -18,7 +18,7 @@ public class ScheduleController {
     public void cleanupRefreshTokens() {
 
         log.info("리프레시 토큰 정리 스케줄러 시작");
-        refreshTokenService.cleanupRefreshTokens();
+        refreshTokenService.cleanupRefreshTokens(null);
         log.info("리프레시 토큰 정리 스케줄러 종료");
     }
 }

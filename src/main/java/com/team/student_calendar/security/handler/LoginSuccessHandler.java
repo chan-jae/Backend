@@ -38,6 +38,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         ResponseCookie refreshCookie = jwtUtil.createCookie("refreshToken", refreshToken, "/api/tokens/reissue");
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
+        // 오래된 REFRESH 토큰 정리
+        refreshTokenService.cleanupRefreshTokens(username);
+
         // 응답
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
