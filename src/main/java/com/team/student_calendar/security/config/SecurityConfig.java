@@ -24,6 +24,13 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 public class SecurityConfig {
 
+    // JWTFilter도 같은 목록을 생성자로 주입받아 인증 헤더 검사를 건너뛰므로, 여기만 수정하면 됨
+    private static final String[] PERMIT_ALL_PATHS = {
+            "/api/users",
+            "/api/tokens/reissue",
+            "/api/login"
+    };
+
     private final AuthenticationConfiguration authenticationConfiguration;
     private final LoginSuccessHandler loginSuccessHandler;
     private final JWTUtil jwtUtil;
@@ -100,9 +107,9 @@ public class SecurityConfig {
         // 경로별 인가
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users").permitAll()
-                        .requestMatchers("/api/tokens/reissue").permitAll()
+                        .requestMatchers(PERMIT_ALL_PATHS).permitAll()
 
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/v1/user").hasRole("USER")
                         .anyRequest().hasRole("ADMIN")
@@ -116,7 +123,7 @@ public class SecurityConfig {
         // JWTFilter가 CorsFilter 보다 먼저 실행되는데 직접 응답설정 할 때
         // CorsFilter 통과안해서 직접 설정한 401 에러가 아닌 CORS 관련 에러가 발생함
         http
-                .addFilterAfter(new JWTFilter(jwtUtil, apiToken), CorsFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil, apiToken, PERMIT_ALL_PATHS), CorsFilter.class);
 
         // 세션 설정 STATELESS
         /* 기존 세션 방식은 로그인을 하면 해당 세션 정보를 서버에서 계속 들고있는 것과 다르게

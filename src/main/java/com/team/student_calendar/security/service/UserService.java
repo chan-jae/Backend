@@ -4,8 +4,8 @@ import com.team.student_calendar.common.enums.UserRole;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.UserErrorCode;
 import com.team.student_calendar.dto.UserRequestDTO;
-import com.team.student_calendar.entity.UserEntity;
-import com.team.student_calendar.repository.UserRepository;
+import com.team.student_calendar.security.entity.UserEntity;
+import com.team.student_calendar.security.repository.UserRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
@@ -22,6 +22,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RegisterTokenService registerTokenService;
 
 
     /**
@@ -31,10 +32,26 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void join(UserRequestDTO dto) {
 
+        registerTokenService.validateAndConsume(dto.token());
+
+        String name = dto.name();
         String username = dto.username();
         String password = dto.password();
 
+
+        // 닉네임 중복 체크
+        boolean existingName = userRepository.existsByUsername(username);
+        if (existingName) {
+            throw new BaseException(UserErrorCode.DUPLICATED_NAME);
+        }
+        // 아이디 중복 체크
+        boolean existingUsername = userRepository.existsByUsername(username);
+        if (existingUsername) {
+            throw new BaseException(UserErrorCode.DUPLICATED_USERNAME);
+        }
+
         UserEntity entity = new UserEntity();
+        entity.setName(name);
         entity.setUsername(username);
         entity.setPassword(passwordEncoder.encode(password));
         entity.setRole(UserRole.USER);

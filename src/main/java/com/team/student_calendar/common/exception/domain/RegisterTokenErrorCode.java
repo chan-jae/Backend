@@ -7,11 +7,10 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum UserErrorCode implements ErrorCode {
+public enum RegisterTokenErrorCode implements ErrorCode {
 
-    INVALID_LOGIN_INFO("U001",HttpStatus.UNAUTHORIZED, "아이디 또는 비밀번호가 틀렸습니다."),
-    DUPLICATED_NAME("U002",HttpStatus.UNAUTHORIZED, "이미 존재하는 이름 입니다."),
-    DUPLICATED_USERNAME("U003",HttpStatus.UNAUTHORIZED, "이미 존재하는 아이디 입니다.");
+    INVALID_REGISTER_TOKEN("RT001", HttpStatus.UNAUTHORIZED, "유효하지 않은 가입 토큰입니다."),
+    EXPIRED_REGISTER_TOKEN("RT002", HttpStatus.UNAUTHORIZED, "만료된 가입 토큰입니다.");
 
 
     private final String code;

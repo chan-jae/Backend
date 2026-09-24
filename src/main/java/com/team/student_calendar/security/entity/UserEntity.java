@@ -1,4 +1,4 @@
-package com.team.student_calendar.entity;
+package com.team.student_calendar.security.entity;
 
 import com.team.student_calendar.common.enums.UserRole;
 import jakarta.persistence.*;
@@ -20,6 +20,9 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "name", nullable = false, length = 10)
+    private String name;
 
     @Column(name = "username", unique = true, nullable = false, length = 20)
     private String username;

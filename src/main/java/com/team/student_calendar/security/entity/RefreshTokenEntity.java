@@ -1,4 +1,4 @@
-package com.team.student_calendar.entity;
+package com.team.student_calendar.security.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

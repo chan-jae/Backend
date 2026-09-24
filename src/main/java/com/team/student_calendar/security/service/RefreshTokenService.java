@@ -2,8 +2,8 @@ package com.team.student_calendar.security.service;
 
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.JWTException;
-import com.team.student_calendar.entity.RefreshTokenEntity;
-import com.team.student_calendar.repository.RefreshTokenRepository;
+import com.team.student_calendar.security.entity.RefreshTokenEntity;
+import com.team.student_calendar.security.repository.RefreshTokenRepository;
 import com.team.student_calendar.security.util.JWTUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;

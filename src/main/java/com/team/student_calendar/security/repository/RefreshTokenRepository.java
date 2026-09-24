@@ -1,6 +1,6 @@
-package com.team.student_calendar.repository;
+package com.team.student_calendar.security.repository;
 
-import com.team.student_calendar.entity.RefreshTokenEntity;
+import com.team.student_calendar.security.entity.RefreshTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

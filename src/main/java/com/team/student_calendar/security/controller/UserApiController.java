@@ -1,5 +1,7 @@
-package com.team.student_calendar.controller.api;
+package com.team.student_calendar.security.controller;
 
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.UserRequestDTO;
 import com.team.student_calendar.security.service.RefreshTokenService;
@@ -7,12 +9,15 @@ import com.team.student_calendar.security.service.UserService;
 import com.team.student_calendar.security.util.JWTUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,11 +35,21 @@ public class UserApiController {
     private final JWTUtil jwtUtil;
 
 
-
+    @Validated
     @PostMapping("/api/users")
     public ResponseEntity<ApiSuccessResponse<Void>> join(
-            @RequestBody UserRequestDTO dto
+            @RequestBody @Valid UserRequestDTO dto,
+            BindingResult bindingResult
             ) {
+
+        System.out.println(dto.name());
+        System.out.println(dto.username());
+        System.out.println(dto.password());
+        System.out.println(dto.token());
+        if (bindingResult.hasFieldErrors()) {
+            throw new BaseException(CommonErrorCode.PARAMETER_ERROR,
+                    bindingResult.getFieldError().getDefaultMessage());
+        }
 
         userService.join(dto);
 

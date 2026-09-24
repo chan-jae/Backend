@@ -13,9 +13,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,12 +26,22 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
     private final String apiToken;
+    private final List<RequestMatcher> permitAllMatchers;
 
-    public JWTFilter(JWTUtil jwtUtil, String apiToken) {
+    public JWTFilter(JWTUtil jwtUtil, String apiToken, String[] permitAllPaths) {
         this.jwtUtil = jwtUtil;
         this.apiToken = apiToken;
+        this.permitAllMatchers = Arrays.stream(permitAllPaths)
+                .<RequestMatcher>map(path -> PathPatternRequestMatcher.withDefaults().matcher(path))
+                .toList();
     }
 
+
+    // SecurityConfig의 permitAll 경로는 인증 헤더 검사 없이 통과시킴 (두 곳에서 따로 관리하면 어긋나기 쉬워서 경로 목록을 생성자로 주입받음)
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return permitAllMatchers.stream().anyMatch(matcher -> matcher.matches(request));
+    }
 
 
     @Override
@@ -55,7 +68,8 @@ public class JWTFilter extends OncePerRequestFilter {
         String authorization = request.getHeader("Authorization");
 
         if (authorization == null) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=utf-8");
             return;
         }
 
