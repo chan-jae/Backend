@@ -7,6 +7,7 @@ import com.team.student_calendar.security.repository.RefreshTokenRepository;
 import com.team.student_calendar.security.util.JWTUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
@@ -97,5 +99,12 @@ public class RefreshTokenService {
                 refreshTokenRepository.deleteAll(excess);
             }
         }
+    }
+
+
+    @Transactional
+    public void deleteRefreshToken(String refreshToken) {
+
+        refreshTokenRepository.deleteByRefresh(refreshToken);
     }
 }

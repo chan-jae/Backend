@@ -9,6 +9,7 @@ import com.team.student_calendar.security.entity.UserEntity;
 import com.team.student_calendar.security.repository.UserRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -32,6 +34,8 @@ public class UserService implements UserDetailsService {
      */
     @Transactional
     public void join(UserRequestDTO dto) {
+
+        log.info("try to join [{}]",dto.username());
 
         registerTokenService.validateAndConsume(dto.token());
 
@@ -58,6 +62,8 @@ public class UserService implements UserDetailsService {
         entity.setRole(UserRole.USER);
 
         userRepository.save(entity);
+
+        log.info("complete join [{}]", dto.username());
     }
 
 

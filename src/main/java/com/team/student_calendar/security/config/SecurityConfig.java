@@ -1,9 +1,11 @@
 package com.team.student_calendar.security.config;
 
+import com.team.student_calendar.security.filter.CustomLogoutFilter;
 import com.team.student_calendar.security.filter.JWTFilter;
 import com.team.student_calendar.security.filter.LoginFilter;
 import com.team.student_calendar.security.handler.LoginFailureHandler;
 import com.team.student_calendar.security.handler.LoginSuccessHandler;
+import com.team.student_calendar.security.service.RefreshTokenService;
 import com.team.student_calendar.security.util.JWTUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -37,19 +40,22 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
     private final JWTUtil jwtUtil;
     private final String apiToken;
+    private final RefreshTokenService refreshTokenService;
 
     public SecurityConfig(
             AuthenticationConfiguration authenticationConfiguration,
             LoginSuccessHandler loginSuccessHandler,
             LoginFailureHandler loginFailureHandler,
             JWTUtil jwtUtil,
-            @Value("${api-token}") String apiToken
+            @Value("${api-token}") String apiToken,
+            RefreshTokenService refreshTokenService
     ) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
         this.loginFailureHandler = loginFailureHandler;
         this.jwtUtil = jwtUtil;
         this.apiToken = apiToken;
+        this.refreshTokenService = refreshTokenService;
     }
 
 
@@ -138,6 +144,8 @@ public class SecurityConfig {
                 .sessionManagement(sessiong -> sessiong
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenService), LogoutFilter.class);
 
         return http.build();
     }

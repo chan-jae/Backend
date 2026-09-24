@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -35,7 +37,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         refreshTokenService.insertRefreshToken(username, refreshToken);
 
-        ResponseCookie refreshCookie = jwtUtil.createCookie("refreshToken", refreshToken, "/api/tokens/reissue");
+        ResponseCookie refreshCookie = jwtUtil.createRefreshTokenCookie(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         // 오래된 REFRESH 토큰 정리
@@ -48,5 +50,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         String json = String.format("{\"accessToken\":\"%s\"}", accessToken);
         response.getWriter().write(json);
         response.getWriter().flush();
+
+        log.info("login success [{}]", username);
     }
 }
