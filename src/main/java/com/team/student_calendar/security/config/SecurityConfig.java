@@ -2,6 +2,7 @@ package com.team.student_calendar.security.config;
 
 import com.team.student_calendar.security.filter.JWTFilter;
 import com.team.student_calendar.security.filter.LoginFilter;
+import com.team.student_calendar.security.handler.LoginFailureHandler;
 import com.team.student_calendar.security.handler.LoginSuccessHandler;
 import com.team.student_calendar.security.util.JWTUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,17 +34,20 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
     private final JWTUtil jwtUtil;
     private final String apiToken;
 
     public SecurityConfig(
             AuthenticationConfiguration authenticationConfiguration,
             LoginSuccessHandler loginSuccessHandler,
+            LoginFailureHandler loginFailureHandler,
             JWTUtil jwtUtil,
             @Value("${api-token}") String apiToken
     ) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.loginSuccessHandler = loginSuccessHandler;
+        this.loginFailureHandler = loginFailureHandler;
         this.jwtUtil = jwtUtil;
         this.apiToken = apiToken;
     }
@@ -117,7 +121,7 @@ public class SecurityConfig {
 
         // 커스텀 필터 추가
         http
-                .addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler, loginFailureHandler), UsernamePasswordAuthenticationFilter.class);
 
         // SecurityContextHolderFilter.class 를 CorsFilter.class 로 수정
         // JWTFilter가 CorsFilter 보다 먼저 실행되는데 직접 응답설정 할 때

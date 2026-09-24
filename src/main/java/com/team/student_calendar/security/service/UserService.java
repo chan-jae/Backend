@@ -4,6 +4,7 @@ import com.team.student_calendar.common.enums.UserRole;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.UserErrorCode;
 import com.team.student_calendar.dto.UserRequestDTO;
+import com.team.student_calendar.dto.UserInfoDTO;
 import com.team.student_calendar.security.entity.UserEntity;
 import com.team.student_calendar.security.repository.UserRepository;
 import lombok.NonNull;
@@ -60,6 +61,19 @@ public class UserService implements UserDetailsService {
     }
 
 
+    /**
+     * 로그인된 유저 정보 조회
+     * @param username 로그인된 유저의 아이디
+     */
+    public UserInfoDTO getMyInfo(String username) {
+
+        UserEntity entity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
+
+        return new UserInfoDTO(entity.getUsername(), entity.getName(), entity.getRole());
+    }
+
+
     // AuthenticationManger가 AuthenticationProvider를 호출하면서 해당 메서드를 호출함
     // AuthenticationProvider가 DB에서 가져온 것과 비교해서 로그인 처리함
     @Override
@@ -67,7 +81,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
 
         UserEntity entity = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BaseException(UserErrorCode.INVALID_LOGIN_INFO));
+                .orElseThrow(() -> new UsernameNotFoundException(UserErrorCode.INVALID_LOGIN_INFO.getMessage()));
 
         return User.builder()
                 .username(entity.getUsername())
