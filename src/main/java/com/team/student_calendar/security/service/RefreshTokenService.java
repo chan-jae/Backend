@@ -56,7 +56,7 @@ public class RefreshTokenService {
         }
 
         // Refresh 토큰 db 확인
-        RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByRefresh(refreshToken)
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findFirstByRefresh(refreshToken)
                 .orElseThrow(() -> new BaseException(JWTException.INVALID_REFRESH_TOKEN));
 
         // 재발급 (Refresh 토큰 로테이션: 기존 토큰 폐기 후 새로 발급)
