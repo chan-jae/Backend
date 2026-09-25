@@ -31,7 +31,7 @@ public class SecurityConfig {
     // JWTFilter도 같은 목록을 생성자로 주입받아 인증 헤더 검사를 건너뛰므로, 여기만 수정하면 됨
     private static final String[] PERMIT_ALL_PATHS = {
             "/api/users",
-            "/api/tokens/reissue",
+            "/api/r-token/tokens/reissue",
             "/api/login"
     };
 
