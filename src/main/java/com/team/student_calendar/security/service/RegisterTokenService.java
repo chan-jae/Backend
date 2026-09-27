@@ -2,6 +2,7 @@ package com.team.student_calendar.security.service;
 
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.RegisterTokenErrorCode;
+import com.team.student_calendar.dto.RegisterTokenRes;
 import com.team.student_calendar.security.entity.RegisterTokenEntity;
 import com.team.student_calendar.security.repository.RegisterTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class RegisterTokenService {
 
     // ADMIN이 가입 토큰 발급, 기존에 발급된 토큰이 있다면 지우고 항상 1개만 존재하도록 함
     @Transactional
-    public String issueToken() {
+    public RegisterTokenRes issueToken() {
 
         registerTokenRepository.deleteAll();
 
@@ -32,7 +33,7 @@ public class RegisterTokenService {
 
         registerTokenRepository.save(entity);
 
-        return entity.getToken();
+        return toResponse(entity);
     }
 
 
@@ -61,6 +62,30 @@ public class RegisterTokenService {
             throw new BaseException(RegisterTokenErrorCode.INVALID_REGISTER_TOKEN);
         }
     }
+
+
+    // ADMIN 전용, 미사용(is_used=false) 가입 토큰 1개 조회
+    @Transactional(readOnly = true)
+    public RegisterTokenRes getUnusedToken() {
+
+        RegisterTokenEntity entity = registerTokenRepository.findFirstByUsedFalse()
+                .orElseThrow(() -> new BaseException(RegisterTokenErrorCode.NOT_FOUND_REGISTER_TOKEN));
+
+        return toResponse(entity);
+    }
+
+
+    private RegisterTokenRes toResponse(RegisterTokenEntity entity) {
+
+        return RegisterTokenRes.builder()
+                .token(entity.getToken())
+                .expiresAt(entity.getRegisteredAt().plusMinutes(REGISTER_TOKEN_EXPIRE_MINUTES))
+                .build();
+    }
+
+
+
+
 
 
     // 발급 후 30분이 지난 가입 토큰 정리

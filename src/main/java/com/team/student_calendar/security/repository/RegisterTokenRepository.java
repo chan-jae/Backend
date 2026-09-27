@@ -13,6 +13,8 @@ public interface RegisterTokenRepository extends JpaRepository<RegisterTokenEnti
 
     Optional<RegisterTokenEntity> findByToken(String token);
 
+    Optional<RegisterTokenEntity> findFirstByUsedFalse();
+
     void deleteByRegisteredAtBefore(LocalDateTime cutoff);
 
     // @Modifying 은 1차 캐시를 거치지않고 바로 DB에 반영되기 때문에 1차 캐시에서는

@@ -1,11 +1,13 @@
 package com.team.student_calendar.security.controller;
 
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.dto.RegisterTokenRes;
 import com.team.student_calendar.security.service.RegisterTokenService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,11 +21,21 @@ public class RegisterTokenApiController {
 
     // ADMIN 전용, 가입 토큰 발급 (기존에 발급된 토큰이 있다면 삭제 후 새로 발급, 항상 1개만 존재)
     @PostMapping("/api/admin/register-tokens")
-    public ResponseEntity<ApiSuccessResponse<String>> issueRegisterToken() {
+    public ResponseEntity<ApiSuccessResponse<RegisterTokenRes>> issueRegisterToken() {
 
-        String token = registerTokenService.issueToken();
+        RegisterTokenRes response = registerTokenService.issueToken();
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiSuccessResponse.created(token, "가입 토큰 발급에 성공했습니다.", "SUCCESS"));
+                .body(ApiSuccessResponse.created(response, "가입 토큰 발급에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    // ADMIN 전용, 미사용 가입 토큰 1개 조회
+    @GetMapping("/api/admin/register-tokens")
+    public ResponseEntity<ApiSuccessResponse<RegisterTokenRes>> getUnusedRegisterToken() {
+
+        RegisterTokenRes response = registerTokenService.getUnusedToken();
+
+        return ResponseEntity.ok(ApiSuccessResponse.ok(response, "미사용 가입 토큰 조회에 성공했습니다.", "SUCCESS"));
     }
 }
