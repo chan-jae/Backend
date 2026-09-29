@@ -49,9 +49,7 @@ public class RegisterTokenService {
         RegisterTokenEntity entity = registerTokenRepository.findByToken(token)
                 .orElseThrow(() -> new BaseException(RegisterTokenErrorCode.INVALID_REGISTER_TOKEN));
 
-        LocalDateTime expireAt = entity.getRegisteredAt().plusMinutes(REGISTER_TOKEN_EXPIRE_MINUTES);
-
-        if (LocalDateTime.now().isAfter(expireAt)) {
+        if (isExpired(entity)) {
             registerTokenRepository.delete(entity);
             throw new BaseException(RegisterTokenErrorCode.EXPIRED_REGISTER_TOKEN);
         }
@@ -71,7 +69,20 @@ public class RegisterTokenService {
         RegisterTokenEntity entity = registerTokenRepository.findFirstByUsedFalse()
                 .orElseThrow(() -> new BaseException(RegisterTokenErrorCode.NOT_FOUND_REGISTER_TOKEN));
 
+        if (isExpired(entity)) {
+            throw new BaseException(RegisterTokenErrorCode.NOT_FOUND_REGISTER_TOKEN);
+        }
+
         return toResponse(entity);
+    }
+
+
+    // 발급 후 REGISTER_TOKEN_EXPIRE_MINUTES 가 지났으면 만료
+    private boolean isExpired(RegisterTokenEntity entity) {
+
+        LocalDateTime expireAt = entity.getRegisteredAt().plusMinutes(REGISTER_TOKEN_EXPIRE_MINUTES);
+
+        return LocalDateTime.now().isAfter(expireAt);
     }
 
 
