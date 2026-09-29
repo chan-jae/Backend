@@ -1,9 +1,11 @@
 package com.team.student_calendar.security.controller;
 
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.common.util.ClientIpUtil;
 import com.team.student_calendar.security.service.RefreshTokenService;
 import com.team.student_calendar.security.util.JWTUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -35,10 +37,11 @@ public class RefreshTokenApiController {
     public ResponseEntity<ApiSuccessResponse<String>> reissueTokens(
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             @RequestHeader("X-Refresh-Request") String refreshRequestHeader,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
 
-        String[] tokens = refreshTokenService.reissueTokens(refreshToken);
+        String[] tokens = refreshTokenService.reissueTokens(refreshToken, ClientIpUtil.getClientIp(request));
         String newAccessToken = tokens[0];
         String newRefreshToken = tokens[1];
 

@@ -1,5 +1,6 @@
 package com.team.student_calendar.security.handler;
 
+import com.team.student_calendar.common.util.ClientIpUtil;
 import com.team.student_calendar.security.util.JWTUtil;
 import com.team.student_calendar.security.service.RefreshTokenService;
 import jakarta.servlet.ServletException;
@@ -35,7 +36,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtUtil.createAccessToken(username, role);
         String refreshToken = jwtUtil.createRefreshToken(username, role);
 
-        refreshTokenService.insertRefreshToken(username, refreshToken);
+        refreshTokenService.insertRefreshToken(username, refreshToken, ClientIpUtil.getClientIp(request));
 
         ResponseCookie refreshCookie = jwtUtil.createRefreshTokenCookie(refreshToken);
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());

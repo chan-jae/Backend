@@ -31,9 +31,10 @@ public class UserService implements UserDetailsService {
     /**
      * 유저 회원가입
      * @param dto 회원가입 정보
+     * @param clientIp 요청자 IP
      */
     @Transactional
-    public void join(UserRequestDTO dto) {
+    public void join(UserRequestDTO dto, String clientIp) {
 
         log.info("try to join [{}]",dto.username());
 
@@ -60,6 +61,8 @@ public class UserService implements UserDetailsService {
         entity.setUsername(username);
         entity.setPassword(passwordEncoder.encode(password));
         entity.setRole(UserRole.USER);
+        entity.setRegisteredIp(clientIp);
+        entity.setUpdatedIp(clientIp);
 
         userRepository.save(entity);
 

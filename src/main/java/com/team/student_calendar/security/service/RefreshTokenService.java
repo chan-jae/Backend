@@ -28,18 +28,20 @@ public class RefreshTokenService {
 
 
     @Transactional
-    public void insertRefreshToken(String username, String refreshToken) {
+    public void insertRefreshToken(String username, String refreshToken, String clientIp) {
 
         RefreshTokenEntity entity = new RefreshTokenEntity();
         entity.setUsername(username);
         entity.setRefresh(refreshToken);
+        entity.setRegisteredIp(clientIp);
+        entity.setUpdatedIp(clientIp);
 
         refreshTokenRepository.save(entity);
     }
 
 
     @Transactional
-    public String[] reissueTokens(String refreshToken) {
+    public String[] reissueTokens(String refreshToken, String clientIp) {
 
         // Refresh 토큰 검증
         Claims claims;
@@ -68,6 +70,7 @@ public class RefreshTokenService {
 
         // 리프레시 토큰 갱신
         refreshTokenEntity.setRefresh(newRefreshToken);
+        refreshTokenEntity.setUpdatedIp(clientIp);
 
         return new String[] { newAccessToken, newRefreshToken };
     }

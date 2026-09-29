@@ -34,6 +34,12 @@ public class UserEntity {
     @Column(name = "role", nullable = false)
     private UserRole role = UserRole.USER;
 
+    @Column(name = "updated_ip", length = 45)
+    private String updatedIp;
+
+    @Column(name = "registered_ip", length = 45)
+    private String registeredIp;
+
     @UpdateTimestamp(source = SourceType.DB)
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;

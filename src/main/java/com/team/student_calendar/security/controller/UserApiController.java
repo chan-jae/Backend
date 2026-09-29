@@ -3,10 +3,12 @@ package com.team.student_calendar.security.controller;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
+import com.team.student_calendar.common.util.ClientIpUtil;
 import com.team.student_calendar.dto.UserRequestDTO;
 import com.team.student_calendar.dto.UserInfoDTO;
 import com.team.student_calendar.security.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +35,8 @@ public class UserApiController {
     @PostMapping("/api/users")
     public ResponseEntity<ApiSuccessResponse<Void>> join(
             @RequestBody @Valid UserRequestDTO dto,
-            BindingResult bindingResult
+            BindingResult bindingResult,
+            HttpServletRequest request
             ) {
 
         if (bindingResult.hasFieldErrors()) {
@@ -41,7 +44,7 @@ public class UserApiController {
                     bindingResult.getFieldError().getDefaultMessage());
         }
 
-        userService.join(dto);
+        userService.join(dto, ClientIpUtil.getClientIp(request));
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiSuccessResponse.created("회원가입에 성공했습니다.", "SUCCESS"));
