@@ -23,7 +23,6 @@ public class StudentCreateReq {
     @NotBlank(message = "학년은 필수 항목입니다.")
     private String grade;
 
-    @NotBlank(message = "레벨은 필수 항목입니다.")
     private String level;
 
     @NotNull(message = "계정 넘버는 필수 항목입니다.")

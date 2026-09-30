@@ -44,7 +44,7 @@ public class StudentEntity {
     @Column(name = "grade", nullable = false, length = 20)
     private String grade;
 
-    @Column(name = "level", nullable = false, length = 10)
+    @Column(name = "level", length = 10)
     private String level;
 
     @Column(name = "account_no", nullable = false, unique = true)
