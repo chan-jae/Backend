@@ -27,14 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //        // addInterceptors만으로는 적용되지 않는 경우가 많음 → MappedInterceptor 빈 필요
 //    }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
-                .allowedMethods("*")
-                .allowedHeaders("*")
-                .allowCredentials(true);
-    }
+
 
 //    @Bean
 //    public MappedInterceptor actuatorTokenMappedInterceptor(ActuatorTokenInterceptor actuatorTokenInterceptor) {

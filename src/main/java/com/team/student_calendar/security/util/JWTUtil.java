@@ -94,13 +94,12 @@ public class JWTUtil {
     }
 
 
-    // 프론트/백엔드가 서로 다른 도메인(cross-site)이라 SameSite=None + Secure 필요.
-    // SameSite=None 은 CSRF 방어 효과가 없으므로 재발급 엔드포인트에서 커스텀 헤더로 별도 방어함.
+    // 프론트/백엔드가 같은 도메인(same-site)이라 SameSite=Strict 사용.
     public ResponseCookie createRefreshTokenCookie(String value) {
         return ResponseCookie.from("refreshToken", value)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("None")
+                .sameSite("Strict")
                 .path("/api/r-token")
                 .maxAge(Duration.ofMillis(refreshTokenExpireTime))
                 .build();
@@ -110,7 +109,7 @@ public class JWTUtil {
         return ResponseCookie.from("refreshToken", null)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("None")
+                .sameSite("Strict")
                 .path("/api/r-token")
                 .maxAge(Duration.ofMillis(refreshTokenExpireTime))
                 .build();
