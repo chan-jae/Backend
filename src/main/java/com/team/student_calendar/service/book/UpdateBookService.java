@@ -35,14 +35,17 @@ public class UpdateBookService {
         // 필드 검증
         req.validate();
 
-        // 등록된 책 있는지 체크
-        validateBookDupService.checkBookDuplication(req.getTitle(), req.getAuthor());
-
         BookEntity entity = selectBookService.findById(id);
 
         // 커스텀 책만 수정가능
         if (BookType.CUSTOM.getType() != entity.getType()) {
             throw new BaseException(BookErrorCode.INVALID_TYPE, "수정 가능한 책 타입이 아닙니다.");
+        }
+
+        // 제목/저자가 바뀐 경우에만 등록된 책 있는지 체크
+        String newHash = BookHashUtil.generateBookHashKey(req.getTitle(), req.getAuthor());
+        if (!newHash.equals(entity.getBHash())) {
+            validateBookDupService.checkBookDuplication(req.getTitle(), req.getAuthor());
         }
 
         byte isActive = (byte) (Boolean.parseBoolean(req.getIsActive()) ? 1 : 0);
@@ -56,7 +59,7 @@ public class UpdateBookService {
         entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
         entity.setUpdatedAt(LocalDateTime.now());
         entity.setIsActive(isActive);
-        entity.setBHash(BookHashUtil.generateBookHashKey(req.getTitle(), req.getAuthor()));
+        entity.setBHash(newHash);
         entity.setUpdatedAt(LocalDateTime.now());
 
         log.info("book update complete - book: {}", id);
