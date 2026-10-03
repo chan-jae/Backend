@@ -8,7 +8,6 @@ public class ClientIpUtil {
     public static String getClientIp(HttpServletRequest request) {
 
         String clientIp = request.getHeader("X-Real-IP");
-        System.out.println("X-Real-IP : " + clientIp);
         if (clientIp == null || clientIp.isEmpty()) {
             clientIp = request.getRemoteAddr();
         }
