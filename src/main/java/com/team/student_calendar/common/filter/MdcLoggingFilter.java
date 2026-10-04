@@ -1,5 +1,6 @@
 package com.team.student_calendar.common.filter;
 
+import com.team.student_calendar.common.util.ClientIpUtil;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,11 +23,7 @@ public class MdcLoggingFilter implements Filter {
         String traceId = UUID.randomUUID().toString().substring(0, 8);
         MDC.put("traceId", traceId);
 
-        String clientIp = httpServletRequest.getHeader("X-Real-IP");
-        if (clientIp == null || clientIp.isEmpty()) {
-            clientIp = request.getRemoteAddr();
-        }
-        MDC.put("clientIp", clientIp);
+        MDC.put("clientIp", ClientIpUtil.getClientIp(httpServletRequest));
 
         try {
             chain.doFilter(request, response);

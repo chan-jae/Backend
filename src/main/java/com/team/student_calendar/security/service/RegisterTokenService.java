@@ -1,0 +1,110 @@
+package com.team.student_calendar.security.service;
+
+import com.team.student_calendar.common.exception.BaseException;
+import com.team.student_calendar.common.exception.domain.RegisterTokenErrorCode;
+import com.team.student_calendar.dto.RegisterTokenRes;
+import com.team.student_calendar.security.entity.RegisterTokenEntity;
+import com.team.student_calendar.security.repository.RegisterTokenRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class RegisterTokenService {
+
+    private static final long REGISTER_TOKEN_EXPIRE_MINUTES = 30;
+
+    private final RegisterTokenRepository registerTokenRepository;
+
+
+    // ADMIN이 가입 토큰 발급, 기존에 발급된 토큰이 있다면 지우고 항상 1개만 존재하도록 함
+    @Transactional
+    public RegisterTokenRes issueToken() {
+
+        registerTokenRepository.deleteAll();
+
+        RegisterTokenEntity entity = new RegisterTokenEntity();
+        entity.setToken(UUID.randomUUID().toString());
+        entity.setUsed(false);
+
+        registerTokenRepository.save(entity);
+
+        return toResponse(entity);
+    }
+
+
+    // 가입 토큰 검증 후 일회용으로 소비. 동시 요청이 같은 토큰을 사용해도 하나만 성공하도록
+    // isUsed=false 조건이 있는 원자적 UPDATE로 소비 처리 (삭제 대신 사용)
+    @Transactional
+    public void validateAndConsume(String token) {
+
+        if (token == null) {
+            throw new BaseException(RegisterTokenErrorCode.INVALID_REGISTER_TOKEN);
+        }
+
+        RegisterTokenEntity entity = registerTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BaseException(RegisterTokenErrorCode.INVALID_REGISTER_TOKEN));
+
+        if (isExpired(entity)) {
+            registerTokenRepository.delete(entity);
+            throw new BaseException(RegisterTokenErrorCode.EXPIRED_REGISTER_TOKEN);
+        }
+
+        int updated = registerTokenRepository.consumeToken(token);
+
+        if (updated == 0) {
+            throw new BaseException(RegisterTokenErrorCode.INVALID_REGISTER_TOKEN);
+        }
+    }
+
+
+    // ADMIN 전용, 미사용(is_used=false) 가입 토큰 1개 조회
+    @Transactional(readOnly = true)
+    public RegisterTokenRes getUnusedToken() {
+
+        RegisterTokenEntity entity = registerTokenRepository.findFirstByUsedFalse()
+                .orElseThrow(() -> new BaseException(RegisterTokenErrorCode.NOT_FOUND_REGISTER_TOKEN));
+
+        if (isExpired(entity)) {
+            throw new BaseException(RegisterTokenErrorCode.NOT_FOUND_REGISTER_TOKEN);
+        }
+
+        return toResponse(entity);
+    }
+
+
+    // 발급 후 REGISTER_TOKEN_EXPIRE_MINUTES 가 지났으면 만료
+    private boolean isExpired(RegisterTokenEntity entity) {
+
+        LocalDateTime expireAt = entity.getRegisteredAt().plusMinutes(REGISTER_TOKEN_EXPIRE_MINUTES);
+
+        return LocalDateTime.now().isAfter(expireAt);
+    }
+
+
+    private RegisterTokenRes toResponse(RegisterTokenEntity entity) {
+
+        return RegisterTokenRes.builder()
+                .token(entity.getToken())
+                .expiresAt(entity.getRegisteredAt().plusMinutes(REGISTER_TOKEN_EXPIRE_MINUTES))
+                .build();
+    }
+
+
+
+
+
+
+    // 발급 후 30분이 지난 가입 토큰 정리
+    @Transactional
+    public void cleanupExpiredTokens() {
+
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(REGISTER_TOKEN_EXPIRE_MINUTES);
+
+        registerTokenRepository.deleteByRegisteredAtBefore(cutoff);
+    }
+}

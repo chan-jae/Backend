@@ -51,7 +51,13 @@ dependencies {
 	implementation("org.apache.poi:poi:5.5.1")
 	implementation("org.apache.poi:poi-ooxml:5.5.1")
 
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
 
 

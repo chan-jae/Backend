@@ -1,0 +1,157 @@
+package com.team.student_calendar.security.config;
+
+import com.team.student_calendar.security.filter.CustomLogoutFilter;
+import com.team.student_calendar.security.filter.JWTFilter;
+import com.team.student_calendar.security.filter.LoginFilter;
+import com.team.student_calendar.security.handler.LoginFailureHandler;
+import com.team.student_calendar.security.handler.LoginSuccessHandler;
+import com.team.student_calendar.security.service.RefreshTokenService;
+import com.team.student_calendar.security.util.JWTUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.List;
+
+@Configuration
+public class SecurityConfig {
+
+    // JWTFilter도 같은 목록을 생성자로 주입받아 인증 헤더 검사를 건너뛰므로, 여기만 수정하면 됨
+    private static final String[] PERMIT_ALL_PATHS = {
+            "/api/users",
+            "/api/r-token/tokens/reissue",
+            "/api/r-token/logout",
+            "/api/login"
+    };
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+    private final JWTUtil jwtUtil;
+    private final String apiToken;
+    private final RefreshTokenService refreshTokenService;
+
+    public SecurityConfig(
+            AuthenticationConfiguration authenticationConfiguration,
+            LoginSuccessHandler loginSuccessHandler,
+            LoginFailureHandler loginFailureHandler,
+            JWTUtil jwtUtil,
+            @Value("${api-token}") String apiToken,
+            RefreshTokenService refreshTokenService
+    ) {
+        this.authenticationConfiguration = authenticationConfiguration;
+        this.loginSuccessHandler = loginSuccessHandler;
+        this.loginFailureHandler = loginFailureHandler;
+        this.jwtUtil = jwtUtil;
+        this.apiToken = apiToken;
+        this.refreshTokenService = refreshTokenService;
+    }
+
+
+
+    // 원래는 자동으로 생성해주지만 Filter단에서 써야하기 때문에 미리 빈으로 등록.
+    // AuthenticationConfiguration는 스프링이 미리 등록해줘서 생성자 주입 가능
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration
+    ) {
+        return configuration.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // 기본 bcrypt 사용
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${cors.allowed-origins}") List<String> allowedOrigins
+    ) {
+
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOrigins(allowedOrigins);
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        // CSRF 필터 비활성화
+        /* JWT는 Authorization: Bearer <token>를 주로 헤더에 실어서 보내서 브라우저가 자동으로
+        커스텀 헤더를 설정 안하기 때문에 비활성화 해도 무관.
+        단, 토큰을 Cookie에 저장하면 브라우저가 자동으로 세팅하기 때문에 위험함.
+         */
+        http
+                .csrf(csrf -> csrf.disable());
+
+        http
+                .cors(Customizer.withDefaults()); // CorsConfigurationSource 빈 자동 사용
+
+        // 기본 form 로그인 비활성화
+        /* multipart/form-data 를 받는 기본 로그인 필터 비활성화 하고
+        json 타입을 받아서 처리하는 필터를 새로 만들어야 함. => LoginFilter
+        기본 로그인 설정시 사용되는 필터인 UsernamePasswordAuthenticationFilter와 아키텍처는 거의 똑같고
+        multipart/form-data 대신 JSON을 받는 부분만 수정할꺼여서 일부만 수정하면 됨.
+         */
+        http
+                .formLogin(login -> login.disable());
+
+        // 경로별 인가
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PERMIT_ALL_PATHS).permitAll()
+
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
+                        .anyRequest().hasRole("ADMIN")
+                );
+
+        // 커스텀 필터 추가
+        http
+                .addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler, loginFailureHandler), UsernamePasswordAuthenticationFilter.class);
+
+        // SecurityContextHolderFilter.class 를 CorsFilter.class 로 수정
+        // JWTFilter가 CorsFilter 보다 먼저 실행되는데 직접 응답설정 할 때
+        // CorsFilter 통과안해서 직접 설정한 401 에러가 아닌 CORS 관련 에러가 발생함
+        http
+                .addFilterAfter(new JWTFilter(jwtUtil, apiToken, PERMIT_ALL_PATHS), CorsFilter.class);
+
+        // 세션 설정 STATELESS
+        /* 기존 세션 방식은 로그인을 하면 해당 세션 정보를 서버에서 계속 들고있는 것과 다르게
+        JWT는 요청~응답이 끝나면 세션을 지우는 방식. 즉, 세션 정보를 서버가 계속 저장하고
+        있지 않기 때문에 STATELESS 설정.
+        */
+        http
+                .sessionManagement(sessiong -> sessiong
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshTokenService), LogoutFilter.class);
+
+        return http.build();
+    }
+}
