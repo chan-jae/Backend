@@ -94,6 +94,5 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         Pageable pageable
         );
 
-        @Query("SELECT b.bHash FROM BookEntity b")
-        Set<String> findAllBookHash();
+        boolean existsBybHash(@Param("bHash") String bHash);
 }
