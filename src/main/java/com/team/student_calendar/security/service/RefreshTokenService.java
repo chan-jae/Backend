@@ -3,7 +3,9 @@ package com.team.student_calendar.security.service;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.JWTException;
 import com.team.student_calendar.security.entity.RefreshTokenEntity;
+import com.team.student_calendar.security.entity.UserEntity;
 import com.team.student_calendar.security.repository.RefreshTokenRepository;
+import com.team.student_calendar.security.repository.UserRepository;
 import com.team.student_calendar.security.util.JWTUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class RefreshTokenService {
     private static final int MAX_REFRESH_TOKENS_PER_USER = 5;
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
 
 
@@ -61,9 +64,13 @@ public class RefreshTokenService {
         RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findFirstByRefresh(refreshToken)
                 .orElseThrow(() -> new BaseException(JWTException.INVALID_REFRESH_TOKEN));
 
-        // 재발급 (Refresh 토큰 로테이션: 기존 토큰 폐기 후 새로 발급)
+        // 권한은 토큰이 아닌 DB에서 읽음 (권한 변경/탈퇴가 재발급 시점에 바로 반영되도록)
         String username = claims.getSubject();
-        String role = claims.get("role", String.class);
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BaseException(JWTException.INVALID_REFRESH_TOKEN));
+        String role = "ROLE_" + user.getRole().name();
+
+        // 재발급 (Refresh 토큰 로테이션: 기존 토큰 폐기 후 새로 발급)
 
         String newAccessToken = jwtUtil.createAccessToken(username, role);
         String newRefreshToken = jwtUtil.createRefreshToken(username, role);

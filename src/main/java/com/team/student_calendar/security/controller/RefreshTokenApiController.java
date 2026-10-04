@@ -33,6 +33,7 @@ public class RefreshTokenApiController {
     // 요청이 서버에서 실행되는 것은 막지 못한다.
     // 따라서, 커스텀 헤더로 preflight 를 강제하면 더이상 simple request 로 취급하지 않게 되면
     // OPTIONS 요청을 먼저 보내므로 핵싱 로직 실행을 막을 수 있다. 실제 값은 사용하지 않는다.
+    // => 같은 도메인에 배포하기로 했으니 SameSite=Strict 설정
     @PostMapping("/api/r-token/tokens/reissue")
     public ResponseEntity<ApiSuccessResponse<String>> reissueTokens(
             @CookieValue(name = "refreshToken", required = false) String refreshToken,

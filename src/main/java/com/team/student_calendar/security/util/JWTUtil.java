@@ -111,7 +111,7 @@ public class JWTUtil {
                 .secure(true)
                 .sameSite("Strict")
                 .path("/api/r-token")
-                .maxAge(Duration.ofMillis(refreshTokenExpireTime))
+                .maxAge(Duration.ZERO) // 0 이어야 브라우저가 쿠키를 삭제함
                 .build();
     }
 }

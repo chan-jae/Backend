@@ -35,6 +35,7 @@ public class SecurityConfig {
     private static final String[] PERMIT_ALL_PATHS = {
             "/api/users",
             "/api/r-token/tokens/reissue",
+            "/api/r-token/logout",
             "/api/login"
     };
 

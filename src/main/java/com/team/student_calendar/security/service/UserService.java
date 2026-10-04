@@ -46,7 +46,7 @@ public class UserService implements UserDetailsService {
 
 
         // 닉네임 중복 체크
-        boolean existingName = userRepository.existsByUsername(username);
+        boolean existingName = userRepository.existsByName(username);
         if (existingName) {
             throw new BaseException(UserErrorCode.DUPLICATED_NAME);
         }

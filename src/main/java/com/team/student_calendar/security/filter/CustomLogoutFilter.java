@@ -2,7 +2,7 @@ package com.team.student_calendar.security.filter;
 
 import com.team.student_calendar.security.service.RefreshTokenService;
 import com.team.student_calendar.security.util.JWTUtil;
-import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -45,7 +45,6 @@ public class CustomLogoutFilter extends OncePerRequestFilter {
 
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            System.out.println("쿠키없음");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
@@ -62,13 +61,11 @@ public class CustomLogoutFilter extends OncePerRequestFilter {
             return;
         }
 
-        Claims claims = jwtUtil.getClaims(refreshToken);
-        String username = claims.getSubject();
-        String tokenType = claims.get("tokenType", String.class);
-        if (!"REFRESH".equals(tokenType)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
+        // 만료/위조된 토큰이어도 예외로 500 내지 않고 DB 삭제 + 쿠키 삭제는 진행.
+        String username = null;
+        try {
+            username = jwtUtil.getClaims(refreshToken).getSubject();
+        } catch (Exception ignored) { }
 
         refreshTokenService.deleteRefreshToken(refreshToken);
 
