@@ -94,7 +94,11 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
-        return source;
+        // X-Api-Token 요청(크롬 확장 등)은 CORS 검사 생략 → 확장 ID 를 allowed-origins 에 등록 안 해도 됨.
+        // 안전한 이유: 생략 시 Access-Control-Allow-* 헤더를 안 내려주므로 일반 웹페이지는 여전히 브라우저에서 차단되고,
+        return request -> request.getHeader("X-Api-Token") != null
+                ? null
+                : source.getCorsConfiguration(request);
     }
 
     @Bean
