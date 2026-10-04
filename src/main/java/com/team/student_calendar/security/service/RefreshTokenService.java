@@ -61,8 +61,12 @@ public class RefreshTokenService {
         }
 
         // Refresh 토큰 db 확인
+        // 서명은 유효한데 DB에 없음 = 로테이션으로 폐기됐거나 로그아웃된 토큰 재사용 (탈취 의심)
         RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findFirstByRefresh(refreshToken)
-                .orElseThrow(() -> new BaseException(JWTException.INVALID_REFRESH_TOKEN));
+                .orElseThrow(() -> {
+                    log.warn("revoked refresh token reused [{}]", claims.getSubject());
+                    return new BaseException(JWTException.INVALID_REFRESH_TOKEN);
+                });
 
         // 권한은 토큰이 아닌 DB에서 읽음 (권한 변경/탈퇴가 재발급 시점에 바로 반영되도록)
         String username = claims.getSubject();
