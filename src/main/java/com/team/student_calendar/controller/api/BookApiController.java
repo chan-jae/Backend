@@ -1,7 +1,6 @@
 package com.team.student_calendar.controller.api;
 
 import com.team.student_calendar.common.enums.LevelDifficultyRange;
-import com.team.student_calendar.common.util.BookHashUtil;
 import com.team.student_calendar.dto.BookCreateReq;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -80,6 +78,23 @@ public class BookApiController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiSuccessResponse.created("책 추가에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "ISBN으로 책 저장", description = "YES24 + 정보나루 API 병렬 호출해서 책 저장")
+    @PostMapping("/api/books/isbn/{isbn}")
+    public ResponseEntity<ApiSuccessResponse<Void>> postBookByIsbn(
+            @PathVariable("isbn") String isbn
+    ) {
+
+        if (!isbn.matches("\\d{13}")) {
+            throw new BaseException(CommonErrorCode.PARAMETER_ERROR, "ISBN은 13자리 숫자여야 합니다.");
+        }
+
+        insertBookService.saveBookByIsbn(isbn);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("ISBN 조회에 성공했습니다.", "SUCCESS"));
     }
 
 
