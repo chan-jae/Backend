@@ -1,5 +1,6 @@
 package com.team.student_calendar.entity;
 
+import com.team.student_calendar.common.enums.IsbnLookupError;
 import com.team.student_calendar.common.enums.IsbnLookupStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,7 +22,6 @@ public class IsbnLookupEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    // 요청 시점에 아는 값
     @Column(name = "isbn", nullable = false, length = 13)
     private String isbn;
 
@@ -44,11 +44,12 @@ public class IsbnLookupEntity {
     @Column(name = "class_no", length = 20)
     private String classNo;
 
-    @Column(name = "yes24_ok", nullable = false)
-    private boolean yes24Ok = false;
+    @Column(name = "category", length = 20)
+    private String category;
 
-    @Column(name = "naru_ok", nullable = false)
-    private boolean naruOk = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "error", length = 10)
+    private IsbnLookupError error;
 
     @UpdateTimestamp(source = SourceType.DB)
     @Column(name = "updated_at", insertable = false)

@@ -95,4 +95,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
         );
 
         boolean existsBybHash(@Param("bHash") String bHash);
+
+        boolean existsByIsbn(String isbn);
 }

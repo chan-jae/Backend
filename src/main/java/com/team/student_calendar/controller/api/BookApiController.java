@@ -81,23 +81,6 @@ public class BookApiController {
     }
 
 
-    @Operation(summary = "ISBN으로 책 저장", description = "YES24 + 정보나루 API 병렬 호출해서 책 저장")
-    @PostMapping("/api/books/isbn/{isbn}")
-    public ResponseEntity<ApiSuccessResponse<Void>> postBookByIsbn(
-            @PathVariable("isbn") String isbn
-    ) {
-
-        if (!isbn.matches("\\d{13}")) {
-            throw new BaseException(CommonErrorCode.PARAMETER_ERROR, "ISBN은 13자리 숫자여야 합니다.");
-        }
-
-        insertBookService.saveBookByIsbn(isbn);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiSuccessResponse.ok("ISBN 조회에 성공했습니다.", "SUCCESS"));
-    }
-
-
     @Operation(summary = "책 1권 조회", description = "책 1권 조회")
     @GetMapping("/api/books/{id}")
     public ResponseEntity<ApiSuccessResponse<BookEntity>> getBook(

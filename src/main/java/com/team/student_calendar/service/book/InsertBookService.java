@@ -1,6 +1,5 @@
 package com.team.student_calendar.service.book;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.team.student_calendar.common.constant.BookLevelMapping;
 import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.exception.BaseException;
@@ -19,29 +18,14 @@ import com.team.student_calendar.repository.jdbc.BookJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
-import java.net.http.HttpClient;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @Service
@@ -52,19 +36,6 @@ public class InsertBookService {
     private final BookJdbcRepository bookJdbcRepository;
     private final DtoValidator dtoValidator;
     private final ValidateBookDupService validateBookDupService;
-
-    private static final String YES24_URL = "https://apis.yes24.com/v1/goods/itemDetail?query={isbn}";
-    private static final String NARU_URL = "https://data4library.kr/api/srchDtlList?authKey={key}&isbn13={isbn}";
-
-    // 외부 API 호출은 블로킹 I/O라 가상 스레드로 실행 (공용 ForkJoinPool 고갈 방지)
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-    private final RestClient restClient = createRestClient();
-
-    @Value("${yes24-token}")
-    private String yes24Token;
-
-    @Value("${naru-token}")
-    private String naruToken;
 
 
     /**
@@ -162,31 +133,6 @@ public class InsertBookService {
     }
 
 
-    /**
-     * ISBN으로 YES24, 정보나루 API를 병렬 호출해 책 저장
-     * @param isbn ISBN13
-     */
-    public void saveBookByIsbn(String isbn) {
-
-        // 두 API를 병렬·비동기로 호출하고, 둘 다 끝날 때까지 대기
-        CompletableFuture<Yes24Item> yes24Future = CompletableFuture.supplyAsync(() -> fetchYes24(isbn), executor);
-        CompletableFuture<String> classNoFuture = CompletableFuture.supplyAsync(() -> fetchClassNo(isbn), executor);
-        CompletableFuture.allOf(yes24Future, classNoFuture).join();
-
-        Yes24Item item = yes24Future.join();
-        String classNo = classNoFuture.join();
-
-        if (item != null) {
-            System.out.println("title = " + item.title());
-            System.out.println("author = " + item.author());
-            System.out.println("publisher = " + item.publisher());
-            System.out.println("isbn13 = " + item.isbn13());
-            System.out.println("cover = " + item.cover());
-        }
-        System.out.println("class_no = " + classNo);
-    }
-
-
 
 
 
@@ -238,73 +184,4 @@ public class InsertBookService {
 
         return excelBookReq;
     }
-
-
-    private static RestClient createRestClient() {
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
-                .build();
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(Duration.ofSeconds(5));
-
-        return RestClient.builder().requestFactory(requestFactory).build();
-    }
-
-
-    private Yes24Item fetchYes24(String isbn) {
-        try {
-            ResponseEntity<Yes24Response> res = restClient.get()
-                    .uri(YES24_URL, isbn)
-                    .header("X-Api-Key", yes24Token)
-                    .retrieve()
-                    .toEntity(Yes24Response.class);
-
-            Yes24Response body = res.getBody();
-            if (res.getStatusCode() != HttpStatus.OK || body == null || !body.success()
-                    || body.data() == null || body.data().items() == null || body.data().items().isEmpty()) {
-                log.info("yes24 api fail isbn={}, status={}", isbn, res.getStatusCode());
-                return null;
-            }
-            return body.data().items().getFirst();
-        } catch (Exception e) {
-            log.warn("yes24 api error isbn={}", isbn, e);
-            return null;
-        }
-    }
-
-
-    private String fetchClassNo(String isbn) {
-        try {
-            byte[] xml = restClient.get()
-                    .uri(NARU_URL, naruToken, isbn)
-                    .retrieve()
-                    .body(byte[].class);
-            if (xml == null) {
-                return null;
-            }
-
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            // 외부 응답이므로 XXE 차단
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            Document doc = factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml));
-
-            NodeList nodes = doc.getElementsByTagName("class_no");
-            return nodes.getLength() == 0 ? null : nodes.item(0).getTextContent().strip();
-        } catch (Exception e) {
-            log.warn("naru api error isbn={}", isbn, e);
-            return null;
-        }
-    }
-
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record Yes24Response(boolean success, Yes24Data data) {}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record Yes24Data(List<Yes24Item> items) {}
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record Yes24Item(String title, String author, String publisher, String isbn13, String cover) {}
 }
