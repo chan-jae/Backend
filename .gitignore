@@ -39,9 +39,13 @@ out/
 
 /logs/
 
-**/src/main/resources
+**/src/main/resources/*
+!**/src/main/resources/templates/
+!**/src/main/resources/fonts/
+!**/src/main/resources/json/
+!**/src/main/resources/md/
 
-**/src/test/http
+**/src/test/
 
 CLAUDE.md
 MEMORY.md
