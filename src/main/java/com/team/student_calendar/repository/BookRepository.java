@@ -57,6 +57,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         AND sb.student.id = :studentId
                         WHERE b.category = :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND b.state = 0 AND (b.isActive IS NULL OR b.isActive = 1)
+                        AND b.type = 1
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
                             OR
@@ -82,6 +83,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         AND sb.student.id = :studentId
                         WHERE b.category != :#{T(com.team.student_calendar.common.enums.BookCategory).LITERATURE.name()}
                         AND b.state = 0 AND (b.isActive IS NULL OR b.isActive = 1)
+                        AND b.type = 1
                         AND (
                             (sb.state IS NULL AND b.cLevel >= :baseLevel)
                             OR
