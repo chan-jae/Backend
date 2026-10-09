@@ -52,6 +52,7 @@ import java.io.UncheckedIOException;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +91,9 @@ public class InsertIsbnLookupService {
     // 활동지 문제 생성 상태 (key: bookId), 프론트가 폴링으로 조회
     // 메모리 보관이라 재시작하면 사라지고 서버 1대 전제. 서버를 늘리거나 결과를 남겨야 하면 DB로
     private final Map<Long, QuestionSheetRes> questionSheets = new ConcurrentHashMap<>();
+
+    // 생성 완료 결과는 첫 응답 후 이 시간 동안 계속 응답 (폴링 응답을 프론트가 한 번 놓쳐도 다음 폴링에서 다시 받게)
+    private static final Duration DONE_SHEET_TTL = Duration.ofMinutes(1);
 
     /**
      * 활동지 문제 생성을 백그라운드로 시작하고 바로 반환 (결과는 findDoneQuestionSheets로 폴링)
@@ -176,15 +180,26 @@ public class InsertIsbnLookupService {
 
 
     /**
-     * 생성이 끝난(SUCCESS/FAILED) 활동지 문제 전체 조회 (프론트 폴링용), 응답한 건 메모리에서 제거
+     * 생성이 끝난(SUCCESS/FAILED) 활동지 문제 전체 조회 (프론트 폴링용)
+     * 첫 응답 시간을 기록하고 DONE_SHEET_TTL 동안은 계속 응답, 지나면 메모리에서 제거
      * @return 없으면 빈 List
      */
     public List<QuestionSheetRes> findDoneQuestionSheets() {
 
+        Instant now = Instant.now();
         List<QuestionSheetRes> res = new ArrayList<>();
         questionSheets.forEach((bookId, sheet) -> {
-            // remove(key, value)는 값이 그대로일 때만 지움 -> 동시 폴링이 같은 결과를 두 번 받거나, 그 사이 새로 등록된 요청을 지우지 않음
-            if (sheet.status() != QuestionSheetRes.Status.PENDING && questionSheets.remove(bookId, sheet)) {
+            if (sheet.status() == QuestionSheetRes.Status.PENDING) {
+                return;
+            }
+            // replace/remove(key, value)는 값이 그대로일 때만 바꿈 -> 그 사이 같은 책으로 새로 등록된 요청을 덮거나 지우지 않음
+            if (sheet.servedAt() == null) {
+                QuestionSheetRes served = sheet.served(now);
+                questionSheets.replace(bookId, sheet, served);
+                res.add(served);
+            } else if (now.isAfter(sheet.servedAt().plus(DONE_SHEET_TTL))) {
+                questionSheets.remove(bookId, sheet);
+            } else {
                 res.add(sheet);
             }
         });
