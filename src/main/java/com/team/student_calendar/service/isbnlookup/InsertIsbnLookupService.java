@@ -217,8 +217,8 @@ public class InsertIsbnLookupService {
                 .fallbacks(BetaFallbacksParam.ofDefault())
                 // Claude가 모르는 책이 많아서 서점 소개, 서평, 블로그 리뷰를 검색하고 본문까지 읽게 함
                 // 횟수 상한으로 비용만 막음 (검색 1회 약 $0.01 + 결과 토큰), 결과가 부족하면 maxUses 조정
-                .addTool(BetaWebSearchTool20260209.builder().maxUses(5L).build())
-                .addTool(BetaWebFetchTool20260209.builder().maxUses(5L).maxContentTokens(10000L).build())
+                .addTool(BetaWebSearchTool20260209.builder().maxUses(8L).build())
+                .addTool(BetaWebFetchTool20260209.builder().maxUses(8L).maxContentTokens(10000L).build())
                 .system(readResource("md/book-question-system.md"))
                 .addUserMessage(userMessage)
                 .build();
@@ -275,23 +275,41 @@ public class InsertIsbnLookupService {
     /**
      * ISBN을 PENDING 상태로 등록 (로그 테이블이라 매번 새 행 추가)
      * 이미 책으로 등록됐거나, FAILED가 아닌 조회 기록이 있으면 에러
+     * 단, 가장 최근 기록이 책은 저장됐는데 활동지 생성에 실패(FAILED)했으면 통과 -> 이전 책 정보를 미리 채워 활동지만 다시 만들게 함
+     * (C_PENDING은 생성 중일 수 있어 막음)
      * @param isbn ISBN13
      * @return 저장된 조회 기록 id
      */
     @Transactional
     public Long saveIsbnPending(String isbn) {
 
-        if (bookRepository.existsByIsbn(isbn)) {
-            throw new BaseException(BookErrorCode.ALREADY_EXIST_BOOK);
-        }
+        IsbnLookupEntity prev = isbnLookupRepository.findFirstByIsbnOrderByIdDesc(isbn).orElse(null);
+        boolean retrySheet = prev != null && prev.getBook() != null && prev.getQuestionSheet() == null
+                && prev.getStatus() == IsbnLookupStatus.FAILED;
 
-        if (isbnLookupRepository.existsByIsbnAndStatusNot(isbn, IsbnLookupStatus.FAILED)) {
-            throw new BaseException(BookErrorCode.ALREADY_EXIST_ISBN, "처리중인 항목이 있습니다.");
+        if (!retrySheet) {
+            if (bookRepository.existsByIsbn(isbn)) {
+                throw new BaseException(BookErrorCode.ALREADY_EXIST_BOOK);
+            }
+
+            if (isbnLookupRepository.existsByIsbnAndStatusNot(isbn, IsbnLookupStatus.FAILED)) {
+                throw new BaseException(BookErrorCode.ALREADY_EXIST_ISBN, "처리중인 항목이 있습니다.");
+            }
         }
 
         IsbnLookupEntity lookup = new IsbnLookupEntity();
         lookup.setIsbn(isbn);
         lookup.setStatus(IsbnLookupStatus.PENDING);
+        if (retrySheet) {
+            // book이 있으면 saveBookByIsbn에서 외부 API 호출과 책 저장을 건너뜀
+            lookup.setBook(prev.getBook());
+            lookup.setTitle(prev.getTitle());
+            lookup.setAuthor(prev.getAuthor());
+            lookup.setPublisher(prev.getPublisher());
+            lookup.setImageUrl(prev.getImageUrl());
+            lookup.setClassNo(prev.getClassNo());
+            lookup.setCategory(prev.getCategory());
+        }
         isbnLookupRepository.save(lookup);
 
         log.info("isbn pending saved - id: {}, isbn: {}", lookup.getId(), isbn);
@@ -303,6 +321,7 @@ public class InsertIsbnLookupService {
     /**
      * 조회 기록 id의 ISBN으로 YES24, 정보나루 API를 병렬 호출해 조회 결과 저장 (이미 책으로 등록된 ISBN이면 에러)
      * 조회 성공 시 BookEntity에도 저장, 실패 시 로그만 FAILED로 남김
+     * 조회 기록에 책이 이미 있으면(활동지 재생성용 재스캔) API 호출과 책 저장 없이 C_PENDING으로만 저장
      * 외부 API 대기 중 DB 커넥션을 잡지 않도록 @Transactional 없이 save()별로 커밋
      * @param id saveIsbnPending에서 반환한 조회 기록 id
      * @return 조회 결과 (조회 실패 시 status=FAILED, 조회된 값만 채움)
@@ -313,6 +332,16 @@ public class InsertIsbnLookupService {
         IsbnLookupEntity lookup = isbnLookupRepository.findById(id)
                 .orElseThrow(() -> new BaseException(BookErrorCode.ISBN_NOT_FOUND));
         String isbn = lookup.getIsbn();
+
+        // 책 정보는 saveIsbnPending에서 이전 기록으로 채웠으므로 활동지 대기 상태로만 바꿈
+        if (lookup.getBook() != null) {
+            lookup.setStatus(IsbnLookupStatus.C_PENDING);
+            isbnLookupRepository.save(lookup);
+
+            log.info("isbn lookup reuse book - isbn: {}, bookId: {}", isbn, lookup.getBook().getId());
+
+            return IsbnBookRes.from(lookup);
+        }
 
         // 이미 책으로 등록된 ISBN이면 API 요청 불가
         if (bookRepository.existsByIsbn(isbn)) {
