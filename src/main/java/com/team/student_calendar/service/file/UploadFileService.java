@@ -1,23 +1,28 @@
 package com.team.student_calendar.service.file;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.exception.domain.FileErrorCode;
 import com.team.student_calendar.config.S3Properties;
+import com.team.student_calendar.dto.QuestionSheet;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.FileEntity;
 import com.team.student_calendar.repository.FileRepository;
 import com.team.student_calendar.service.book.SelectBookService;
+import com.team.student_calendar.service.file.util.PdfRenderUtil;
 import com.team.student_calendar.service.file.util.UploadFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -34,6 +39,8 @@ public class UploadFileService {
     private final SelectBookService selectBookService;
     private final SelectFileService selectFileService;
     private final S3Properties s3Properties;
+    private final PdfRenderUtil pdfRenderUtil;
+    private final DeleteFileService deleteFileService;
 
 
     @CacheEvict(cacheNames = "books", allEntries = true)
@@ -89,6 +96,9 @@ public class UploadFileService {
         } catch (IOException e) {
             log.warn("failed file save");
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (Exception e) {
+            log.warn("failed file save to s3 key={}, error={}", s3Key, e.getMessage());
+            throw new BaseException(FileErrorCode.FAIL_TO_SAVE_FILE);
         }
         log.info("bucket putObject done key={}", s3Key);
 
@@ -102,5 +112,70 @@ public class UploadFileService {
 //                .fileSize(saved.getFileSize())
 //                .registeredAt(saved.getRegisteredAt())
 //                .build();
+    }
+
+
+    /**
+     * 마이북 활동지 문제를 문제지 / 정답지 PDF 두 개로 만들어 S3에 저장
+     * file 테이블은 책과 1:1(@OneToOne)이라 문제지 키만 저장, 정답지 키는 같은 UUID라 문제지 키에서 구함
+     * (mb_pdfs/{bookId}_{uuid} -> mb_pdfs/answer_{bookId}_{uuid})
+     * uploadFile처럼 DB 먼저 저장하고 S3는 마지막 -> S3 실패 시 예외로 DB 롤백 (호출 쪽 트랜잭션도 같이 롤백)
+     * @param bookId 책 id
+     * @param sheet Claude가 채운 활동지 문제
+     */
+    @CacheEvict(cacheNames = "books", allEntries = true)
+    @Transactional
+    public void uploadMyBookPdf(Long bookId, QuestionSheet sheet) {
+
+        log.info("try to upload mybook pdf by bookId={}", bookId);
+
+        BookEntity book = selectBookService.findById(bookId);
+
+        /* 이미 pdf 파일이 등록되어 있으면 throw */
+        if (selectFileService.existsFileByBookId(book.getId())) {
+            throw new BaseException(FileErrorCode.ALREADY_EXISTS_FILE);
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        String questionKey = String.format("mb_pdfs/%d_%s", bookId, uuid);
+        String answerKey = String.format("mb_pdfs/answer_%d_%s", bookId, uuid);
+
+        byte[] questionPdf = pdfRenderUtil.renderQuestionSheet(book, sheet);
+        byte[] answerPdf = pdfRenderUtil.renderQuestionSheetAnswer(book, sheet);
+
+        /* 메타데이터 db 저장 (문제지 기준) */
+        fileRepository.save(FileEntity.builder()
+                .book(book)
+                .s3Key(questionKey)
+                .originalName(book.getTitle() + " 활동지.pdf")
+                .fileSize((long) questionPdf.length)
+                .contentType(MediaType.APPLICATION_PDF_VALUE)
+                .registeredAt(LocalDateTime.now())
+                .build());
+
+        putPdf(questionKey, questionPdf);
+        try {
+            putPdf(answerKey, answerPdf);
+        } catch (BaseException e) {
+            // 문제지만 남지 않게
+            deleteFileService.deleteQuietly(questionKey);
+            throw e;
+        }
+
+        log.info("completed mybook pdf save bookId={}, questionKey={}, answerKey={}", bookId, questionKey, answerKey);
+    }
+
+
+    private void putPdf(String s3Key, byte[] pdf) {
+
+        ObjectMetadata metadata = uploadFileUtil.makeMetaData((long) pdf.length, MediaType.APPLICATION_PDF_VALUE);
+        try {
+            amazonS3.putObject(s3Properties.getBucket(), s3Key, new ByteArrayInputStream(pdf), metadata);
+        } catch (Exception e) {
+            log.warn("failed file save to s3 key={}, error={}", s3Key, e.getMessage());
+            throw new BaseException(FileErrorCode.FAIL_TO_SAVE_FILE);
+        }
+
+        log.info("bucket putObject done key={}", s3Key);
     }
 }

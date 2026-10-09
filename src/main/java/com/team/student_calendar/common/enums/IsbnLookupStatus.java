@@ -1,5 +1,5 @@
 package com.team.student_calendar.common.enums;
 
 public enum IsbnLookupStatus {
-    PENDING, SUCCESS, FAILED
+    PENDING, C_PENDING, SUCCESS, FAILED
 }

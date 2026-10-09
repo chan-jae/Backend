@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- openhtmltopdf는 XML 파서를 쓰므로 모든 태그를 닫아야 함 (<br/>, <meta ... />) -->
+<!-- book-question-sheet.html의 정답지만 따로 뽑은 파일, 변수: bookTitle, sheet(QuestionSheet) -->
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${bookTitle} + ' 정답지'">정답지</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 16mm 16mm 18mm 16mm;
+            @bottom-center {
+                content: "- " counter(page) " -";
+                font-family: 'NanumGothic';
+                font-size: 9pt;
+                color: #2b9b8c;
+            }
+        }
+        body {
+            font-family: 'NanumGothic';
+            font-size: 11.5pt;
+            color: #333;
+            margin: 0;
+        }
+
+        /* ===== 섹션 머리 (영역별 색상) ===== */
+        .section-head {
+            margin: 6mm 0 5mm 0;
+            padding-bottom: 2mm;
+            border-bottom: 2px dashed #ccc;
+            page-break-after: avoid;
+        }
+        .tag {
+            display: inline-block;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13pt;
+            padding: 1.5mm 5mm;
+            border-radius: 5mm;
+        }
+        .s-vocab .tag { background: #4fb783; }
+        .s-vocab .section-head { border-color: #4fb783; }
+        .s-factual .tag { background: #5b9be0; }
+        .s-factual .section-head { border-color: #5b9be0; }
+        .s-critical .tag { background: #f0a04b; }
+        .s-critical .section-head { border-color: #f0a04b; }
+        .s-appreciative .tag { background: #ef7fa6; }
+        .s-appreciative .section-head { border-color: #ef7fa6; }
+        .s-creative .tag { background: #9b7fe0; }
+        .s-creative .section-head { border-color: #9b7fe0; }
+
+        /* 보기 번호 ①②③④ (나눔고딕에 글리프가 없어 이 부분만 IBM Plex Sans KR 사용) */
+        .num {
+            font-family: 'IBMPlexSansKR';
+            line-height: 1;
+            margin-right: 1.5mm;
+        }
+
+        /* ===== 정답 ===== */
+        .answer-title {
+            text-align: center;
+            font-size: 20pt;
+            font-weight: 700;
+            color: #2b9b8c;
+            margin: 0 0 1mm 0;
+        }
+        .book-title {
+            text-align: center;
+            color: #777;
+            font-size: 11pt;
+            margin: 0 0 4mm 0;
+        }
+        /* 번호 칸 / 답 칸 분리: 예시 답안이 두 줄 이상이 돼도 번호 아래로 글이 들어가지 않음 */
+        .answer-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 1.5mm;
+        }
+        .answer-row b, .answer-body {
+            display: table-cell;
+            vertical-align: baseline;
+        }
+        .answer-row b {
+            width: 30mm;
+        }
+    </style>
+</head>
+<body>
+
+<div class="answer-title">정답지</div>
+<div class="book-title" th:text="${bookTitle}">책 제목</div>
+
+<div class="s-vocab">
+    <div class="section-head"><span class="tag">낱말 탐험</span></div>
+    <div class="answer-row" th:each="v, stat : ${sheet.vocabulary}">
+        <b th:text="${stat.count} + '. ' + ${v.word}">1. 어휘</b>
+        <span class="answer-body"><span th:each="m, ms : ${v.meanings}" th:text="${ms.count == v.answer ? 'O' : 'X'} + ' '">O</span></span>
+    </div>
+</div>
+
+<div class="s-factual">
+    <div class="section-head"><span class="tag">사실적 이해</span></div>
+    <th:block th:replace="~{this :: answers(${sheet.factual})}"></th:block>
+    <div class="answer-row" th:each="q, stat : ${sheet.factualShortAnswer}">
+        <b th:text="${#lists.size(sheet.factual) + stat.count} + '. (예시 답안)'">4. (예시 답안)</b>
+        <span class="answer-body" th:text="${q.exampleAnswer}">예시 답안</span>
+    </div>
+</div>
+
+<div class="s-critical">
+    <div class="section-head"><span class="tag">비판적 이해</span></div>
+    <th:block th:replace="~{this :: answers(${sheet.critical})}"></th:block>
+</div>
+
+<div class="s-appreciative">
+    <div class="section-head"><span class="tag">감상적 이해</span></div>
+    <th:block th:replace="~{this :: answers(${sheet.appreciative})}"></th:block>
+</div>
+
+<div class="s-creative">
+    <div class="section-head"><span class="tag">창의적 이해</span></div>
+    <th:block th:replace="~{this :: answers(${sheet.creative})}"></th:block>
+</div>
+
+
+<!-- 공통 조각 (여기서는 출력되지 않음) -->
+<th:block th:if="false">
+    <th:block th:fragment="answers(items)">
+        <div class="answer-row" th:each="q, stat : ${items}">
+            <b th:text="${stat.count} + '.'">1.</b>
+            <span class="answer-body"><span class="num" th:text="${'①②③④⑤'.charAt(q.answer - 1)}">①</span></span>
+        </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>

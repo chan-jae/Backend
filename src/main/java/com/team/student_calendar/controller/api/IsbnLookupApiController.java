@@ -5,6 +5,7 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.IsbnBookRes;
+import com.team.student_calendar.dto.QuestionSheetRes;
 import com.team.student_calendar.service.isbnlookup.InsertIsbnLookupService;
 import com.team.student_calendar.service.isbnlookup.SelectIsbnLookupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,6 +72,30 @@ public class IsbnLookupApiController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "ISBN 바코드 전체 이력 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "책 활동지 문제 생성 요청", description = "Claude API로 활동지 문제 생성을 백그라운드로 시작하고 바로 응답 (결과는 GET으로 폴링)")
+    @PostMapping("/api/books/{bookId}/question-sheet")
+    public ResponseEntity<ApiSuccessResponse<Void>> postQuestionSheet(
+            @PathVariable("bookId") Long bookId
+    ) {
+
+        insertIsbnLookupService.requestQuestionSheet(bookId);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(ApiSuccessResponse.ok("책 활동지 문제 생성 요청에 성공했습니다.", "C_PENDING"));
+    }
+
+
+    @Operation(summary = "생성 완료된 책 활동지 문제 조회", description = "생성이 끝난(SUCCESS/FAILED) 활동지 문제를 lookupId, status 목록으로 응답 (폴링용, 한 번 응답한 결과는 다시 오지 않음)")
+    @GetMapping("/api/books/question-sheets")
+    public ResponseEntity<ApiSuccessResponse<List<QuestionSheetRes>>> getQuestionSheets() {
+
+        List<QuestionSheetRes> res = insertIsbnLookupService.findDoneQuestionSheets();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(res, "생성 완료된 책 활동지 문제 조회에 성공했습니다.", "SUCCESS"));
     }
 
 

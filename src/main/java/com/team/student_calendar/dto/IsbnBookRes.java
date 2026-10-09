@@ -7,6 +7,8 @@ import com.team.student_calendar.entity.IsbnLookupEntity;
 import java.time.LocalDateTime;
 
 public record IsbnBookRes(
+        Long lookupId,
+        Long bookId,
         String isbn,
         IsbnLookupStatus status,
         IsbnLookupError error,
@@ -18,7 +20,8 @@ public record IsbnBookRes(
 ) {
 
     public static IsbnBookRes from(IsbnLookupEntity lookup) {
-        return new IsbnBookRes(lookup.getIsbn(), lookup.getStatus(), lookup.getError(), lookup.getTitle(),
+        Long bookId = lookup.getBook() == null ? null : lookup.getBook().getId();
+        return new IsbnBookRes(lookup.getId(), bookId, lookup.getIsbn(), lookup.getStatus(), lookup.getError(), lookup.getTitle(),
                 lookup.getAuthor(), lookup.getPublisher(), lookup.getCategory(), lookup.getRegisteredAt());
     }
 }

@@ -1,0 +1,116 @@
+{
+  "vocabulary": [
+    {
+      "sentence": "책 속 낱말이 들어간 예문 (word가 글자 그대로 포함되어야 함)",
+      "word": "예문 속 밑줄 칠 낱말",
+      "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
+      "answer": 1
+    },
+    {
+      "sentence": "예문",
+      "word": "낱말",
+      "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
+      "answer": 3
+    },
+    {
+      "sentence": "예문",
+      "word": "낱말",
+      "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
+      "answer": 2
+    },
+    {
+      "sentence": "예문",
+      "word": "낱말",
+      "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
+      "answer": 3
+    },
+    {
+      "sentence": "예문",
+      "word": "낱말",
+      "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
+      "answer": 2
+    }
+  ],
+  "factual": [
+    {
+      "question": "책 내용을 기억하는지 묻는 질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 2
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 4
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 1
+    }
+  ],
+  "factualShortAnswer": [
+    {
+      "question": "책 내용을 짧게 써서 답하는 질문",
+      "exampleAnswer": "예시 답안 (한두 문장)"
+    },
+    {
+      "question": "질문",
+      "exampleAnswer": "예시 답안"
+    },
+    {
+      "question": "질문",
+      "exampleAnswer": "예시 답안"
+    }
+  ],
+  "critical": [
+    {
+      "question": "인물의 생각이나 행동이 옳은지 따져 보는 질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 3
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 1
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 4
+    }
+  ],
+  "appreciative": [
+    {
+      "question": "인물의 마음이나 책의 감동을 느껴 보는 질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 4
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 2
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 3
+    }
+  ],
+  "creative": [
+    {
+      "question": "내가 주인공이라면, 내 생활에 적용한다면 등 생각을 넓히는 질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 1
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 3
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 2
+    }
+  ]
+}

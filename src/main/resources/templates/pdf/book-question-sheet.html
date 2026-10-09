@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<!-- openhtmltopdf는 XML 파서를 쓰므로 모든 태그를 닫아야 함 (<br/>, <meta ... />) -->
+<!-- 변수: bookTitle, author, publisher, difficulty, imageUrl, level, branchName, sheet(QuestionSheet) (level, branchName, imageUrl는 없으면 생략) -->
+<!-- 정답지는 book-question-sheet-answer.html로 따로 렌더링 -->
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${bookTitle}">독서 활동지</title>
+    <style>
+        @page {
+            size: A4;
+            /* 좌우 여백은 .content padding으로 처리: openhtmltopdf는 첫 페이지(표지, 여백 0) 폭으로 전체를 배치해서
+               여기 좌우 여백을 주면 본문이 210mm로 잡혀 오른쪽(O 표시 칸 등)이 잘림 */
+            margin: 16mm 0 18mm 0;
+            @bottom-center {
+                content: "- " counter(page) " -";
+                font-family: 'NanumGothic';
+                font-size: 9pt;
+                color: #2b9b8c;
+            }
+        }
+        body {
+            font-family: 'NanumGothic';
+            font-size: 11.5pt;
+            color: #333;
+            margin: 0;   /* 기본 8px 여백이 있으면 표지가 밀려 다음 장으로 넘침 */
+        }
+        .content {
+            padding: 0 16mm;
+            page-break-before: always;   /* 표지 다음 장부터 시작 */
+        }
+
+        /* ===== 첫 페이지: 표지 ===== */
+        @page :first {
+            margin: 0;
+            @bottom-center { content: none; }
+        }
+        /* 절대 위치 요소는 overflow: hidden으로 잘리지 않음 -> 모든 장식은 210 x 296mm 안에 들어오게 배치 */
+        .cover {
+            position: relative;
+            width: 210mm;
+            height: 296mm;   /* 297mm면 반올림으로 빈 페이지가 생길 수 있음 */
+        }
+        .cover div, .cover img, .cover table {
+            position: absolute;
+        }
+        .wave-band {
+            left: 178mm; top: 0;
+            width: 32mm; height: 296mm;
+            background: #c5dfd0;
+        }
+        .wave {
+            border-radius: 50%;
+        }
+        .wave.bump { left: 138mm; width: 64mm; height: 64mm; background: #c5dfd0; }
+        .wave.notch { left: 130mm; width: 56mm; height: 56mm; background: #fff; }
+        .water {
+            border-radius: 45mm 0 0 0;
+        }
+        .arch {
+            left: -15mm; top: 108mm;
+            width: 148mm; height: 186mm;
+            border: 1.5px solid #c5dfd0;
+            border-radius: 74mm 74mm 0 0;
+            background: #f5faf7;
+        }
+        .bubble {
+            border: 1px solid #9fc4e8;
+            border-radius: 50%;
+        }
+        .branch {
+            left: 5mm; top: 4mm;
+            font-size: 9pt;
+            color: #555;
+        }
+        .headline {
+            left: 0; top: 20mm;
+            width: 170mm;
+            text-align: center;
+        }
+        .headline span {
+            display: inline-block;
+            background: #2b9b8c;
+            color: #fff;
+            font-size: 12pt;
+            padding: 2mm 7mm;
+            border-radius: 6mm;
+        }
+        .headline b {
+            font-size: 17pt;
+        }
+        .title-deco {
+            width: 22mm; height: 22mm;
+            border-radius: 50%;
+        }
+        .title {
+            left: 0; top: 36mm;
+            width: 170mm;
+            text-align: center;
+            font-size: 72pt;
+            font-weight: 700;
+            letter-spacing: 2mm;
+        }
+        .title.outline {
+            color: #2b8f86;
+        }
+        .level {
+            left: 126mm; top: 102mm;
+        }
+        .level span {
+            display: inline-block;
+            background: #c5dfd0;
+            color: #2b8f86;
+            font-weight: 700;
+            font-size: 15pt;
+            padding: 2.5mm 6mm;
+            border-radius: 7mm;
+        }
+        .cover-card {
+            left: 50mm; top: 116mm;
+            width: 48mm; height: 66mm;
+            background: #c5dfd0;
+            transform: rotate(7deg);
+        }
+        .cover-img {
+            left: 44mm; top: 110mm;
+            width: 48mm;
+            border: 1px solid #ddd;
+        }
+        /* 민트 라벨(왼쪽 끝에 붙음) + 값 밑줄 */
+        .intro {
+            left: 0; top: 196mm;
+            width: 122mm;
+            border-collapse: separate;
+            border-spacing: 0 9mm;
+        }
+        /* 칸에 배경을 주면 값이 여러 줄일 때 라벨도 같이 늘어남 -> 안쪽 span에 배경, 첫 줄 높이에 고정 */
+        .intro-label {
+            width: 40mm;
+            padding: 0;
+            vertical-align: top;
+        }
+        .intro-label span {
+            display: block;
+            padding: 2.5mm 0;
+            background: #c5dfd0;
+            color: #2b8f86;
+            font-weight: 700;
+            font-size: 13pt;
+            text-align: center;
+            border-radius: 0 6mm 6mm 0;
+        }
+        .intro-value {
+            /* 라벨과 같은 위아래 padding -> 여러 줄이 돼도 밑줄과의 간격이 한 줄일 때와 같음 */
+            padding: 2.5mm 0 2.5mm 5mm;
+            vertical-align: top;   /* 첫 줄을 라벨과 같은 높이에 */
+            font-size: 13pt;
+            font-weight: 700;
+            border-bottom: 1px solid #a9c9bb;
+        }
+
+
+        /* ===== 섹션 머리 (영역별 색상) ===== */
+        .section-head {
+            margin: 6mm 0 5mm 0;
+            padding-bottom: 2mm;
+            border-bottom: 2px dashed #ccc;
+            page-break-after: avoid;
+        }
+        .tag {
+            display: inline-block;
+            color: #fff;
+            font-weight: 700;
+            font-size: 13pt;
+            padding: 1.5mm 5mm;
+            border-radius: 5mm;
+        }
+        .desc {
+            margin-left: 3mm;
+            color: #777;
+            font-size: 10pt;
+        }
+        .s-vocab .tag, .s-vocab .q-num { background: #4fb783; }
+        .s-vocab .section-head { border-color: #4fb783; }
+        .s-factual .tag, .s-factual .q-num { background: #5b9be0; }
+        .s-factual .section-head { border-color: #5b9be0; }
+        .s-critical .tag, .s-critical .q-num { background: #f0a04b; }
+        .s-critical .section-head { border-color: #f0a04b; }
+        .s-appreciative .tag, .s-appreciative .q-num { background: #ef7fa6; }
+        .s-appreciative .section-head { border-color: #ef7fa6; }
+        .s-creative .tag, .s-creative .q-num { background: #9b7fe0; }
+        .s-creative .section-head { border-color: #9b7fe0; }
+
+        /* ===== 문제 ===== */
+        .question {
+            margin-bottom: 6mm;
+            page-break-inside: avoid;
+        }
+        /* 번호 칸 / 질문 칸 분리 (.choice와 같은 방식): 질문이 두 줄 이상이 돼도 번호 아래로 글이 들어가지 않음 */
+        .question-text {
+            display: table;
+            width: 100%;
+            font-weight: 700;
+            margin-bottom: 2mm;
+        }
+        .q-cell, .q-body {
+            display: table-cell;
+            vertical-align: baseline;   /* 번호와 질문 첫 줄 글자 높이 맞춤 */
+        }
+        .q-cell {
+            width: 8.5mm;   /* q-num 6.5mm + margin 2mm */
+        }
+        .q-num {
+            display: inline-block;
+            width: 6.5mm;
+            /* 나눔고딕은 아래 여백(descent)이 커서 숫자가 위로 뜸 -> 0.3mm 내림 (합계 높이 6.5mm 유지) */
+            height: 5.9mm;
+            line-height: 5.9mm;
+            padding-top: 0.6mm;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: 700;
+            text-align: center;
+            margin-right: 2mm;
+        }
+        .choices {
+            margin-left: 8.5mm;
+            background: #f7f9fc;
+            border-radius: 3mm;
+            padding: 2.5mm 4mm 1.3mm 4mm;
+        }
+        /* 번호 칸 / 글 칸 분리: 보기가 두 줄 이상이 돼도 번호 아래로 글이 들어가지 않음 */
+        .choice {
+            display: table;
+            width: 100%;
+        }
+        .choice .num, .choice-text {
+            display: table-cell;
+            vertical-align: baseline;   /* 번호와 첫 줄 글자 높이 맞춤 */
+            padding-bottom: 1.2mm;
+        }
+        .choice .num {
+            width: 5mm;
+        }
+        /* 보기 번호 ①②③④ (나눔고딕에 글리프가 없어 이 부분만 IBM Plex Sans KR 사용) */
+        .num {
+            font-family: 'IBMPlexSansKR';
+            line-height: 1;   /* 이 폰트 줄 높이가 커서 보기 간격이 벌어지는 것 방지 */
+            margin-right: 1.5mm;
+        }
+        .answer-line {
+            margin-left: 8.5mm;
+            border-bottom: 1.5px dashed #c5d3e3;
+            height: 9mm;
+        }
+
+        /* 어휘: 번호 배지 + 둥근 테두리 예문 + 뜻 O/X 표 */
+        .vocab-head {
+            width: 100%;
+            border-collapse: separate;
+            margin-bottom: 2mm;
+        }
+        .badge {
+            width: 9mm;
+            vertical-align: middle;
+        }
+        .sentence {
+            border: 1.5px solid #6b9bd2;
+            border-radius: 3mm;
+            background: #f2f8ff;
+            padding: 2.5mm 4mm;
+            font-weight: 700;
+        }
+        .sentence u {
+            text-decoration: underline;
+            color: #2f6fb8;
+        }
+        /* width 100% + margin-left 조합은 표가 오른쪽으로 넘쳐 ( ) 칸이 잘림 -> 들여쓰기는 bullet 칸 padding으로 */
+        .meanings {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .meanings td {
+            padding: 1.2mm 0;
+            vertical-align: top;
+        }
+        .meanings .bullet {
+            width: 4mm;
+            padding-left: 9mm;
+            color: #4fb783;
+        }
+        .meanings .ox {
+            width: 28mm;
+            text-align: right;
+            padding-right: 9mm;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 첫 페이지: 표지 (여백 없는 A4 위에 절대 위치로 배치) -->
+<div class="cover">
+    <!-- 오른쪽 물결 띠: 민트 띠 + 바깥으로 볼록한 원(bump) + 안으로 파인 흰 원(notch) -->
+    <div class="wave-band"></div>
+    <div class="wave notch" style="top: 77mm;"></div>
+    <div class="wave notch" style="top: 197mm;"></div>
+    <div class="wave bump" style="top: 8mm;"></div>
+    <div class="wave bump" style="top: 138mm;"></div>
+    <!-- 오른쪽 아래 바다 -->
+    <div class="water" style="left: 128mm; top: 232mm; width: 82mm; height: 64mm; background: #d7eef6;"></div>
+    <div class="water" style="left: 148mm; top: 250mm; width: 62mm; height: 46mm; background: #b9e0ee;"></div>
+
+    <!-- 왼쪽 아치 -->
+    <div class="arch"></div>
+
+    <!-- 물방울 -->
+    <div class="bubble" style="left: 20mm; top: 78mm; width: 4mm; height: 4mm;"></div>
+    <div class="bubble" style="left: 27mm; top: 88mm; width: 2.5mm; height: 2.5mm;"></div>
+    <div class="bubble" style="left: 143mm; top: 30mm; width: 5mm; height: 5mm;"></div>
+    <div class="bubble" style="left: 150mm; top: 24mm; width: 2.5mm; height: 2.5mm;"></div>
+    <div class="bubble" style="left: 152mm; top: 208mm; width: 4.5mm; height: 4.5mm;"></div>
+    <div class="bubble" style="left: 159mm; top: 199mm; width: 2.5mm; height: 2.5mm;"></div>
+
+    <div class="branch" th:if="${branchName}" th:text="${branchName}">리딩오션</div>
+
+    <div class="headline"><span><b>문해력</b>을 높여 주는</span></div>
+
+    <!-- 제목: 테두리용 사본 8개(사방으로 살짝 밀어 겹침) + 그림자 + 파스텔 글자 -->
+    <div class="title-deco" style="left: 44mm; top: 41mm; background: #d6e0f5;"></div>
+    <div class="title-deco" style="left: 79mm; top: 50mm; background: #fdedbd;"></div>
+    <div class="title-deco" style="left: 112mm; top: 40mm; background: #f9d3d8;"></div>
+    <div class="title outline" style="margin: 2mm 0 0 2mm;">파워북</div>
+    <div class="title outline" style="margin: -0.8mm 0 0 0;">파워북</div>
+    <div class="title outline" style="margin: 0.8mm 0 0 0;">파워북</div>
+    <div class="title outline" style="margin: 0 0 0 -0.8mm;">파워북</div>
+    <div class="title outline" style="margin: 0 0 0 0.8mm;">파워북</div>
+    <div class="title outline" style="margin: -0.6mm 0 0 -0.6mm;">파워북</div>
+    <div class="title outline" style="margin: -0.6mm 0 0 0.6mm;">파워북</div>
+    <div class="title outline" style="margin: 0.6mm 0 0 -0.6mm;">파워북</div>
+    <div class="title outline" style="margin: 0.6mm 0 0 0.6mm;">파워북</div>
+    <div class="title"><span style="color: #eef2fc;">파</span><span style="color: #fff8e3;">워</span><span style="color: #fdeef0;">북</span></div>
+
+    <!-- 책 표지 + 뒤에 비스듬한 민트 카드 -->
+    <div class="cover-card" th:if="${imageUrl}"></div>
+    <img class="cover-img" th:if="${imageUrl}" th:src="${imageUrl}" alt="표지"/>
+
+    <table class="intro">
+        <tr><td class="intro-label"><span>책 제 목</span></td><td class="intro-value" th:text="${bookTitle}">책 제목</td></tr>
+        <tr><td class="intro-label"><span>글 쓴 이</span></td><td class="intro-value" th:text="${author}">저자</td></tr>
+        <tr><td class="intro-label"><span>출 판 사</span></td><td class="intro-value" th:text="${publisher}">출판사</td></tr>
+        <tr><td class="intro-label"><span>도서난이도</span></td><td class="intro-value" th:text="${difficulty}">난이도</td></tr>
+    </table>
+</div>
+
+
+<div class="content">
+<!-- 어휘 -->
+<div class="s-vocab">
+    <div class="section-head"><span class="tag">낱말 탐험</span><span class="desc">밑줄 친 낱말의 뜻이 맞으면 O 해 보세요!</span></div>
+    <div class="question" th:each="v, stat : ${sheet.vocabulary}">
+        <table class="vocab-head">
+            <tr>
+                <td class="badge"><span class="q-num" th:text="${stat.count}">1</span></td>
+                <td class="sentence" th:if="${#strings.contains(v.sentence, v.word)}"><span
+                        th:text="${#strings.substringBefore(v.sentence, v.word)}">앞</span><u
+                        th:text="${v.word}">어휘</u><span
+                        th:text="${#strings.substringAfter(v.sentence, v.word)}">뒤</span></td>
+                <td class="sentence" th:unless="${#strings.contains(v.sentence, v.word)}"
+                    th:text="${v.sentence}">예문</td>
+            </tr>
+        </table>
+        <table class="meanings">
+            <tr th:each="m : ${v.meanings}">
+                <td class="bullet">•</td>
+                <td th:text="${m}">뜻</td>
+                <td class="ox">(&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+<!-- 사실적 이해: 객관식 + 주관식 (번호 이어서) -->
+<div class="s-factual">
+    <div class="section-head"><span class="tag">사실적 이해</span><span class="desc">책 내용을 잘 기억하고 있나요?</span></div>
+    <th:block th:replace="~{this :: choices(${sheet.factual})}"></th:block>
+    <div class="question" th:each="q, stat : ${sheet.factualShortAnswer}">
+        <div class="question-text"><span class="q-cell"><span class="q-num" th:text="${#lists.size(sheet.factual) + stat.count}">4</span></span><span class="q-body"
+                th:text="${q.question}">질문</span></div>
+        <div class="answer-line"></div>
+        <div class="answer-line"></div>
+        <div class="answer-line"></div>
+    </div>
+</div>
+
+<div class="s-critical">
+    <div class="section-head"><span class="tag">비판적 이해</span><span class="desc">무엇이 옳은지 꼼꼼히 따져 볼까요?</span></div>
+    <th:block th:replace="~{this :: choices(${sheet.critical})}"></th:block>
+</div>
+
+<div class="s-appreciative">
+    <div class="section-head"><span class="tag">감상적 이해</span><span class="desc">인물의 마음을 함께 느껴 볼까요?</span></div>
+    <th:block th:replace="~{this :: choices(${sheet.appreciative})}"></th:block>
+</div>
+
+<div class="s-creative">
+    <div class="section-head"><span class="tag">창의적 이해</span><span class="desc">내가 주인공이라면 어떻게 할까요?</span></div>
+    <th:block th:replace="~{this :: choices(${sheet.creative})}"></th:block>
+</div>
+</div>
+
+
+<!-- 공통 조각 (여기서는 출력되지 않음) -->
+<th:block th:if="false">
+    <th:block th:fragment="choices(items)">
+        <div class="question" th:each="q, stat : ${items}">
+            <div class="question-text"><span class="q-cell"><span class="q-num" th:text="${stat.count}">1</span></span><span class="q-body"
+                    th:text="${q.question}">질문</span></div>
+            <div class="choices">
+                <div class="choice" th:each="c, cs : ${q.choices}"><span
+                        class="num" th:text="${'①②③④⑤'.charAt(cs.index)}">①</span><span class="choice-text" th:text="${c}">보기</span></div>
+            </div>
+        </div>
+    </th:block>
+</th:block>
+
+</body>
+</html>
