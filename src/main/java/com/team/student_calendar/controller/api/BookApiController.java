@@ -105,14 +105,16 @@ public class BookApiController {
     }
 
 
-    @Operation(summary = "마이북 여러 권 업데이트 + 활동지 PDF 재업로드",
-            description = "{책 id: 수정 정보} 형태로 받아 책 정보와 활동지 JSON의 책 정보를 갱신하고, 활동지가 있으면 PDF를 다시 만들어 덮어씀")
+    @Operation(summary = "마이북 여러 권 일괄 업데이트",
+            description = "body로 받은 책 id 목록([1, 2, 3])을 type=LEVEL이면 difficulty로 난이도 수정 + 활동지 JSON 책 정보 갱신 + PDF 재업로드, type=ACTIVE/INACTIVE이면 활성화(1)/비활성화(0)만 수정")
     @PatchMapping("/api/books/mybooks")
     public ResponseEntity<ApiSuccessResponse<Void>> patchMyBooks(
-            @RequestBody Map<Long, MyBookUpdateReq> reqs
+            @RequestParam("type") String type,
+            @RequestParam(value = "difficulty", required = false) Integer difficulty,
+            @RequestBody List<Long> ids
     ) {
 
-        updateBookService.updateMyBooks(reqs);
+        updateBookService.updateMyBooks(type, ids, difficulty);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("마이북 업데이트에 성공했습니다.", "SUCCESS"));
