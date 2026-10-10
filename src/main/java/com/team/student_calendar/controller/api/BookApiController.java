@@ -1,13 +1,10 @@
 package com.team.student_calendar.controller.api;
 
 import com.team.student_calendar.common.enums.LevelDifficultyRange;
-import com.team.student_calendar.dto.BookCreateReq;
+import com.team.student_calendar.dto.*;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
-import com.team.student_calendar.dto.ManualBookDto;
-import com.team.student_calendar.dto.RecBookRes;
-import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.service.book.*;
@@ -98,13 +95,27 @@ public class BookApiController {
     @PutMapping("/api/books/{id}")
     public ResponseEntity<ApiSuccessResponse<Void>> patchBook(
             @PathVariable("id") Long id,
-            @RequestBody ManualBookDto req
+            @RequestBody ManualUpdateBookDto req
     ) {
 
         updateBookService.updateBook(id, req);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("책 업데이트에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "마이북 여러 권 업데이트 + 활동지 PDF 재업로드",
+            description = "{책 id: 수정 정보} 형태로 받아 책 정보와 활동지 JSON의 책 정보를 갱신하고, 활동지가 있으면 PDF를 다시 만들어 덮어씀")
+    @PatchMapping("/api/books/mybooks")
+    public ResponseEntity<ApiSuccessResponse<Void>> patchMyBooks(
+            @RequestBody Map<Long, MyBookUpdateReq> reqs
+    ) {
+
+        updateBookService.updateMyBooks(reqs);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("마이북 업데이트에 성공했습니다.", "SUCCESS"));
     }
 
 

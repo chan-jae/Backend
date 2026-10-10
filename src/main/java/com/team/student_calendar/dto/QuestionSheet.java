@@ -1,5 +1,7 @@
 package com.team.student_calendar.dto;
 
+import com.team.student_calendar.entity.BookEntity;
+
 import java.util.List;
 
 /**
@@ -7,6 +9,7 @@ import java.util.List;
  * answer는 모두 1부터 시작하는 번호 (①=1)
  */
 public record QuestionSheet(
+        BookInfo book,                              // 문제 생성에 쓴 책 정보 (Claude 응답엔 없고 DB 저장할 때만 채움)
         List<VocabularyQuiz> vocabulary,            // 어휘 5개
         List<MultipleChoice> factual,               // 사실적 이해 4지 선다 3개
         List<ShortAnswer> factualShortAnswer,       // 사실적 이해 주관식 3개
@@ -14,6 +17,13 @@ public record QuestionSheet(
         List<MultipleChoice> appreciative,          // 감상적 이해 4지 선다 3개
         List<MultipleChoice> creative               // 창의적 이해 4지 선다 3개
 ) {
+
+    public QuestionSheet withBook(BookEntity entity) {
+        BookInfo info = new BookInfo(entity.getTitle(), entity.getAuthor(), entity.getPublisher(), entity.getLevel(), entity.getDifficulty());
+        return new QuestionSheet(info, vocabulary, factual, factualShortAnswer, critical, appreciative, creative);
+    }
+
+    public record BookInfo(String title, String author, String publisher, String level, Integer difficulty) {}
 
     /**
      * @param sentence 예문 (word가 그대로 포함돼야 밑줄 표시됨)

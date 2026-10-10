@@ -125,7 +125,7 @@ public class InsertIsbnLookupService {
         executor.submit(() -> {
             try {
                 QuestionSheet questionSheet = createQuestionSheet(book);
-                saveQuestionSheet(bookId, lookup, questionSheet);
+                saveQuestionSheet(book, lookup, questionSheet);
                 questionSheets.put(bookId, QuestionSheetRes.success(lookup.getId()));
             } catch (Exception e) {
                 log.error("claude question sheet fail - bookId: {}", bookId, e);
@@ -162,19 +162,21 @@ public class InsertIsbnLookupService {
      * S3는 트랜잭션에 못 묶으므로 DB 작업을 먼저 다 하고 S3를 마지막에 -> S3 실패 시 전부 롤백 (이후 failQuestionSheet가 FAILED로 기록)
      * (가상 스레드에서 자기 메서드 호출이라 @Transactional 프록시를 안 타서 TransactionTemplate 사용)
      * 서버 시작 시 PDF 재업로드(StartupController)에서도 사용
-     * @param bookId 책 id
+     * @param book 활동지를 만든 책 (JSON에 같이 저장할 책 정보)
      * @param lookup 상태를 바꿀 조회 기록
      * @param questionSheet Claude가 채운 활동지 문제
      */
-    public void saveQuestionSheet(Long bookId, IsbnLookupEntity lookup, QuestionSheet questionSheet) {
+    public void saveQuestionSheet(BookEntity book, IsbnLookupEntity lookup, QuestionSheet questionSheet) {
 
         transactionTemplate.executeWithoutResult(status -> {
-            lookup.setQuestionSheet(questionSheet);
+            // 나중에 책 정보(level 등)가 바뀌면 이 JSON에서 고쳐서 PDF를 다시 만들 수 있게, 저장 시점의 책 정보를 같이 저장
+            QuestionSheet sheetWithBook = questionSheet.withBook(book);
+            lookup.setQuestionSheet(sheetWithBook);
             lookup.setStatus(IsbnLookupStatus.SUCCESS);
             lookup.setError(null);
             // 커밋 때가 아니라 지금 UPDATE를 날려서, DB 에러가 S3 업로드 전에 나도록
             isbnLookupRepository.saveAndFlush(lookup);
-            uploadFileService.uploadMyBookPdf(bookId, questionSheet);
+            uploadFileService.uploadMyBookPdf(book.getId(), sheetWithBook);
         });
     }
 

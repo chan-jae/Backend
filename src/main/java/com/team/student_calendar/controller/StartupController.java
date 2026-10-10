@@ -41,7 +41,7 @@ public class StartupController {
             // 조회 기록 SUCCESS(error 비움) 저장 + PDF 업로드를 한 트랜잭션으로 (업로드 실패 시 상태도 롤백)
             // 한 권 실패해도 나머지는 계속, 서버 시작도 막지 않음
             try {
-                insertIsbnLookupService.saveQuestionSheet(bookId, lookup, lookup.getQuestionSheet());
+                insertIsbnLookupService.saveQuestionSheet(lookup.getBook(), lookup, lookup.getQuestionSheet());
                 success++;
                 log.info("[startup] upload mybook pdf done, status -> SUCCESS lookupId={}, bookId={}", lookup.getId(), bookId);
             } catch (Exception e) {

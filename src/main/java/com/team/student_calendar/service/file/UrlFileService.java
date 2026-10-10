@@ -5,6 +5,7 @@ import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.config.S3Properties;
 import com.team.student_calendar.dto.PresignedUrlRes;
 import com.team.student_calendar.entity.FileEntity;
+import com.team.student_calendar.service.file.util.UploadFileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ public class UrlFileService {
     private final SelectFileService selectFileService;
     private final AmazonS3 amazonS3;
     private final S3Properties s3Properties;
+    private final UploadFileUtil uploadFileUtil;
 
 
     /**
@@ -49,8 +51,7 @@ public class UrlFileService {
         String answerUrl = null;
         // 수동 등록 CUSTOM 책은 직접 올린 파일이라 정답지 없음 -> mb_pdfs 키만
         if (BookType.CUSTOM.getType() == fileEntity.getBook().getType() && fileEntity.getS3Key().startsWith("mb_pdfs/")) {
-            String[] keyParts = fileEntity.getS3Key().split("/", 2);
-            String answerKey = keyParts[0] + "/answer_" + keyParts[1];
+            String answerKey = uploadFileUtil.mybookAnswerKeyOf(fileEntity.getS3Key());
             answerUrl = amazonS3.generatePresignedUrl(s3Properties.getBucket(), answerKey, expiration).toExternalForm();
         }
 

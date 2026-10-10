@@ -166,7 +166,12 @@ public class UploadFileService {
     }
 
 
-    private void putPdf(String s3Key, byte[] pdf) {
+    /**
+     * PDF를 S3에 저장 (같은 키가 있으면 덮어씀, ReUploadFileService에서도 사용)
+     * @param s3Key S3 키
+     * @param pdf PDF 바이트
+     */
+    public void putPdf(String s3Key, byte[] pdf) {
 
         ObjectMetadata metadata = uploadFileUtil.makeMetaData((long) pdf.length, MediaType.APPLICATION_PDF_VALUE);
         try {
