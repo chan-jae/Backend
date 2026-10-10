@@ -270,10 +270,10 @@ public class InsertIsbnLookupService {
         try {
             return objectMapper.readValue(json, QuestionSheet.class);
         } catch (JacksonException e) {
-            log.warn("claude question sheet parse fail - bookId: {}, json: {}", book.getId(), json);
+            log.warn("claude question sheet parse fail - bookId: {}", book.getId());
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "문제 생성 결과가 JSON 틀과 다릅니다.");
         } catch (Exception e) {
-            log.warn("claude question fail - bookId: {}, json: {}", book.getId(), json);
+            log.warn("claude question fail - bookId: {}", book.getId());
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "활동지 읽는 중 에러가 발생했습니다.");
         }
     }
@@ -400,6 +400,9 @@ public class InsertIsbnLookupService {
         IsbnBookRes res = IsbnBookRes.from(lookup);
 
         if (lookup.getStatus() == IsbnLookupStatus.FAILED) {
+            // 저장 안 하면 DB에 PENDING으로 남아 재스캔도 "처리중"으로 막힘
+            isbnLookupRepository.save(lookup);
+            log.info("isbn lookup complete - isbn: {}, status: {}, error: {}", isbn, lookup.getStatus(), lookup.getError());
             return res;
         }
 
@@ -437,7 +440,7 @@ public class InsertIsbnLookupService {
     private static RestClient createRestClient() {
 
         HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
+                .connectTimeout(Duration.ofSeconds(15))
                 .build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(Duration.ofSeconds(5));
