@@ -1,6 +1,7 @@
 package com.team.student_calendar.service.file;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.config.S3Properties;
 import com.team.student_calendar.dto.PresignedUrlRes;
 import com.team.student_calendar.entity.FileEntity;
@@ -44,8 +45,18 @@ public class UrlFileService {
         /* 만료시간을 가지는 URL 가져오기*/
         URL url = amazonS3.generatePresignedUrl(s3Properties.getBucket(), fileEntity.getS3Key(), expiration);
 
+        /* 마이북은 정답지도 같이 (정답지 키는 문제지 키에 answer_ 붙인 형태, UploadFileService.uploadMyBookPdf 참고)*/
+        String answerUrl = null;
+        // 수동 등록 CUSTOM 책은 직접 올린 파일이라 정답지 없음 -> mb_pdfs 키만
+        if (BookType.CUSTOM.getType() == fileEntity.getBook().getType() && fileEntity.getS3Key().startsWith("mb_pdfs/")) {
+            String[] keyParts = fileEntity.getS3Key().split("/", 2);
+            String answerKey = keyParts[0] + "/answer_" + keyParts[1];
+            answerUrl = amazonS3.generatePresignedUrl(s3Properties.getBucket(), answerKey, expiration).toExternalForm();
+        }
+
         return PresignedUrlRes.builder()
                 .url(url.toExternalForm())
+                .answerUrl(answerUrl)
                 .originalName(fileEntity.getOriginalName())
                 .expiresAt(Instant.ofEpochMilli(expiration.getTime()))
                 .build();

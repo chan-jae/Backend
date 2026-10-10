@@ -14,6 +14,7 @@ import java.time.Instant;
 public class PresignedUrlRes {
 
     private String url;
+    private String answerUrl;
     private String originalName;
     private Instant expiresAt;
 }
