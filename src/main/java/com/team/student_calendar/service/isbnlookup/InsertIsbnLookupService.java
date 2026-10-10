@@ -93,7 +93,7 @@ public class InsertIsbnLookupService {
     private final Map<Long, QuestionSheetRes> questionSheets = new ConcurrentHashMap<>();
 
     // 생성 완료 결과는 첫 응답 후 이 시간 동안 계속 응답 (폴링 응답을 프론트가 한 번 놓쳐도 다음 폴링에서 다시 받게)
-    private static final Duration DONE_SHEET_TTL = Duration.ofMinutes(1);
+    private static final Duration DONE_SHEET_TTL = Duration.ofMinutes(2);
 
     /**
      * 활동지 문제 생성을 백그라운드로 시작하고 바로 반환 (결과는 findDoneQuestionSheets로 폴링)
@@ -117,6 +117,10 @@ public class InsertIsbnLookupService {
         questionSheets.compute(bookId, (id, prev) -> {
             if (prev != null && prev.status() == QuestionSheetRes.Status.PENDING) {
                 throw new BaseException(BookErrorCode.QUESTION_SHEET_IN_PROGRESS);
+            }
+            // 이미 끝난 조회 기록: 위 DB 확인 직후 생성이 끝나 DB엔 아직 C_PENDING으로 읽힌 경우 (재스캔하면 새 조회 기록이라 통과)
+            if (prev != null && prev.lookupId().equals(lookup.getId())) {
+                throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED, "이미 작업이 완료된 책입니다.");
             }
             return QuestionSheetRes.pending(lookup.getId());
         });

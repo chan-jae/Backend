@@ -1,5 +1,6 @@
 package com.team.student_calendar.controller;
 
+import com.team.student_calendar.common.enums.IsbnLookupStatus;
 import com.team.student_calendar.entity.IsbnLookupEntity;
 import com.team.student_calendar.repository.IsbnLookupRepository;
 import com.team.student_calendar.service.isbnlookup.InsertIsbnLookupService;
@@ -7,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -21,7 +23,26 @@ public class StartupController {
     private final IsbnLookupRepository isbnLookupRepository;
     private final InsertIsbnLookupService insertIsbnLookupService;
 
+    // 서버 시작 시, 처리 중(PENDING/C_PENDING)으로 남은 조회 기록을 FAILED로 (재스캔으로 다시 진행)
+    // 재시작하면 진행 중이던 작업은 사라지므로 PENDING이 남아 있으면 재스캔이 "처리중"으로 막힘
+    // C_PENDING은 활동지 요청 대기 중인 책도 포함 -> 이 책들도 재스캔 후 활동지 요청
+    @Order(1)
+    @EventListener(ApplicationReadyEvent.class)
+    public void failInterruptedLookups() {
+
+        try {
+            int count = isbnLookupRepository.updateStatusToFailed(
+                    List.of(IsbnLookupStatus.PENDING, IsbnLookupStatus.C_PENDING), IsbnLookupStatus.FAILED);
+            log.info("[startup] interrupted isbn lookups -> FAILED count={}", count);
+        } catch (Exception e) {
+            // 서버 시작은 막지 않음
+            log.error("[startup] interrupted isbn lookups FAILED update fail, error={}", e.getMessage());
+        }
+    }
+
+
     // 서버 시작 시, 활동지 문제는 저장됐는데 PDF(file)가 없는 책을 다시 업로드
+    @Order(2)
     @EventListener(ApplicationReadyEvent.class)
     public void uploadMissingMyBookPdfs() {
 
