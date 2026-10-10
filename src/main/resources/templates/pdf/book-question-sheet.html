@@ -380,15 +380,13 @@
 </div>
 
 
-<!-- 사실적 이해: 객관식 + 주관식 (번호 이어서) -->
+<!-- 사실적 이해: 객관식 + 단답형 (번호 이어서, 개수는 저학년/고학년 틀에 따라 다름) -->
 <div class="s-factual">
     <div class="section-head"><span class="tag">사실적 이해</span><span class="desc">책 내용을 잘 기억하고 있나요?</span></div>
     <th:block th:replace="~{this :: choices(${sheet.factual})}"></th:block>
     <div class="question" th:each="q, stat : ${sheet.factualShortAnswer}">
         <div class="question-text"><span class="q-cell"><span class="q-num" th:text="${#lists.size(sheet.factual) + stat.count}">4</span></span><span class="q-body"
                 th:text="${q.question}">질문</span></div>
-        <div class="answer-line"></div>
-        <div class="answer-line"></div>
         <div class="answer-line"></div>
     </div>
 </div>

@@ -215,6 +215,7 @@ public class InsertIsbnLookupService {
 
     /**
      * 책 정보로 Claude에 활동지 문제 생성 요청 (md/ 프롬프트 + json/book-question-base.json 틀)
+     * 문제는 항상 고학년 기준 개수로 만들고, 저학년이면 PDF 만들 때 앞쪽 일부만 보여줌 (PdfRenderUtil)
      * @param book 문제를 만들 책
      * @return Claude가 틀을 채운 활동지 문제
      */

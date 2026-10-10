@@ -46,20 +46,35 @@
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 1
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 3
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 1
+    },
+    {
+      "question": "질문",
+      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
+      "answer": 4
     }
   ],
   "factualShortAnswer": [
     {
-      "question": "책 내용을 짧게 써서 답하는 질문",
-      "exampleAnswer": "예시 답안 (한두 문장)"
+      "question": "낱말이나 짧은 말로 답하는 질문",
+      "exampleAnswer": "정답 (낱말이나 짧은 구절)"
     },
     {
       "question": "질문",
-      "exampleAnswer": "예시 답안"
+      "exampleAnswer": "정답"
     },
     {
       "question": "질문",
-      "exampleAnswer": "예시 답안"
+      "exampleAnswer": "정답"
     }
   ],
   "critical": [
@@ -72,11 +87,6 @@
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 1
-    },
-    {
-      "question": "질문",
-      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
-      "answer": 4
     }
   ],
   "appreciative": [
@@ -89,11 +99,6 @@
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 2
-    },
-    {
-      "question": "질문",
-      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
-      "answer": 3
     }
   ],
   "creative": [
@@ -106,11 +111,6 @@
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 3
-    },
-    {
-      "question": "질문",
-      "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
-      "answer": 2
     }
   ]
 }

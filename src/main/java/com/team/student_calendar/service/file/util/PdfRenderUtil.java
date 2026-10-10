@@ -24,6 +24,7 @@ public class PdfRenderUtil {
 
     private static final String FONT_FAMILY = "NanumGothic";
     private static final String BRANCH_NAME = "리딩오션 용천점";   // 표지 왼쪽 위 지점명
+    private static final int UPPER_GRADE_DIFFICULTY = 610;        // 도서난이도 이 값 이상이면 고학년 활동지 (미만은 저학년)
 
     private final TemplateEngine templateEngine;
 
@@ -87,7 +88,8 @@ public class PdfRenderUtil {
         variables.put("imageUrl", book.getImageUrl());
         variables.put("level", book.getLevel());
         variables.put("branchName", BRANCH_NAME);
-        variables.put("sheet", sheet);
+        // 문제는 고학년 기준으로 저장돼 있음 -> 저학년이면 일부만 (난이도를 바꾸고 PDF 재업로드하면 그때 기준으로 다시 나뉨)
+        variables.put("sheet", book.getDifficulty() < UPPER_GRADE_DIFFICULTY ? sheet.forLowerGrade() : sheet);
         return variables;
     }
 
