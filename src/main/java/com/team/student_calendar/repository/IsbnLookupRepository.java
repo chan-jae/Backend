@@ -24,14 +24,14 @@ public interface IsbnLookupRepository extends JpaRepository<IsbnLookupEntity, Lo
     // 책의 활동지 생성까지 성공한 조회 기록 (SUCCESS는 책당 1개)
     Optional<IsbnLookupEntity> findFirstByBook_IdAndStatus(Long bookId, IsbnLookupStatus status);
 
-    // 지정한 상태들을 FAILED로 일괄 변경 (활동지 문제가 저장된 기록은 PDF 재업로드 대상이라 제외)
+    // SUCCESS가 아닌 조회 기록 일괄 삭제
     @Modifying
     @Transactional
     @Query("""
-            UPDATE IsbnLookupEntity l SET l.status = :failed, l.updatedAt = LOCAL DATETIME
-            WHERE l.status IN :statuses AND l.questionSheet IS NULL AND l.book IS NULL
+            DELETE FROM IsbnLookupEntity l
+            WHERE l.status <> :success AND (l.questionSheet IS NULL OR l.book IS NULL)
             """)
-    int updateStatusToFailed(@Param("statuses") List<IsbnLookupStatus> statuses, @Param("failed") IsbnLookupStatus failed);
+    int deleteNotSucceed(@Param("success") IsbnLookupStatus success);
 
     // 활동지 문제는 있는데 PDF(file)가 없는 조회 기록 (최근 것부터)
     @Query("""

@@ -23,26 +23,25 @@ public class StartupController {
     private final IsbnLookupRepository isbnLookupRepository;
     private final InsertIsbnLookupService insertIsbnLookupService;
 
-    // 서버 시작 시, 처리 중(PENDING/C_PENDING)으로 남은 조회 기록을 FAILED로 (재스캔으로 다시 진행)
+    // 서버 시작 시, SUCCESS가 아닌 조회 기록 삭제 (재스캔으로 다시 진행)
     // 재시작하면 진행 중이던 작업은 사라지므로 PENDING이 남아 있으면 재스캔이 "처리중"으로 막힘
-    // C_PENDING은 활동지 요청 대기 중인 책도 포함 -> 이 책들도 재스캔 후 활동지 요청
-    @Order(1)
+    // 책이 연결돼 활동지를 다시 만들어야 하는 기록은 남김 (IsbnLookupRepository.deleteUnfinished 참고)
+    @Order(2)
     @EventListener(ApplicationReadyEvent.class)
-    public void failInterruptedLookups() {
+    public void deleteUnfinishedLookups() {
 
         try {
-            int count = isbnLookupRepository.updateStatusToFailed(
-                    List.of(IsbnLookupStatus.PENDING, IsbnLookupStatus.C_PENDING), IsbnLookupStatus.FAILED);
-            log.info("[startup] interrupted isbn lookups -> FAILED count={}", count);
+            int count = isbnLookupRepository.deleteNotSucceed(IsbnLookupStatus.SUCCESS);
+            log.info("[startup] unfinished isbn lookups deleted count={}", count);
         } catch (Exception e) {
             // 서버 시작은 막지 않음
-            log.error("[startup] interrupted isbn lookups FAILED update fail, error={}", e.getMessage());
+            log.error("[startup] unfinished isbn lookups delete fail, error={}", e.getMessage());
         }
     }
 
 
     // 서버 시작 시, 활동지 문제는 저장됐는데 PDF(file)가 없는 책을 다시 업로드
-    @Order(2)
+    @Order(1)
     @EventListener(ApplicationReadyEvent.class)
     public void uploadMissingMyBookPdfs() {
 

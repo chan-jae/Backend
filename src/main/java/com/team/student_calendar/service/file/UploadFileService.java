@@ -119,6 +119,7 @@ public class UploadFileService {
      * 마이북 활동지 문제를 문제지 / 정답지 PDF 두 개로 만들어 S3에 저장
      * file 테이블은 책과 1:1(@OneToOne)이라 문제지 키만 저장, 정답지 키는 같은 UUID라 문제지 키에서 구함
      * (mb_pdfs/{bookId}_{uuid} -> mb_pdfs/answer_{bookId}_{uuid})
+     * 책에 이미 file이 있으면 그 키에 덮어씀 (ReUploadFileService.reuploadMyBookPdf처럼)
      * uploadFile처럼 DB 먼저 저장하고 S3는 마지막 -> S3 실패 시 예외로 DB 롤백 (호출 쪽 트랜잭션도 같이 롤백)
      * @param bookId 책 id
      * @param sheet Claude가 채운 활동지 문제
@@ -131,34 +132,39 @@ public class UploadFileService {
 
         BookEntity book = selectBookService.findById(bookId);
 
-        /* 이미 pdf 파일이 등록되어 있으면 throw */
-        if (selectFileService.existsFileByBookId(book.getId())) {
-            throw new BaseException(FileErrorCode.ALREADY_EXISTS_FILE);
-        }
-
-        String uuid = UUID.randomUUID().toString();
-        String questionKey = String.format("mb_pdfs/%d_%s", bookId, uuid);
-        String answerKey = String.format("mb_pdfs/answer_%d_%s", bookId, uuid);
-
         byte[] questionPdf = pdfRenderUtil.renderQuestionSheet(book, sheet);
         byte[] answerPdf = pdfRenderUtil.renderQuestionSheetAnswer(book, sheet);
 
-        /* 메타데이터 db 저장 (문제지 기준) */
-        fileRepository.save(FileEntity.builder()
-                .book(book)
-                .s3Key(questionKey)
-                .originalName(book.getTitle() + " 활동지.pdf")
-                .fileSize((long) questionPdf.length)
-                .contentType(MediaType.APPLICATION_PDF_VALUE)
-                .registeredAt(LocalDateTime.now())
-                .build());
+        /* 이미 등록된 파일이 있으면 그 키에 덮어쓰기 (S3에 안 쓰는 파일이 쌓이지 않게), 없으면 새 키로 저장 */
+        FileEntity existing = fileRepository.findFirstByBook_Id(bookId).orElse(null);
+        String questionKey;
+        if (existing != null) {
+            questionKey = existing.getS3Key();
+            existing.setOriginalName(book.getTitle() + " 활동지.pdf");
+            existing.setFileSize((long) questionPdf.length);
+            existing.setContentType(MediaType.APPLICATION_PDF_VALUE);
+        } else {
+            questionKey = String.format("mb_pdfs/%d_%s", bookId, UUID.randomUUID());
+            /* 메타데이터 db 저장 (문제지 기준) */
+            fileRepository.save(FileEntity.builder()
+                    .book(book)
+                    .s3Key(questionKey)
+                    .originalName(book.getTitle() + " 활동지.pdf")
+                    .fileSize((long) questionPdf.length)
+                    .contentType(MediaType.APPLICATION_PDF_VALUE)
+                    .registeredAt(LocalDateTime.now())
+                    .build());
+        }
+        String answerKey = uploadFileUtil.mybookAnswerKeyOf(questionKey);
 
         putPdf(questionKey, questionPdf);
         try {
             putPdf(answerKey, answerPdf);
         } catch (BaseException e) {
-            // 문제지만 남지 않게
-            deleteFileService.deleteQuietly(questionKey);
+            // 새로 올린 문제지만 남지 않게 (기존 키는 지우면 DB가 없는 파일을 가리키게 되므로 그대로 둠)
+            if (existing == null) {
+                deleteFileService.deleteQuietly(questionKey);
+            }
             throw e;
         }
 
