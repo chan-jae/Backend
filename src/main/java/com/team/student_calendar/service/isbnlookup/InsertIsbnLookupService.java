@@ -11,6 +11,7 @@ import com.anthropic.models.beta.messages.BetaWebFetchTool20260209;
 import com.anthropic.models.beta.messages.BetaWebSearchTool20260209;
 import com.anthropic.models.beta.messages.MessageCreateParams;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.team.student_calendar.common.enums.ApiUsageType;
 import com.team.student_calendar.common.enums.BookCategory;
 import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.enums.IsbnLookupError;
@@ -26,6 +27,7 @@ import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.entity.IsbnLookupEntity;
 import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.repository.IsbnLookupRepository;
+import com.team.student_calendar.service.apiusage.UpdateApiUsageService;
 import com.team.student_calendar.service.file.UploadFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +75,7 @@ public class InsertIsbnLookupService {
     private final AnthropicClient anthropicClient;
     private final UploadFileService uploadFileService;
     private final TransactionTemplate transactionTemplate;
+    private final UpdateApiUsageService updateApiUsageService;
 
     private static final String YES24_URL = "https://apis.yes24.com/v1/goods/itemDetail?query={isbn}";
     private static final String NARU_URL = "https://data4library.kr/api/srchDtlList?authKey={key}&isbn13={isbn}";
@@ -368,6 +371,17 @@ public class InsertIsbnLookupService {
         // 이미 책으로 등록된 ISBN이면 API 요청 불가
         if (bookRepository.existsByIsbn(isbn)) {
             throw new BaseException(BookErrorCode.ALREADY_EXIST_BOOK);
+        }
+
+        // 보내기 전에 호출 횟수 기록, 하나라도 한도 초과면 둘 다 안 보냄
+        try {
+            updateApiUsageService.increaseCallCount(ApiUsageType.YES24, ApiUsageType.NARU);
+        } catch (BaseException e) {
+            // PENDING으로 남으면 재스캔이 "처리중"으로 막히므로 FAILED로 저장
+            lookup.setStatus(IsbnLookupStatus.FAILED);
+            lookup.setError(IsbnLookupError.API);
+            isbnLookupRepository.save(lookup);
+            throw e;
         }
 
         // 두 API를 병렬·비동기로 호출하고, 둘 다 끝날 때까지 대기
