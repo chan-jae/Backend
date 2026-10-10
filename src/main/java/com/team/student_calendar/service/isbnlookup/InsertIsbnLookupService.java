@@ -120,7 +120,7 @@ public class InsertIsbnLookupService {
             }
             // 이미 끝난 조회 기록: 위 DB 확인 직후 생성이 끝나 DB엔 아직 C_PENDING으로 읽힌 경우 (재스캔하면 새 조회 기록이라 통과)
             if (prev != null && prev.lookupId().equals(lookup.getId())) {
-                throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED, "이미 작업이 완료된 책입니다.");
+                throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED, "작업이 진행중입니다.");
             }
             return QuestionSheetRes.pending(lookup.getId());
         });
