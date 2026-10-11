@@ -444,7 +444,17 @@ public class InsertIsbnLookupService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        BookEntity saved = bookRepository.save(bookEntity);
+        BookEntity saved;
+        try {
+            saved = bookRepository.save(bookEntity);
+        } catch (Exception e) {
+            // 책 저장 실패(제약 조건 위반 등)해도 FAILED로 기록해야 DB에 PENDING으로 안 남음 (재스캔도 "처리중"으로 막히는 문제 방지)
+            log.warn("isbn book save fail - isbn: {}, msg: {}", isbn, e.getMessage());
+            lookup.setStatus(IsbnLookupStatus.FAILED);
+            lookup.setError(IsbnLookupError.BOOK);
+            isbnLookupRepository.save(lookup);
+            return IsbnBookRes.from(lookup);
+        }
 
         log.info("isbn book save complete - id: {}, isbn: {}", bookEntity.getId(), isbn);
 
