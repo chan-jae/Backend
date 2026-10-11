@@ -233,7 +233,7 @@ public class InsertIsbnLookupService {
                 .replace("{template}", readResource("json/book-question-base.json"));
 
         MessageCreateParams params = MessageCreateParams.builder()
-                .model("claude-opus-5-5")
+                .model("claude-sonnet-5-5")
                 .maxTokens(16000L)
                 // opus 5.5 기본 effort가 medium이라 명시
                 .outputConfig(BetaOutputConfig.builder().effort(BetaOutputConfig.Effort.MEDIUM).build())
