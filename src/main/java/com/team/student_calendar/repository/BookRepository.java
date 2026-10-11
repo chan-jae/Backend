@@ -96,6 +96,24 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         Pageable pageable
         );
 
+        /**
+         * 읽어야 하는 마이북(커스텀 등록 책) 가져오기 - 난이도 분류 없이 type만 구분
+         * b.type = 1 -> BookType.CUSTOM
+         */
+        @Query("""
+                        SELECT
+                        b as book, sb.state as state, sb.readAt as readAt FROM BookEntity b
+                        LEFT JOIN StudentBookEntity sb ON b.id = sb.book.id
+                        AND sb.student.id = :studentId
+                        WHERE b.type = 1
+                        AND b.state = 0 AND (b.isActive IS NULL OR b.isActive = 1)
+                        AND (sb.state IS NULL OR sb.state != 2)
+        """)
+        List<RecBookMapping> findFirstUnreadCustomBook(
+                        @Param("studentId") Long studentId,
+                        Pageable pageable
+        );
+
         boolean existsBybHash(@Param("bHash") String bHash);
 
         boolean existsByIsbn(String isbn);

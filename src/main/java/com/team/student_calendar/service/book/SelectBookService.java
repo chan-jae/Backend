@@ -123,6 +123,20 @@ public class SelectBookService {
         return mappingToDto(bookMapping);
     }
 
+    /**
+     * 현재 수업에서 읽을 마이북(커스텀 등록 책) 가져오기 - 난이도 분류 없음
+     * @param studentId 학생 pk
+     * @return 책 array
+     */
+    @Transactional(readOnly = true)
+    public RecBookRes[] findCustomBookToRead(Long studentId) {
+
+        List<RecBookMapping> bookMapping = bookRepository
+                .findFirstUnreadCustomBook(studentId, recBookQueryOption());
+
+        return mappingToDto(bookMapping);
+    }
+
 
 
 

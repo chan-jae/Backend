@@ -1,6 +1,7 @@
 package com.team.student_calendar.service.student.book;
 
 import com.team.student_calendar.common.enums.BookCategory;
+import com.team.student_calendar.common.enums.BookType;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.BookErrorCode;
 import com.team.student_calendar.common.exception.domain.ReadBookErrorCode;
@@ -145,6 +146,34 @@ public class SelectReadBookService {
                     .orElse(null);
             default -> null;
         };
+        if (studentBookEntity == null) {
+            return null;
+        }
+
+        BookEntity book = studentBookEntity.getBook();
+
+        /* entity를 RecBookRes로 변환*/
+        return book.toRecBook(studentBookEntity.getState(), studentBookEntity.getReadAt());
+    }
+
+
+    /**
+     * 가장 최근에 읽었던 마이북 가져오기 (책 추가 시 타입을 구분하지 않으므로 category 대신 book.type으로 필터링)
+     * @param studentId 학생 pk
+     * @return 책
+     */
+    public RecBookRes findPreviousCustomBookToRead(Long studentId) {
+
+        /* 읽은순, 등록순으로 가져오기*/
+        Sort sort = Sort.by(
+                Sort.Order.desc("readAt").nullsLast(),
+                Sort.Order.desc("registeredAt")
+        );
+
+        StudentBookEntity studentBookEntity = studentBookRepository
+                .findTopByStudent_IdAndBook_Type(studentId, BookType.CUSTOM.getType(), sort)
+                .orElse(null);
+
         if (studentBookEntity == null) {
             return null;
         }

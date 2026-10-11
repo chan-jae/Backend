@@ -41,6 +41,8 @@ public class RecommendBookService {
         RecBookRes[] toReadLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.LITERATURE);
         /* 읽어야 하는 비문학 책 가져오기*/
         RecBookRes[] toReadNonLiterature = getCurrentAndNextReadBook(studentEntity, BookCategory.NON_LITERATURE);
+        /* 읽어야 하는 마이북 가져오기 (난이도 분류 없음) */
+        RecBookRes[] toReadCustom = selectBookService.findCustomBookToRead(studentEntity.getId());
 
         return new RecBookRes[][] {
                 {
@@ -52,6 +54,11 @@ public class RecommendBookService {
                         getPreviousReadBook(studentEntity, BookCategory.NON_LITERATURE),
                         getSafe(toReadNonLiterature, 0),
                         getSafe(toReadNonLiterature, 1),
+                },
+                {
+                        getPreviousReadCustomBook(studentEntity),
+                        getSafe(toReadCustom, 0),
+                        getSafe(toReadCustom, 1),
                 }
         };
     }
@@ -85,6 +92,16 @@ public class RecommendBookService {
     private RecBookRes getPreviousReadBook(StudentEntity student, BookCategory category) {
 
         return selectReadBookService.findPreviousBookToRead(student.getId(), category);
+    }
+
+
+    /**
+     * 마지막으로 읽었던 마이북 (책 추가 시 타입을 구분하지 않으므로 category 대신 book.type으로 조회)
+     * @param student 학생
+     */
+    private RecBookRes getPreviousReadCustomBook(StudentEntity student) {
+
+        return selectReadBookService.findPreviousCustomBookToRead(student.getId());
     }
 
 

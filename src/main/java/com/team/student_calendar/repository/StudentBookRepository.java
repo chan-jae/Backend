@@ -56,4 +56,6 @@ public interface StudentBookRepository extends JpaRepository<StudentBookEntity, 
 
     Optional<StudentBookEntity> findTopByStudent_IdAndBook_CategoryNot(Long studentId, String category, Sort sort);
 
+    Optional<StudentBookEntity> findTopByStudent_IdAndBook_Type(Long studentId, Byte type, Sort sort);
+
 }
