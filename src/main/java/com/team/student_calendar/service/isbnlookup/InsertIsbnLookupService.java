@@ -242,8 +242,8 @@ public class InsertIsbnLookupService {
                 .fallbacks(BetaFallbacksParam.ofDefault())
                 // Claude가 모르는 책이 많아서 서점 소개, 서평, 블로그 리뷰를 검색하고 본문까지 읽게 함
                 // 횟수 상한으로 비용만 막음 (검색 1회 약 $0.01 + 결과 토큰), 결과가 부족하면 maxUses 조정
-                .addTool(BetaWebSearchTool20260209.builder().maxUses(8L).build())
-                .addTool(BetaWebFetchTool20260209.builder().maxUses(8L).maxContentTokens(10000L).build())
+                .addTool(BetaWebSearchTool20260209.builder().maxUses(10L).build())
+                .addTool(BetaWebFetchTool20260209.builder().maxUses(10L).maxContentTokens(12000L).build())
                 .system(readResource("md/book-question-system.md"))
                 .addUserMessage(userMessage)
                 .build();
