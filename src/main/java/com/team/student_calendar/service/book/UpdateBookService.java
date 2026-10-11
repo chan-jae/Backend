@@ -111,7 +111,7 @@ public class UpdateBookService {
         // DB 조회 전에 요청값 검증
         switch (type) {
             case LEVEL -> {
-                if (difficulty == null || difficulty <= 0 || difficulty >= 10000) {
+                if (difficulty == null || difficulty < 0 || difficulty >= 10000) {
                     throw new BaseException(CommonErrorCode.PARAMETER_ERROR, "난이도는 0보다 크고 10000보다 작아야 합니다.");
                 }
             }
