@@ -196,6 +196,11 @@
             margin-bottom: 6mm;
             page-break-inside: avoid;
         }
+        /* 마지막 문제의 margin-bottom이 전체 높이를 살짝 넘기면 그만큼만 새 페이지로 밀려
+           거의 빈 페이지가 하나 더 생김 (표지 296mm 트릭과 같은 반올림 문제) -> 마지막 문제는 0으로 */
+        .content > div:last-child .question:last-child {
+            margin-bottom: 0;
+        }
         /* 번호 칸 / 질문 칸 분리 (.choice와 같은 방식): 질문이 두 줄 이상이 돼도 번호 아래로 글이 들어가지 않음 */
         .question-text {
             display: table;
