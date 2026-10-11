@@ -413,17 +413,15 @@ public class InsertIsbnLookupService {
                     : BookCategory.NON_LITERATURE.name());
         }
 
-        // 둘 다에서 책 정보를 못 구했으면 YES24를 우선 기록, 책 정보는 있는데 분류번호만 없으면 NARU 기록
+        // 둘 다에서 책 정보를 못 구했을 때만 실패로 처리 (분류번호는 없으면 그냥 null로 저장하고 진행)
         if (title == null) {
             lookup.setError(IsbnLookupError.YES24);
-        } else if (classNo == null) {
-            lookup.setError(IsbnLookupError.NARU);
         }
         lookup.setStatus(lookup.getError() == null ? IsbnLookupStatus.C_PENDING : IsbnLookupStatus.FAILED);
 
 
 
-        // 실패해도 조회된 값까지는 응답 (책 정보 둘 다 실패 시 title/author/publisher, 분류번호 실패 시 category가 null)
+        // 실패해도 조회된 값까지는 응답 (책 정보 둘 다 실패 시 title/author/publisher가 null, 분류번호 없으면 category가 null)
         IsbnBookRes res = IsbnBookRes.from(lookup);
 
         if (lookup.getStatus() == IsbnLookupStatus.FAILED) {
