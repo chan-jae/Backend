@@ -386,18 +386,24 @@ public class InsertIsbnLookupService {
 
         // 두 API를 병렬·비동기로 호출하고, 둘 다 끝날 때까지 대기
         CompletableFuture<Yes24Item> yes24Future = CompletableFuture.supplyAsync(() -> fetchYes24(isbn), executor);
-        CompletableFuture<String> classNoFuture = CompletableFuture.supplyAsync(() -> fetchClassNo(isbn), executor);
-        CompletableFuture.allOf(yes24Future, classNoFuture).join();
+        CompletableFuture<NaruItem> naruFuture = CompletableFuture.supplyAsync(() -> fetchNaruItem(isbn), executor);
+        CompletableFuture.allOf(yes24Future, naruFuture).join();
 
         Yes24Item item = yes24Future.join();
-        String classNo = classNoFuture.join();
+        NaruItem naruItem = naruFuture.join();
+        String classNo = naruItem != null ? naruItem.classNo() : null;
 
-        if (item != null) {
-            lookup.setTitle(item.title());
-            lookup.setAuthor(item.author());
-            lookup.setPublisher(item.publisher());
-            lookup.setImageUrl(item.cover());
+        // YES24 실패("success": false 등으로 item == null) 시 정보나루의 서명(bookname/authors/publisher)으로 보완
+        String title = item != null ? item.title() : (naruItem != null ? naruItem.bookname() : null);
+        String author = item != null ? item.author() : (naruItem != null ? naruItem.authors() : null);
+        String publisher = item != null ? item.publisher() : (naruItem != null ? naruItem.publisher() : null);
+        String cover = item != null ? item.cover() : null;
 
+        if (title != null) {
+            lookup.setTitle(title);
+            lookup.setAuthor(author);
+            lookup.setPublisher(publisher);
+            lookup.setImageUrl(cover);
         }
         if (classNo != null) {
             lookup.setClassNo(classNo);
@@ -407,8 +413,8 @@ public class InsertIsbnLookupService {
                     : BookCategory.NON_LITERATURE.name());
         }
 
-        // 둘 다 실패하면 책 정보 자체가 없는 YES24를 우선 기록
-        if (item == null) {
+        // 둘 다에서 책 정보를 못 구했으면 YES24를 우선 기록, 책 정보는 있는데 분류번호만 없으면 NARU 기록
+        if (title == null) {
             lookup.setError(IsbnLookupError.YES24);
         } else if (classNo == null) {
             lookup.setError(IsbnLookupError.NARU);
@@ -417,7 +423,7 @@ public class InsertIsbnLookupService {
 
 
 
-        // 실패해도 조회된 값까지는 응답 (YES24 실패 시 title/author/publisher, 정보나루 실패 시 category가 null)
+        // 실패해도 조회된 값까지는 응답 (책 정보 둘 다 실패 시 title/author/publisher, 분류번호 실패 시 category가 null)
         IsbnBookRes res = IsbnBookRes.from(lookup);
 
         if (lookup.getStatus() == IsbnLookupStatus.FAILED) {
@@ -429,17 +435,17 @@ public class InsertIsbnLookupService {
 
         // 레벨은 나중에 직접 지정하므로 cLevel 0으로 저장
         BookEntity bookEntity = BookEntity.builder()
-                .title(item.title())
-                .author(item.author())
-                .publisher(item.publisher())
+                .title(title)
+                .author(author)
+                .publisher(publisher)
                 .category(lookup.getCategory())
                 .difficulty(0)
                 .cLevel((byte) 0)
                 .bookNo(null)
-                .imageUrl(item.cover())
+                .imageUrl(cover)
                 .type(BookType.CUSTOM.getType())
                 .isActive((byte) 1)
-                .bHash(BookHashUtil.generateBookHashKey(item.title(), item.author()))
+                .bHash(BookHashUtil.generateBookHashKey(title, author))
                 .isbn(isbn)
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -502,7 +508,7 @@ public class InsertIsbnLookupService {
     }
 
 
-    private String fetchClassNo(String isbn) {
+    private NaruItem fetchNaruItem(String isbn) {
         try {
             byte[] xml = restClient.get()
                     .uri(NARU_URL, naruToken, isbn)
@@ -518,12 +524,25 @@ public class InsertIsbnLookupService {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             Document doc = factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml));
 
-            NodeList nodes = doc.getElementsByTagName("class_no");
-            return nodes.getLength() == 0 ? null : nodes.item(0).getTextContent().strip();
+            return new NaruItem(
+                    textOf(doc, "bookname"),
+                    textOf(doc, "authors"),
+                    textOf(doc, "publisher"),
+                    textOf(doc, "class_no"));
         } catch (Exception e) {
             log.warn("naru api error isbn={}, msg={}", isbn, e.getMessage());
             return null;
         }
+    }
+
+    /** 태그 하나의 텍스트(CDATA 포함) 추출, 없거나 비어 있으면 null */
+    private static String textOf(Document doc, String tagName) {
+        NodeList nodes = doc.getElementsByTagName(tagName);
+        if (nodes.getLength() == 0) {
+            return null;
+        }
+        String text = nodes.item(0).getTextContent().strip();
+        return text.isEmpty() ? null : text;
     }
 
 
@@ -535,4 +554,7 @@ public class InsertIsbnLookupService {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     record Yes24Item(String title, String author, String publisher, String isbn13, String cover) {}
+
+    /** 정보나루 응답 (XML) */
+    record NaruItem(String bookname, String authors, String publisher, String classNo) {}
 }
