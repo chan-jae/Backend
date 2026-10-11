@@ -1,14 +1,10 @@
 package com.team.student_calendar.controller.api;
 
 import com.team.student_calendar.common.enums.LevelDifficultyRange;
-import com.team.student_calendar.common.util.BookHashUtil;
-import com.team.student_calendar.dto.BookCreateReq;
+import com.team.student_calendar.dto.*;
 import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
-import com.team.student_calendar.dto.ManualBookDto;
-import com.team.student_calendar.dto.RecBookRes;
-import com.team.student_calendar.dto.UpsertResult;
 import com.team.student_calendar.entity.BookEntity;
 import com.team.student_calendar.repository.BookRepository;
 import com.team.student_calendar.service.book.*;
@@ -19,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -100,13 +95,29 @@ public class BookApiController {
     @PutMapping("/api/books/{id}")
     public ResponseEntity<ApiSuccessResponse<Void>> patchBook(
             @PathVariable("id") Long id,
-            @RequestBody ManualBookDto req
+            @RequestBody ManualUpdateBookDto req
     ) {
 
         updateBookService.updateBook(id, req);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok("책 업데이트에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "마이북 여러 권 일괄 업데이트",
+            description = "body로 받은 책 id 목록([1, 2, 3])을 type=LEVEL이면 difficulty로 난이도 수정 + 활동지 JSON 책 정보 갱신 + PDF 재업로드, type=ACTIVE/INACTIVE이면 활성화(1)/비활성화(0)만 수정")
+    @PatchMapping("/api/books/mybooks")
+    public ResponseEntity<ApiSuccessResponse<Void>> patchMyBooks(
+            @RequestParam("type") String type,
+            @RequestParam(value = "difficulty", required = false) Integer difficulty,
+            @RequestBody List<Long> ids
+    ) {
+
+        updateBookService.updateMyBooks(type, ids, difficulty);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok("마이북 업데이트에 성공했습니다.", "SUCCESS"));
     }
 
 

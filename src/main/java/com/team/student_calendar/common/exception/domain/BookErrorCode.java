@@ -16,7 +16,12 @@ public enum BookErrorCode implements ErrorCode {
     INVALID_TYPE("B005", HttpStatus.BAD_REQUEST, "유효한 책 타입이 아닙니다."),
     INVALID_EXCEL_FILE("B006", HttpStatus.BAD_REQUEST, "유효한 책 정보가 담긴 액셀 파일이 아닙니다."),
     TOO_MANY_EXCEL_DATA("B007", HttpStatus.BAD_REQUEST, "액셀에 데이터가 너무 많이 있습니다."),
-    ALREADY_EXIST_BOOK("B008", HttpStatus.BAD_REQUEST, "이미 등록된 책 입니다.");
+    ALREADY_EXIST_BOOK("B008", HttpStatus.BAD_REQUEST, "이미 등록된 책 입니다."),
+    ALREADY_EXIST_ISBN("B009", HttpStatus.BAD_REQUEST, "이미 등록된 ISBN 입니다."),
+    ISBN_NOT_FOUND("B010", HttpStatus.NOT_FOUND, "등록되지 않은 ISBN 입니다."),
+    QUESTION_SHEET_IN_PROGRESS("B011", HttpStatus.CONFLICT, "활동지 문제를 생성 중인 책입니다."),
+    QUESTION_SHEET_NOT_FOUND("B012", HttpStatus.NOT_FOUND, "활동지 문제 생성 요청 기록이 없습니다."),
+    QUESTION_SHEET_NOT_ALLOWED("B013", HttpStatus.BAD_REQUEST, "활동지 문제를 생성할 수 있는 상태가 아닙니다.");
 
 
     private final String code;

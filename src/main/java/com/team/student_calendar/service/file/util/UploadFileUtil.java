@@ -8,7 +8,6 @@ import com.team.student_calendar.config.S3Properties;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -73,6 +72,18 @@ public class UploadFileUtil {
         metadata.setContentType(mimeType);
 
         return metadata;
+    }
+
+
+    /**
+     * 마이북 문제지 키로 정답지 키 구하기 (mb_pdfs/{bookId}_{uuid} -> mb_pdfs/answer_{bookId}_{uuid})
+     * @param questionKey 문제지 S3 키
+     * @return 정답지 S3 키
+     */
+    public String mybookAnswerKeyOf(String questionKey) {
+
+        String[] keyParts = questionKey.split("/", 2);
+        return keyParts[0] + "/answer_" + keyParts[1];
     }
 
 

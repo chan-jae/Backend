@@ -13,12 +13,26 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 @Slf4j
 public class ApiLoggingFilter extends OncePerRequestFilter {
 
     private static final int REQUEST_CACHE_LIMIT = 65_536;  // 64KB
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    // 프론트가 폴링하는 API라 요청마다 로그가 쌓여서 제외
+    private static final Set<String> SKIP_ENDPOINTS = Set.of(
+            "GET /api/api-usages",
+            "OPTIONS /api/api-usages",
+            "GET /api/books/question-sheets",
+            "OPTIONS /api/books/question-sheets"
+    );
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return SKIP_ENDPOINTS.contains(request.getMethod() + " " + request.getRequestURI());
+    }
 
     @Override
     protected void doFilterInternal(

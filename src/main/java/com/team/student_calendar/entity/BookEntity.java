@@ -82,6 +82,9 @@ public class BookEntity {
     @Column(name = "b_hash", length = 64)
     private String bHash;
 
+    @Column(name = "isbn", unique = true, length = 13)
+    private String isbn;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
