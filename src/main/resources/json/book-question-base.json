@@ -1,30 +1,35 @@
 {
   "vocabulary": [
     {
+      "id": 1,
       "sentence": "책 속 낱말이 들어간 예문 (word가 글자 그대로 포함되어야 함)",
       "word": "예문 속 밑줄 칠 낱말",
       "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
       "answer": 1
     },
     {
+      "id": 2,
       "sentence": "예문",
       "word": "낱말",
       "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
       "answer": 3
     },
     {
+      "id": 3,
       "sentence": "예문",
       "word": "낱말",
       "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
       "answer": 2
     },
     {
+      "id": 4,
       "sentence": "예문",
       "word": "낱말",
       "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
       "answer": 3
     },
     {
+      "id": 5,
       "sentence": "예문",
       "word": "낱말",
       "meanings": ["뜻 보기 1", "뜻 보기 2", "뜻 보기 3"],
@@ -33,31 +38,37 @@
   ],
   "factual": [
     {
+      "id": 6,
       "question": "책 내용을 기억하는지 묻는 질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 2
     },
     {
+      "id": 7,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 4
     },
     {
+      "id": 8,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 1
     },
     {
+      "id": 9,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 3
     },
     {
+      "id": 10,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 1
     },
     {
+      "id": 11,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 4
@@ -65,25 +76,30 @@
   ],
   "factualShortAnswer": [
     {
+      "id": 12,
       "question": "낱말이나 짧은 말로 답하는 질문",
       "exampleAnswer": "정답 (낱말이나 짧은 구절)"
     },
     {
+      "id": 13,
       "question": "질문",
       "exampleAnswer": "정답"
     },
     {
+      "id": 14,
       "question": "질문",
       "exampleAnswer": "정답"
     }
   ],
   "critical": [
     {
+      "id": 15,
       "question": "인물의 생각이나 행동이 옳은지 따져 보는 질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 3
     },
     {
+      "id": 16,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 1
@@ -91,11 +107,13 @@
   ],
   "appreciative": [
     {
+      "id": 17,
       "question": "인물의 마음이나 책의 감동을 느껴 보는 질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 4
     },
     {
+      "id": 18,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 2
@@ -103,11 +121,13 @@
   ],
   "creative": [
     {
+      "id": 19,
       "question": "내가 주인공이라면, 내 생활에 적용한다면 등 생각을 넓히는 질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 1
     },
     {
+      "id": 20,
       "question": "질문",
       "choices": ["보기 1", "보기 2", "보기 3", "보기 4"],
       "answer": 3

@@ -5,6 +5,7 @@ import com.team.student_calendar.common.exception.BaseException;
 import com.team.student_calendar.common.exception.domain.CommonErrorCode;
 import com.team.student_calendar.common.response.ApiSuccessResponse;
 import com.team.student_calendar.dto.IsbnBookRes;
+import com.team.student_calendar.dto.QuestionSheet;
 import com.team.student_calendar.dto.QuestionSheetRes;
 import com.team.student_calendar.service.isbnlookup.InsertIsbnLookupService;
 import com.team.student_calendar.service.isbnlookup.SelectIsbnLookupService;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -88,14 +90,54 @@ public class IsbnLookupApiController {
     }
 
 
+    @Operation(summary = "책 활동지 조회", description = "책 id로 생성된 활동지 문제 JSON 조회 (문제 id, 정답 포함, 활동지가 없으면 404)")
+    @GetMapping("/api/books/{bookId}/question-sheet")
+    public ResponseEntity<ApiSuccessResponse<QuestionSheet>> getQuestionSheet(
+            @PathVariable("bookId") Long bookId
+    ) {
+
+        QuestionSheet res = selectIsbnLookupService.findQuestionSheetByBookId(bookId);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(res, "책 활동지 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "책 활동지 일부 문제 재생성 요청",
+            description = "body로 받은 문제 id 목록([3, 7, 15])의 문제만 Claude API로 새로 만들어 바꾸는 작업을 백그라운드로 시작하고 바로 응답 "
+                    + "(활동지가 만들어진 책만 가능, 결과는 GET /api/books/question-sheets/regenerate로 폴링, 실패하면 기존 활동지 유지)")
+    @PostMapping("/api/books/{bookId}/question-sheet/regenerate")
+    public ResponseEntity<ApiSuccessResponse<Void>> postRegenerateQuestionSheet(
+            @PathVariable("bookId") Long bookId,
+            @RequestBody List<Integer> ids
+    ) {
+
+        insertIsbnLookupService.requestRegenerateQuestionSheet(bookId, ids);
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(ApiSuccessResponse.ok("책 활동지 문제 재생성 요청에 성공했습니다.", "PENDING"));
+    }
+
+
     @Operation(summary = "생성 완료된 책 활동지 문제 조회", description = "생성이 끝난(SUCCESS/FAILED) 활동지 문제를 lookupId, status 목록으로 응답 (폴링용, 한 번 응답한 결과는 다시 오지 않음)")
     @GetMapping("/api/books/question-sheets")
     public ResponseEntity<ApiSuccessResponse<List<QuestionSheetRes>>> getQuestionSheets() {
 
-        List<QuestionSheetRes> res = insertIsbnLookupService.findDoneQuestionSheets();
+        List<QuestionSheetRes> res = insertIsbnLookupService.findDoneQuestionSheets(QuestionSheetRes.Type.CREATE);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ApiSuccessResponse.ok(res, "생성 완료된 책 활동지 문제 조회에 성공했습니다.", "SUCCESS"));
+    }
+
+
+    @Operation(summary = "재생성 완료된 책 활동지 문제 조회", description = "일부 문제 재생성이 끝난(SUCCESS/FAILED) 활동지를 lookupId, status 목록으로 응답 (폴링용, 한 번 응답한 결과는 다시 오지 않음)")
+    @GetMapping("/api/books/question-sheets/regenerate")
+    public ResponseEntity<ApiSuccessResponse<List<QuestionSheetRes>>> getRegeneratedQuestionSheets() {
+
+        List<QuestionSheetRes> res = insertIsbnLookupService.findDoneQuestionSheets(QuestionSheetRes.Type.REGENERATE);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ApiSuccessResponse.ok(res, "재생성 완료된 책 활동지 문제 조회에 성공했습니다.", "SUCCESS"));
     }
 
 

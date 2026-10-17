@@ -44,6 +44,7 @@ import org.springframework.web.client.RestClient;
 import org.w3c.dom.Document;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.w3c.dom.NodeList;
 
 import javax.xml.XMLConstants;
@@ -57,8 +58,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -128,7 +131,7 @@ public class InsertIsbnLookupService {
                 markFailed(lookup, IsbnLookupError.PROCESSING);
                 throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED, "작업이 진행중입니다.");
             }
-            return QuestionSheetRes.pending(lookup.getId());
+            return QuestionSheetRes.pending(lookup.getId(), QuestionSheetRes.Type.CREATE);
         });
 
         // 백그라운드 예외는 GlobalExceptionHandler로 안 가므로 여기서 잡아 FAILED로 기록
@@ -136,10 +139,74 @@ public class InsertIsbnLookupService {
             try {
                 QuestionSheet questionSheet = createQuestionSheet(book);
                 saveQuestionSheet(book, lookup, questionSheet);
-                questionSheets.put(bookId, QuestionSheetRes.success(lookup.getId()));
+                questionSheets.put(bookId, QuestionSheetRes.success(lookup.getId(), QuestionSheetRes.Type.CREATE));
             } catch (Exception e) {
                 log.error("claude question sheet fail - bookId: {}", bookId, e);
                 failQuestionSheet(bookId, lookup);
+            }
+        });
+    }
+
+
+    /**
+     * 활동지 일부 문제만 새로 만드는 작업을 백그라운드로 시작하고 바로 반환 (결과는 findDoneQuestionSheets로 폴링)
+     * 활동지가 만들어진(SUCCESS) 책만 가능, 요청한 id의 문제만 바꾸고 나머지는 그대로
+     * 재생성에 실패하면 폴링 결과만 FAILED, DB의 기존 활동지와 PDF는 그대로 유지
+     * @param bookId 책 id
+     * @param ids 새로 만들 문제 id (json/book-question-base.json의 id)
+     */
+    public void requestRegenerateQuestionSheet(Long bookId, List<Integer> ids) {
+
+        if (ids == null || ids.isEmpty()) {
+            throw new BaseException(CommonErrorCode.PARAMETER_ERROR, "새로 만들 문제가 없습니다.");
+        }
+        Set<Integer> targetIds = new LinkedHashSet<>(ids);
+
+        BookEntity book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
+
+        IsbnLookupEntity lookup = isbnLookupRepository.findFirstByIsbnOrderByIdDesc(book.getIsbn())
+                .orElseThrow(() -> new BaseException(BookErrorCode.ISBN_NOT_FOUND));
+
+        QuestionSheet current = lookup.getQuestionSheet();
+        if (lookup.getStatus() != IsbnLookupStatus.SUCCESS || current == null) {
+            throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED);
+        }
+
+        // 요청 단계에서 바로 거절하기 위한 확인 (실제 병합은 백그라운드에서 다시 읽은 활동지로), id가 없는 예전 활동지도 여기서 걸림
+        if (!current.ids().containsAll(targetIds)) {
+            throw new BaseException(CommonErrorCode.PARAMETER_ERROR, "활동지에 없는 문제 id가 있습니다.");
+        }
+
+        // 확인과 PENDING 등록을 한 번에 (동시 요청이 둘 다 통과하지 않도록)
+        questionSheets.compute(bookId, (id, prev) -> {
+            if (prev != null && prev.status() == QuestionSheetRes.Status.PENDING) {
+                throw new BaseException(BookErrorCode.QUESTION_SHEET_IN_PROGRESS);
+            }
+            return QuestionSheetRes.pending(lookup.getId(), QuestionSheetRes.Type.REGENERATE);
+        });
+
+        // 백그라운드 예외는 GlobalExceptionHandler로 안 가므로 여기서 잡아 FAILED로 기록
+        executor.submit(() -> {
+            try {
+                // 위에서 읽은 활동지는 직전 재생성이 반영되기 전일 수 있어(읽은 뒤 compute 사이에 끝난 경우) 여기서 다시 읽음
+                // PENDING 확인으로 재생성은 한 번에 하나만 돌고 직전 작업은 DB 커밋 후 SUCCESS가 되므로, 지금 읽으면 항상 반영돼 있음
+                IsbnLookupEntity latest = isbnLookupRepository.findById(lookup.getId())
+                        .filter(l -> l.getStatus() == IsbnLookupStatus.SUCCESS && l.getQuestionSheet() != null)
+                        .orElseThrow(() -> new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED));
+                QuestionSheet latestSheet = latest.getQuestionSheet();
+
+                QuestionSheet generated = regenerateQuestions(book, latestSheet, targetIds);
+
+                // Claude 호출이 몇 분 걸려서 그 사이 책 정보(난이도 등)가 수정됐을 수 있음 -> 저장 직전에 다시 읽어 JSON/PDF 표지에 반영
+                BookEntity latestBook = bookRepository.findById(bookId)
+                        .orElseThrow(() -> new BaseException(BookErrorCode.BOOK_NOT_FOUND));
+                saveQuestionSheet(latestBook, latest, latestSheet.replaceByIds(generated, targetIds));
+                questionSheets.put(bookId, QuestionSheetRes.success(lookup.getId(), QuestionSheetRes.Type.REGENERATE));
+            } catch (Exception e) {
+                log.error("claude question sheet regenerate fail - bookId: {}, ids: {}", bookId, targetIds, e);
+                // failQuestionSheet는 활동지를 지우고 FAILED로 바꾸므로 쓰지 않음 (saveQuestionSheet 실패 시 DB는 롤백돼 기존 활동지 유지)
+                questionSheets.put(bookId, QuestionSheetRes.failed(lookup.getId(), QuestionSheetRes.Type.REGENERATE));
             }
         });
     }
@@ -152,7 +219,7 @@ public class InsertIsbnLookupService {
      */
     void failQuestionSheet(Long bookId, IsbnLookupEntity lookup) {
 
-        questionSheets.put(bookId, QuestionSheetRes.failed(lookup.getId()));
+        questionSheets.put(bookId, QuestionSheetRes.failed(lookup.getId(), QuestionSheetRes.Type.CREATE));
 
         // saveQuestionSheet 롤백돼도 메모리 객체엔 SUCCESS/문제가 남아 있으므로 같이 되돌림
         lookup.setQuestionSheet(null);
@@ -192,16 +259,17 @@ public class InsertIsbnLookupService {
 
 
     /**
-     * 생성이 끝난(SUCCESS/FAILED) 활동지 문제 전체 조회 (프론트 폴링용)
+     * 생성이 끝난(SUCCESS/FAILED) 활동지 문제 중 type에 해당하는 것 전체 조회 (프론트 폴링용)
      * 첫 응답 시간을 기록하고 DONE_SHEET_TTL 동안은 계속 응답, 지나면 메모리에서 제거
+     * @param type 최초 생성(CREATE) / 일부 재생성(REGENERATE), 폴링 엔드포인트별로 구분
      * @return 없으면 빈 List
      */
-    public List<QuestionSheetRes> findDoneQuestionSheets() {
+    public List<QuestionSheetRes> findDoneQuestionSheets(QuestionSheetRes.Type type) {
 
         Instant now = Instant.now();
         List<QuestionSheetRes> res = new ArrayList<>();
         questionSheets.forEach((bookId, sheet) -> {
-            if (sheet.status() == QuestionSheetRes.Status.PENDING) {
+            if (sheet.type() != type || sheet.status() == QuestionSheetRes.Status.PENDING) {
                 return;
             }
             // replace/remove(key, value)는 값이 그대로일 때만 바꿈 -> 그 사이 같은 책으로 새로 등록된 요청을 덮거나 지우지 않음
@@ -235,6 +303,45 @@ public class InsertIsbnLookupService {
                 .replace("{difficulty}", String.valueOf(book.getDifficulty()))
                 .replace("{template}", readResource("json/book-question-base.json"));
 
+        return askClaude(book.getId(), userMessage);
+    }
+
+
+    /**
+     * 기존 활동지 전체와 바꿀 문제 id를 보내 Claude에 일부 문제만 새로 만들어 달라고 요청 (md/book-question-regenerate.md)
+     * @param book 문제를 만들 책
+     * @param current 현재 활동지
+     * @param ids 새로 만들 문제 id
+     * @return Claude가 응답한 활동지 전체 (요청한 id 외의 문제는 replaceByIds에서 버림)
+     */
+    private QuestionSheet regenerateQuestions(BookEntity book, QuestionSheet current, Set<Integer> ids) {
+
+        // 저장된 활동지엔 책 정보(book)가 들어 있어 그대로 보내면 응답에도 따라 붙으므로 빼고 보냄
+        ObjectNode sheetJson = objectMapper.valueToTree(current);
+        sheetJson.remove("book");
+
+        // {sheet}는 책 내용이 들어간 긴 글이라 마지막에 치환 (안에 다른 {변수} 글자가 있어도 다시 치환되지 않게)
+        String userMessage = readResource("md/book-question-regenerate.md")
+                .replace("{bookTitle}", book.getTitle())
+                .replace("{author}", String.valueOf(book.getAuthor()))
+                .replace("{publisher}", String.valueOf(book.getPublisher()))
+                .replace("{level}", String.valueOf(book.getLevel()))
+                .replace("{difficulty}", String.valueOf(book.getDifficulty()))
+                .replace("{ids}", ids.toString())
+                .replace("{sheet}", objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(sheetJson));
+
+        return askClaude(book.getId(), userMessage);
+    }
+
+
+    /**
+     * 활동지 문제 출제 프롬프트(md/book-question-system.md)와 사용자 메시지로 Claude 호출 후 응답 JSON을 활동지로 변환
+     * @param bookId 로그용 책 id
+     * @param userMessage 사용자 메시지 (새로 생성 / 일부 재생성)
+     * @return Claude가 응답한 활동지
+     */
+    private QuestionSheet askClaude(Long bookId, String userMessage) {
+
         MessageCreateParams params = MessageCreateParams.builder()
                 .model("claude-sonnet-5-5")
                 .maxTokens(16000L)
@@ -262,7 +369,7 @@ public class InsertIsbnLookupService {
         // 토큰 한도로 잘리거나 거절되면 JSON이 불완전함
         BetaStopReason stopReason = response.stopReason().orElse(null);
         if (!BetaStopReason.END_TURN.equals(stopReason)) {
-            log.warn("claude question sheet fail - bookId: {}, stopReason: {}", book.getId(), stopReason);
+            log.warn("claude question sheet fail - bookId: {}, stopReason: {}", bookId, stopReason);
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "문제 생성 실패: " + stopReason);
         }
 
@@ -274,7 +381,7 @@ public class InsertIsbnLookupService {
         int start = text.indexOf('{');
         String json = start < 0 ? text : text.substring(start, text.lastIndexOf('}') + 1);
 
-        log.debug("claude question sheet complete - bookId: {}, usage: {}, json: {}", book.getId(), response.usage(), json);
+        log.debug("claude question sheet complete - bookId: {}, usage: {}, json: {}", bookId, response.usage(), json);
 
         if (json.contains("UNKNOWN_BOOK")) {
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "웹에서 책 내용을 충분히 찾지 못해 문제를 만들지 않았습니다.");
@@ -283,10 +390,10 @@ public class InsertIsbnLookupService {
         try {
             return objectMapper.readValue(json, QuestionSheet.class);
         } catch (JacksonException e) {
-            log.warn("claude question sheet parse fail - bookId: {}", book.getId());
+            log.warn("claude question sheet parse fail - bookId: {}", bookId);
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "문제 생성 결과가 JSON 틀과 다릅니다.");
         } catch (Exception e) {
-            log.warn("claude question fail - bookId: {}", book.getId());
+            log.warn("claude question fail - bookId: {}", bookId);
             throw new BaseException(CommonErrorCode.INTERNAL_SERVER_ERROR, "활동지 읽는 중 에러가 발생했습니다.");
         }
     }
