@@ -62,25 +62,23 @@ public class UpdateBookService {
             throw new BaseException(BookErrorCode.INVALID_TYPE, "수정 가능한 책 타입이 아닙니다.");
         }
 
-//        // 제목/저자가 바뀐 경우에만 등록된 책 있는지 체크
-//        String newHash = BookHashUtil.generateBookHashKey(req.getTitle(), req.getAuthor());
-//        if (!newHash.equals(entity.getBHash())) {
-//            validateBookDupService.checkBookDuplication(req.getTitle(), req.getAuthor());
-//        }
+        // 저자가 바뀐 경우에만 등록된 책 있는지 체크 (제목은 수정 불가라 저자만 비교)
+        String newHash = BookHashUtil.generateBookHashKey(entity.getTitle(), req.getAuthor());
+        if (!newHash.equals(entity.getBHash())) {
+            validateBookDupService.checkBookDuplication(entity.getTitle(), req.getAuthor());
+        }
 
         byte isActive = (byte) (Boolean.parseBoolean(req.getIsActive()) ? 1 : 0);
 
-//        entity.setTitle(req.getTitle());
-//        entity.setAuthor(req.getAuthor());
-//        entity.setPublisher(req.getPublisher());
+        entity.setAuthor(req.getAuthor());
+        entity.setPublisher(req.getPublisher());
         entity.setDifficulty(req.getDifficulty());
         entity.setCategory(req.getCategory());
 //        entity.setLevel(req.getLevel());
 //        entity.setCLevel(BookLevelMapping.customLevelOf(req.getLevel()));
         entity.setUpdatedAt(LocalDateTime.now());
         entity.setIsActive(isActive);
-//        entity.setBHash(newHash);
-        entity.setUpdatedAt(LocalDateTime.now());
+        entity.setBHash(newHash);
 
         // 활동지가 있는 마이북이면 JSON 책 정보 갱신 후 PDF 다시 업로드 (DB 반영 먼저, S3는 마지막)
         refreshQuestionSheet(entity).ifPresent(sheet -> {

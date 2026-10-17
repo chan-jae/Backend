@@ -108,6 +108,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
                         WHERE b.type = 1
                         AND b.state = 0 AND (b.isActive IS NULL OR b.isActive = 1)
                         AND (sb.state IS NULL OR sb.state != 2)
+                        AND b.difficulty >= 0
         """)
         List<RecBookMapping> findFirstUnreadCustomBook(
                         @Param("studentId") Long studentId,

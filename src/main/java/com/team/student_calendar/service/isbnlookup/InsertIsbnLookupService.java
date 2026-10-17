@@ -113,16 +113,19 @@ public class InsertIsbnLookupService {
                 .orElseThrow(() -> new BaseException(BookErrorCode.ISBN_NOT_FOUND));
 
         if (lookup.getStatus() != IsbnLookupStatus.C_PENDING) {
+            markFailed(lookup, IsbnLookupError.PROCESSING);
             throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED);
         }
 
         // 확인과 C_PENDING 등록을 한 번에 (동시 요청이 둘 다 통과하지 않도록)
         questionSheets.compute(bookId, (id, prev) -> {
             if (prev != null && prev.status() == QuestionSheetRes.Status.PENDING) {
+                markFailed(lookup, IsbnLookupError.PROCESSING);
                 throw new BaseException(BookErrorCode.QUESTION_SHEET_IN_PROGRESS);
             }
             // 이미 끝난 조회 기록: 위 DB 확인 직후 생성이 끝나 DB엔 아직 C_PENDING으로 읽힌 경우 (재스캔하면 새 조회 기록이라 통과)
             if (prev != null && prev.lookupId().equals(lookup.getId())) {
+                markFailed(lookup, IsbnLookupError.PROCESSING);
                 throw new BaseException(BookErrorCode.QUESTION_SHEET_NOT_ALLOWED, "작업이 진행중입니다.");
             }
             return QuestionSheetRes.pending(lookup.getId());
@@ -370,6 +373,8 @@ public class InsertIsbnLookupService {
 
         // 이미 책으로 등록된 ISBN이면 API 요청 불가
         if (bookRepository.existsByIsbn(isbn)) {
+            // PENDING으로 남으면 재스캔이 "처리중"으로 막히므로 FAILED로 저장
+            markFailed(lookup, IsbnLookupError.EXISTING);
             throw new BaseException(BookErrorCode.ALREADY_EXIST_BOOK);
         }
 
@@ -378,9 +383,7 @@ public class InsertIsbnLookupService {
             updateApiUsageService.increaseCallCount(ApiUsageType.YES24, ApiUsageType.NARU);
         } catch (BaseException e) {
             // PENDING으로 남으면 재스캔이 "처리중"으로 막히므로 FAILED로 저장
-            lookup.setStatus(IsbnLookupStatus.FAILED);
-            lookup.setError(IsbnLookupError.API);
-            isbnLookupRepository.save(lookup);
+            markFailed(lookup, IsbnLookupError.API);
             throw e;
         }
 
@@ -437,7 +440,7 @@ public class InsertIsbnLookupService {
                 .author(author)
                 .publisher(publisher)
                 .category(lookup.getCategory())
-                .difficulty(0)
+                .difficulty(-1)
                 .cLevel((byte) 0)
                 .bookNo(null)
                 .imageUrl(cover)
@@ -454,9 +457,7 @@ public class InsertIsbnLookupService {
         } catch (Exception e) {
             // 책 저장 실패(제약 조건 위반 등)해도 FAILED로 기록해야 DB에 PENDING으로 안 남음 (재스캔도 "처리중"으로 막히는 문제 방지)
             log.warn("isbn book save fail - isbn: {}, msg: {}", isbn, e.getMessage());
-            lookup.setStatus(IsbnLookupStatus.FAILED);
-            lookup.setError(IsbnLookupError.BOOK);
-            isbnLookupRepository.save(lookup);
+            markFailed(lookup, IsbnLookupError.BOOK);
             return IsbnBookRes.from(lookup);
         }
 
@@ -469,6 +470,19 @@ public class InsertIsbnLookupService {
         log.info("isbn lookup complete - isbn: {}, status: {}, error: {}", isbn, lookup.getStatus(), lookup.getError());
 
         return res;
+    }
+
+
+    /**
+     * 조회 기록을 FAILED로 표시 (저장 안 하면 DB에 PENDING으로 남아 재스캔도 "처리중"으로 막힘)
+     * @param lookup 상태를 바꿀 조회 기록
+     * @param error 실패 원인
+     */
+    private void markFailed(IsbnLookupEntity lookup, IsbnLookupError error) {
+
+        lookup.setStatus(IsbnLookupStatus.FAILED);
+        lookup.setError(error);
+        isbnLookupRepository.save(lookup);
     }
 
 

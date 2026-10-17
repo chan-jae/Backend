@@ -11,6 +11,14 @@ import lombok.Getter;
 @Data
 public class ManualUpdateBookDto {
 
+    @NotBlank(message = "저자는 필수 항목입니다.")
+    @Size(max = 20, message = "저자는 20자 이하로 입력해주세요.")
+    private String author;
+
+    @NotBlank(message = "출판사는 필수 항목입니다.")
+    @Size(max = 20, message = "출판사는 20자 이하로 입력해주세요.")
+    private String publisher;
+
     @NotBlank(message = "카테고리는 필수 항목입니다.")
     @Size(max = 20, message = "카테고리는 20자 이하로 입력해주세요.")
     private String category;
@@ -46,6 +54,20 @@ public class ManualUpdateBookDto {
      * @return 에러 메시지 반환 (문제 없으면 null)
      */
     public String validateAll() {
+
+        if (author == null || author.isBlank()) {
+            return "저자는 필수 항목입니다.";
+        }
+        if (author.length() > 20) {
+            return "저자는 20자 이하로 입력해주세요.";
+        }
+
+        if (publisher == null || publisher.isBlank()) {
+            return "출판사는 필수 항목입니다.";
+        }
+        if (publisher.length() > 20) {
+            return "출판사는 20자 이하로 입력해주세요.";
+        }
 
         if (category == null || category.isBlank()) {
             return "카테고리는 필수 항목입니다.";
